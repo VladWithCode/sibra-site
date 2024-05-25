@@ -1,0 +1,11 @@
+# Ignore binaries
+cmd/*
+
+# Do not ignore go files in cmd
+!cmd/*.go
+!cmd/**/*.go
+
+# Ignore env files
+.env*
+
+
