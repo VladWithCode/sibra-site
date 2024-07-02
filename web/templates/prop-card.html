@@ -1,0 +1,41 @@
+{{block "prop-card" .}}
+<a href="/propiedades/{{.Contract}}/{{.Id}}" class="block basis-full overflow-hidden md:basis-[49%] 2xl:basis-[32.5%]">
+    <div class="relative rounded-md overflow-hidden mb-2 z-0">
+        <div class="absolute top-2 left-2 flex flex-wrap gap-2 text-xs font-bold uppercase">
+            <p class="bg-stone-50 text-slate-800 p-1 rounded">{{.Contract}}</p>
+        </div>
+        <div class="h-48">
+            <img class="w-full max-h-full object-cover object-center" src="/static/properties/{{.Id}}/{{.MainImg}}" alt="Foto propiedad en {{.Address}}">
+        </div>
+    </div>
+    <div class="flex justify-between mb-1">
+        <h2 class="text-lg font-bold uppercase">{{FormatMoney .Price}}</h2>
+    </div>
+    <div class="flex text-[10px] items-end gap-2 mb-2">
+        <p class="flex gap-2 items-end leading-4">
+        <svg class="w-4 h-4 fill-slate-700">
+            <use href="/static/svg/bed.svg#bed"></use>
+        </svg>
+        <span>{{.Beds}} Hab(s)</span>
+        </p>
+        <p class="flex gap-2 items-end leading-4">
+        <svg class="w-4 h-4 fill-slate-700">
+            <use href="/static/svg/bath.svg#bath"></use>
+        </svg>
+        <span>{{.Baths}} Baño(s)</span>
+        </p>
+        <p class="flex gap-2 items-end leading-4">
+        <svg class="w-4 h-4 fill-slate-700">
+            <use href="/static/svg/square.svg#square"></use>
+        </svg>
+        <span>{{.SqMt}}m²</span>
+        </p>
+    </div>
+    <p class="font-semibold text-sm mb-1">
+    {{.Address}}
+    </p>
+    <p class="font-semibold max-w-full text-sm overflow-hidden break-all text-ellipsis whitespace-nowrap">
+    {{.City}}, {{.State}} {{.Zip}}
+    </p>
+</a>
+{{end}}

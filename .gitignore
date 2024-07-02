@@ -8,4 +8,7 @@ cmd/*
 # Ignore env files
 .env*
 
+# Ignore static
+static/properties/**/*
+static/users/**/*
 

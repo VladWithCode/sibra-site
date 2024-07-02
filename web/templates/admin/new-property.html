@@ -1,0 +1,156 @@
+{{define "content"}}
+<script>
+    const ImgPreviewClasslist = "relative w-40 border border-slate-300 rounded object-cover pic-preview-img z-0"
+    document.addEventListener("DOMContentLoaded", () => {
+        let pictures = []
+        let picFiles = []
+        handleUploadPicsSuccess()
+
+        // Handle new-prop response
+        htmx.on("htmx:configRequest", e => {
+            if (e.target.id === "new-property-form")
+                handleNewPropRequest(e)
+            else if (e.target.id === "property-pic-form")
+                handlePicRequest(e)
+        })
+
+        htmx.on("htmx:beforeSwap", e => {
+            e.detail.shouldSwap = true
+
+            pictures = []
+            picFiles = []
+        })
+
+        let picFormInited = false
+        htmx.on("htmx:afterSwap", e => {
+            if (!picFormInited) {
+                picFormInited = true
+
+                handleUploadPicsSuccess()
+            }
+        })
+
+        // Picture form
+        let picForm = document.getElementById("property-pic-form")
+
+        function handleNewPropRequest(e) {
+            let loadingSpinner = document.getElementById("new-property-loader")
+
+            loadingSpinner.style.display = "flex"
+        }
+
+        function handlePicRequest(e) {
+            let loadingSpinner = document.getElementById("pic-upload-loader")
+
+            loadingSpinner.style.display = "flex"
+
+            e.detail.parameters["prop-pic-inp"] = undefined
+            e.detail.parameters["pictures"] = []
+
+            for (let file of picFiles) {
+                e.detail.parameters["pictures"].push(file)
+            }
+        }
+
+        function handleUploadPicsSuccess() {
+            let picPreview = document.getElementById("picture-preview")
+            let picInp = document.getElementById("prop-pic-inp")
+
+            picInp.addEventListener("change", e => {
+                let pics = e.target.files
+
+                for (let i = 0, l = pics.length; i < l; i++) {
+                    let pic = pics[i]
+                    let imgElem = document.createElement("img")
+                    imgElem.classList.add(...ImgPreviewClasslist.split(" "))
+                    imgElem.src = URL.createObjectURL(pic)
+                    imgElem.alt = "Imagen no. " + i
+                    imgElem.addEventListener("click", handlePicClick)
+                    pictures.push(imgElem)
+                    picFiles.push(pic)
+                }
+
+                renderPreviews(pictures)
+            })
+
+            function handlePicClick(e) {
+                idx = e.target.dataset.idx
+                let newPreviews = []
+                let newPics = []
+
+                for (let pic of pictures) {
+                    if (pic.dataset.idx !== idx) {
+                        newPreviews.push(pic)
+                    }
+                }
+
+                for (let i = 0, l = picFiles.length; i < l; i++) {
+                    if (i !== parseInt(idx)) {
+                        newPics.push(picFiles[i])
+                    }
+                }
+
+                pictures = newPreviews
+                picFiles = newPics
+
+                renderPreviews(newPreviews)
+            }
+
+            function renderPreviews(pictures) {
+                picPreview.innerHTML = ""
+
+                if (pictures.length === 0) {
+                    picPreview.innerHTML = `<p class="text-lg text-slate-300 font-bold py-12">Agrega imagenes de la propiedad</p>`
+                    return
+                }
+                for (let i = 0, l = pictures.length; i < l; i++) {
+                    let pic = pictures[i]
+                    pic.dataset.idx = i
+                    picPreview.appendChild(pic)
+                }
+            }
+
+            let mainPreview = document.getElementById("main-preview")
+            let mainPicInp = document.getElementById("main-pic")
+
+            mainPicInp.addEventListener("change", e => {
+                let pic = e.target.files[0]
+                let imgElem = document.createElement("img")
+                imgElem.classList.add(...ImgPreviewClasslist.split(" "))
+                imgElem.src = URL.createObjectURL(pic)
+                imgElem.alt = "Imagen principal"
+                imgElem.addEventListener("click", handleMainPicClick)
+
+                mainPreview.innerHTML = ""
+
+                if (!pic) {
+                    mainPreview.innerHTML = `<p class="text-lg text-slate-300 font-bold py-12">Agrega la imagen principal para la propiedad</p>`
+                    return
+                }
+
+                mainPreview.appendChild(imgElem)
+            })
+
+            function handleMainPicClick(e) {
+                mainPicInp.value = ""
+                mainPreview.innerHTML = `<p class="text-lg text-slate-300 font-bold py-12">Agrega la imagen principal para la propiedad</p>`
+            }
+        }
+    })
+</script>
+{{with .IsEditForm}}
+<h2 class="text-lg">Actualizar propiedad</h2>
+{{else}}
+<h2 class="text-lg">Registrar nueva propiedad</h2>
+{{end}}
+<div class="py-2"></div>
+<div class="flex gap-2">
+    <div class="w-1/2">
+        {{template "prop-form" .}}
+    </div>
+
+    <div class="w-1/2">
+        {{template "prop-pic-form" .}}
+    </div>
+</div>
+{{end}}

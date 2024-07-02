@@ -1,0 +1,32 @@
+{{define "content"}}
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        let confirmInp = document.getElementById("confirm-inp")
+        let submitBtn = document.getElementById("confirm-btn")
+
+        confirmInp.addEventListener("input", (e) => {
+            let val = e.target.value
+
+            if (val.toLowerCase() === "eliminar") {
+                submitBtn.disabled = false
+            } else {
+                submitBtn.disabled = true
+            }
+        })
+    })
+</script>
+<h2 class="text-lg">Eliminar propiedad</h2>
+<div class="py-2"></div>
+<form hx-delete="/api/property/{{.Data.id}}/delete" class="max-w-96 border bg-rose-50 border-rose-700 rounded p-4 pt-2">
+    <p class="text-lg">Confirma la eliminacion de la propiedad {{.Data.title}}</p>
+    <div class="py-1"></div>
+    <div class="space-y-2">
+        <label for="confirm" class="block text-sm text-slate-700">
+            Ingresa <span class="text-rose-700 font-bold">eliminar</span> para confirmar
+        </label>
+        <input type="text" name="confirm" id="confirm-inp" class="w-full border border-rose-700 rounded py-1 px-2 focus:outline-rose-700 outline-offset-4">
+    </div>
+    <div class="py-2"></div>
+    <button class="w-full py-1 rounded bg-rose-700 text-stone-50 disabled:opacity-80 disabled:cursor-default" id="confirm-btn" disabled>Confirmar</button>
+</form>
+{{end}}

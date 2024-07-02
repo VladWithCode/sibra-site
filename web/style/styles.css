@@ -11,10 +11,15 @@ body {
 }
 
 .page {
-    /* min-height: calc(100vh - 60px); */
-    min-height: 100vh;
+    min-height: calc(100vh - 64px);
     font-family: 'Plus Jakarta Sans', sans-serif;
     max-width: 100%;
     overflow: hidden auto;
+}
+
+a[disabled] {
+    pointer-events: none;
+    cursor: default;
+    opacity: .90;
 }
 

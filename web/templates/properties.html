@@ -1,0 +1,462 @@
+{{define "head"}}
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js" defer></script>
+{{end}}
+{{define "content"}}
+{{$root := .}}
+<style>
+.filters-select:focus,
+.filters-input:focus {
+    outline: none;
+    box-shadow: 0px 0px 0px 1px white, 0px 0px 2px 4px #334155;
+}
+</style>
+<script>
+    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({
+        key: "AIzaSyCsrM3Hd7k1rb_150drlP6yeUxvHQvRxOI",
+        v: "weekly",
+        // Use the 'v' parameter to indicate the version to use (weekly, beta, alpha, etc.).
+        // Add other bootstrap parameters as needed, using camel case.
+    });
+    let locations = {{.Props}}
+    let gMarkers = []
+    let gMap
+
+    async function initMap() {
+        const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+        const { AdvancedMarkerElement, PinElement } = await google.maps.importLibrary("marker");
+
+        let map = new Map(document.getElementById("maps"), {
+            center: { lat: 24.0216082, lng: -104.6608131 },
+            zoom: 13,
+            disableDefaultUI: true,
+            zoomControl: true,
+            mapId: "69a943f831b6ae9a",
+        });
+        let infoWindow = new InfoWindow({
+            content: '',
+            disableAutoPan: true,
+        });
+
+        let markers = locations
+            .filter(loc => {
+                if (loc.lat === undefined || loc.lon === undefined) {
+                    return
+                }
+                return loc
+            })
+            .map((loc, i) => {
+            let position = { lat: loc.lat, lng: loc.lon }
+
+            const content = document.createElement("div");
+            content.classList.add("p-1", "bg-indigo-800", "rounded-full", "z-0")
+            content.innerHTML = `<svg class="relative w-8 h-8 fill-indigo-400 z-20"> <use href="/static/svg/home.svg#home"></use> </svg>`;
+
+            const marker = new AdvancedMarkerElement({
+                position,
+                title: loc.address,
+                content,
+            });
+
+            marker.addListener("click", () => {
+                let card = document.getElementById("maps-card")
+                let anchorTag = document.createElement("a")
+                anchorTag.classList.add("block", "h-full", "flex", "flex-col", "opacity-0")
+                anchorTag.href = `/propiedades/${loc.contract}/${loc.id}` 
+                anchorTag.innerHTML = (() => (`
+                    <div class="basis-1/2 h-1/2 shrink-0 grow-0 z-0">
+                    <img class="w-full max-h-full object-cover object-center" src="/static/properties/${loc.id}/${loc.mainImg}" alt="Fotografía de la propiedad ubicada en ${loc.address}, ${loc.state} C.P. ${loc.zip}">
+                    </div>
+                    <div class="flex-auto p-2 pb-3">
+                        <h4 class="text-lg font-bold xl:text-2xl">$${Number(loc.price).toLocaleString()}</h4>
+                        <div class="py-0.5"></div>
+                        <div class="flex gap-2 items-center text-sm font-light xl:text-base">
+                            <div class="flex items-center gap-2">
+                                <svg class="block w-4 h-4 fill-current">
+                                <use href="/static/svg/bed.svg#bed"></use>
+                                </svg>
+                                <p>${loc.beds} Hab(s)</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="block w-4 h-4 fill-current">
+                                <use href="/static/svg/bath.svg#bath"></use>
+                                </svg>
+                                <p>${loc.baths} baño(s)</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <svg class="block w-4 h-4 fill-current">
+                                <use href="/static/svg/square.svg#square"></use>
+                                </svg>
+                                <p>${loc.sqMt} m<sup>2</sup></p>
+                            </div>
+                        </div>
+                        <div class="py-0.5 xl:py-1.5"></div>
+                        <div class="overflow-hidden text-nowrap xl:text-lg">${loc.address},</div>
+                        <div class="py-0.5"></div>
+                        <div class="overflow-hidden text-nowrap xl:text-lg">${loc.city}, ${loc.city} ${loc.zip}</div>
+                    </div>
+                    `))();
+                card.innerHTML = ""
+                card.appendChild(anchorTag)
+
+                let tl = gsap.timeline({ duration: 0.3, ease: "power2.inOut" })
+                tl.to(card, { y: "0%", opacity: 1 }, "<")
+                tl.to(anchorTag, { opacity: 1 }, "<")
+            });
+            return marker
+        })
+
+        return [map, markers]
+    }
+
+    initMap().then(([map, markers]) => {
+        new markerClusterer.MarkerClusterer({ map, markers })
+    })
+
+    document.addEventListener("DOMContentLoaded", () => {
+        let navMobileMenu = document.getElementById("nav-mobile-menu")
+        let navBtnClose = document.getElementById("nav-btn-close")
+        let navBtnOpen = document.getElementById("nav-btn-open")
+
+        navBtnClose.addEventListener("click", () => {
+            let tl = gsap.timeline({ ease: "power2.inOut", duration: 0.3 })
+            tl.to(navMobileMenu, { x: "100%" })
+        })
+
+        navBtnOpen.addEventListener("click", () => {
+            let tl = gsap.timeline({ ease: "power2.inOut", duration: 0.3 })
+            tl.to(navMobileMenu, { x: "0%" })
+        })
+
+        let mapBtnOpen = document.getElementById("map-btn-open")
+        let mapBtnClose = document.getElementById("map-btn-close")
+        let propList = document.getElementById("prop-list")
+        let propMap = document.getElementById("prop-map")
+
+        mapBtnOpen.addEventListener("click", () => {
+            let tl = gsap.timeline({ ease: "power2.inOut", duration: 0.3 })
+
+            tl.set(propMap, { display: "block", opacity: 0, margin: "0" })
+            tl.set(mapBtnClose, { display: "block", opacity: 0, y: "100%" })
+            tl.to(propList, { opacity: 0, x: "-100%" })
+            tl.to(mapBtnOpen, { opacity: 0, y: "-100%" }, "<")
+            tl.set(mapBtnOpen, { display: "none" }, "<0.08")
+            tl.to(propMap, { opacity: 1, width: "100%" }, "<0.15")
+            tl.to(mapBtnClose, { opacity: 1, y: "0%" }, "<")
+        })
+
+        mapBtnClose.addEventListener("click", () => {
+            let tl = gsap.timeline({ ease: "power2.inOut", duration: 0.3 })
+
+            tl.set(propList, { display: "flex", opacity: 0 })
+            tl.set(mapBtnOpen, { display: "block", opacity: 0, y: "100%" })
+            tl.to(propMap, { opacity: 0, width: "0%" })
+            tl.to(mapBtnClose, { opacity: 0, y: "-100%" }, "<")
+            tl.set(mapBtnClose, { display: "none" }, "<0.08")
+            tl.to(propList, { opacity: 1, width: "100%", x: "0%" }, "<0.15")
+            tl.to(mapBtnOpen, { opacity: 1, y: "0%" }, "<")
+        })
+
+        let filtersMenu = document.getElementById("filters-mobile-menu")
+        let filtersBtnOpen = document.getElementById("filters-btn-open")
+        let filtersBtnClose = document.getElementById("filters-btn-close")
+        let filtersBtnApply = document.getElementById("filters-btn-apply")
+        let mainContent = document.getElementById("main-content")
+
+        filtersBtnOpen.addEventListener("click", () => {
+            let tl = gsap.timeline({ ease: "power2.inOut", duration: 0.3 })
+            
+            tl.set(mainContent, { overflow: "hidden" })
+            tl.to(filtersMenu, { opacity: 1, pointerEvents: "all" })
+        })
+
+        filtersBtnClose.addEventListener("click", () => {
+            let tl = gsap.timeline({ ease: "power2.inOut", duration: 0.15 })
+            
+            tl.set(mainContent, { overflow: "auto" })
+            tl.to(filtersMenu, { opacity: 0, pointerEvents: "none" })
+        })
+    })
+</script>
+<div class="flex flex-col min-h-[calc(100vh-4rem)]">
+    <div class="h-14">
+        <div class="fixed bg-stone-50 w-full grid grid-cols-3 items-center px-2 py-4 z-20">
+            <button class="col-start-1 row-start-1 w-fit border border-stone-200 rounded-md py-1.5 px-3.5 font-bold text-base text-stone-600 hover:bg-stone-200 active:bg-stone-200" id="map-btn-open">
+                <svg class="inline-block w-6 h-6 fill-slate-700">
+                    <use href="/static/svg/map.svg#map"></use>
+                </svg>
+                <span class="">Mapa</span>
+            </button>
+            <button class="col-start-1 row-start-1 hidden w-fit border border-stone-200 rounded-md py-1.5 px-3.5 font-bold text-base text-stone-600 hover:bg-stone-200 active:bg-stone-200" id="map-btn-close">
+                <svg class="inline-block w-6 h-6 fill-slate-700">
+                    <use href="/static/svg/list.svg#list"></use>
+                </svg>
+                <span class="">Lista</span>
+            </button>
+            <button class="col-start-3 w-fit border border-stone-200 rounded-md py-1.5 px-3 ml-auto font-bold text-base text-stone-600 hover:bg-stone-200 active:bg-stone-200" id="filters-btn-open">
+                <svg class="inline-block w-6 h-6 fill-slate-700" id="filters-svg-open">
+                    <use href="/static/svg/filter.svg#filter"></use>
+                </svg>
+                <svg class="hidden w-6 h-6 fill-slate-700" id="filters-svg-close">
+                    <use href="/static/svg/sprites.svg#times"></use>
+                </svg>
+                <span class="">Filtros</span>
+            </button>
+        </div>
+        <form 
+            hx-get="/propiedades"
+            class="flex flex-col fixed bg-stone-50 w-full h-[calc(100vh-4rem)] z-40 opacity-0 pointer-events-none" 
+            id="filters-mobile-menu">
+            <div class="flex items-center px-4 py-1">
+                <button type="button" class="w-fit rounded-full text-3xl text-stone-950 ml-auto" id="filters-btn-close">
+                    <svg class="w-4 h-4 fill-current">
+                        <use href="/static/svg/times.svg#times"></use>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex flex-col w-full flex-auto overflow-auto px-4 gap-6">
+                <div class="">
+                    <h4 class="text-sm text-slate-400">Filtros activos</h4>
+                    <div class="py-0.5"></div>
+                    <div class="flex flex-wrap gap-2">
+                        <!-- <div class="flex items-center pr-1 pl-2 bg-stone-200 rounded gap-1">
+                            <p class="text-sm font-bold capitalize h-6">3+ camas</p>
+                            <button class="ml-auto h-4 w-4">
+                                <svg class="w-4 h-4 fill-current">
+                                    <use href="/static/svg/times.svg#times"></use>
+                                </svg>
+                            </button>
+                        </div> -->
+                    </div>
+                </div>
+                <div class="flex gap-0 mx-auto grow-0 overflow-hidden">
+                    <button
+                        {{if eq .Contract "venta"}}
+                        class="h-full px-8 py-2 border-l border-y border-slate-700 rounded-s-lg text-stone-50 bg-slate-600 font-bold"
+                        {{else}}
+                        class="h-full px-8 py-2 border-l border-y border-slate-300 rounded-s-lg text-slate-950 bg-stone-50 font-bold"
+                        {{end}}
+                        >
+                        Venta
+                    </button>
+                    <button 
+                        {{if eq .Contract "renta"}}
+                        class="h-full px-8 py-2 border-r border-y border-slate-700 rounded-e-lg text-stone-50 bg-slate-600 font-bold"
+                        {{else}}
+                        class="h-full px-8 py-2 border-r border-y border-slate-300 rounded-e-lg text-slate-950 bg-stone-50 font-bold"
+                        {{end}}
+                        >
+                        Renta
+                    </button>
+                </div>
+
+                <div class="">
+                    <h4 class="text-sm text-slate-400">Precio</h4>
+                    <div class="py-1"></div>
+                    <div class="flex">
+                        <select class="basis-2/5 grow-0 border border-slate-500 p-2 rounded-lg filters-select font-semibold" name="minPrice" id="minPrice">
+                            <option value>Sin Mínimo</option>
+                            <option value="200000">$200k</option>
+                            <option value="300000">$300k</option>
+                        </select>
+                        <p class="text-2xl mx-auto flex-auto text-center text-slate-500">&minus;</p>
+                        <select class="basis-2/5 grow-0 border border-slate-500 p-2 rounded-lg filters-select font-semibold" name="minPrice" id="minPrice">
+                            <option value>Sin Máximo</option>
+                            <option value="200000">$200k</option>
+                            <option value="300000">$300k</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="">
+                    <h4 class="text-sm text-slate-400">Metros Cuadrados</h4>
+                    <div class="py-1"></div>
+                    <div class="flex justify-between">
+                        <input 
+                            type="number"
+                            name="minMt"
+                            id="minMt" 
+                            class="w-2/5 shrink grow-0 border border-slate-500 p-2 rounded-lg filters-input"
+                            placeholder="Sin Mínimo">
+                        <p class="text-2xl mx-auto flex-auto text-center text-slate-500">&minus;</p>
+                        <input 
+                            type="number" 
+                            name="maxMt" 
+                            id="minMt" 
+                            class="w-2/5 shrink grow-0 border border-slate-500 p-2 rounded-lg filters-input"
+                            placeholder="Sin Máximo">
+                   </div>
+                </div>
+
+            </div>
+            <div class="mx-auto py-6">
+                <button type="submit" class="uppercase font-semibold text-stone-50 bg-slate-600 px-8 py-2.5 rounded" id="filters-btn-apply">
+                    Ver propiedades
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="flex flex-col flex-auto lg:w-3/5 py-4">
+        <!-- Content -->
+        <div class="flex flex-wrap flex-auto gap-6 md:gap-x-2 justify-between p-4 lg:pr-0 items-start" id="prop-list">
+            {{range .Props}}
+            <a href="/propiedades/{{.Contract}}/{{.Id}}" class="block basis-full overflow-hidden pb-2 md:basis-[49%] 2xl:basis-[32.5%]">
+                <div class="relative rounded-md overflow-hidden mb-2 z-0">
+                    <div class="absolute top-2 left-2 flex flex-wrap gap-2 text-xs font-bold uppercase">
+                        <p class="bg-stone-50 text-slate-800 p-1 rounded">{{.Contract}}</p>
+                    </div>
+                    <div class="h-48">
+                        <img class="w-full max-h-full object-cover object-center" src="/static/properties/{{.Id}}/{{.MainImg}}" alt="Foto propiedad en {{.Address}}">
+                    </div>
+                </div>
+                <div class="flex justify-between mb-1">
+                    <h2 class="text-lg font-bold uppercase">{{FormatMoney .Price}}</h2>
+                </div>
+                <div class="flex text-sm items-end gap-2 mb-2">
+                    <p class="flex gap-2 items-end leading-4">
+                    <svg class="w-5 h-5 fill-slate-700">
+                        <use href="/static/svg/bed.svg#bed"></use>
+                    </svg>
+                    <span>{{.Beds}} Hab(s)</span>
+                    </p>
+                    <p class="flex gap-2 items-end leading-4">
+                    <svg class="w-5 h-5 fill-slate-700">
+                        <use href="/static/svg/bath.svg#bath"></use>
+                    </svg>
+                    <span>{{.Baths}} Baño(s)</span>
+                    </p>
+                    <p class="flex gap-2 items-end leading-4">
+                    <svg class="w-4 h-4 fill-slate-700">
+                        <use href="/static/svg/square.svg#square"></use>
+                    </svg>
+                    <span>{{.SqMt}}m²</span>
+                    </p>
+                </div>
+                <p class="text-sm mb-1">
+                {{.Address}}
+                </p>
+                <p class="max-w-full text-sm overflow-hidden break-all text-ellipsis whitespace-nowrap">
+                {{.City}}, {{.State}} {{.Zip}}
+                </p>
+            </a>
+            {{end}}
+        </div>
+        <div class="py-4"></div>
+        <div class="flex gap-2 mx-auto items-center">
+            {{with .Pagination}}
+
+            <a href="/propiedades/{{$root.Contract}}?page={{.Prev}}" class="text-slate-600 text-center text-xs font-semibold bg-slate-200 border p-2 rounded"{{if eq .Prev .Current}} disabled{{end}}>
+                Anterior
+            </a>
+
+            {{if ne .First .Current}}
+            <a href="/propiedades/{{$root.Contract}}?page={{.First}}" class="h-8 aspect-square text-slate-600 text-center text-xs bg-slate-100 border p-2 rounded">
+                {{.First}}
+            </a>
+            {{end}}
+
+            {{if and (ne .Prev .Current) (ne .Prev .First)}}
+            <a href="/propiedades/{{$root.Contract}}?page={{.Prev}}" class="h-8 aspect-square text-slate-600 text-center text-xs bg-slate-100 border p-2 rounded">
+                {{.Prev}}
+            </a>
+            {{end}}
+
+            {{if .Current}}
+            <a href="/propiedades/{{$root.Contract}}?page={{.Current}}" class="h-8 aspect-square text-slate-700 text-center text-xs font-bold bg-slate-50 border border-slate-950 p-2 rounded">
+                {{.Current}}
+            </a>
+            {{end}}
+
+            {{if and (ne .Next .Current) (ne .Next .Last)}}
+            <a href="/propiedades/{{$root.Contract}}?page={{.Next}}" class="w-8 aspect-square text-slate-600 text-center text-xs bg-slate-200 border p-2 rounded">
+                {{.Next}}
+            </a>
+            {{end}}
+
+            {{if ne .Last .Current}}
+            <a href="/propiedades/{{$root.Contract}}?page={{.Last}}" class="h-8 aspect-square text-slate-600 text-center text-xs bg-slate-200 border p-2 rounded">
+                {{.Last}}
+            </a>
+            {{end}}
+
+            <a href="/propiedades/{{$root.Contract}}?page={{.Next}}" class="text-slate-600 text-center text-xs font-semibold bg-slate-200 border p-2 rounded"{{if eq .Next .Current}} disabled{{end}}>
+                Siguiente
+            </a>
+
+            {{end}}
+        </div>
+        <div class="py-4"></div>
+        <footer class="text-stone-800 bg-slate-100 px-4 pt-6 space-y-8 font-medium -mb-4">
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-slate-700">Sibra Durango</h3>
+                <ul class="space-y-1 text-slate-500">
+                    <li class="flex items-center gap-2">
+                        <svg class="w-5 h-5 fill-current">
+                            <use href="/static/svg/sprites.svg#phone"></use>
+                        </svg>
+                        <p class="">618-194-1145</p>
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <svg class="w-5 h-5 fill-current">
+                            <use href="/static/svg/sprites.svg#email"></use>
+                        </svg>
+                        <p class="">sibradgo_bienes@outlook.com</p>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 fill-current mt-1">
+                            <use href="/static/svg/sprites.svg#location_pin"></use>
+                        </svg>
+                        <p class="">Gral. Anaya 101, Juan de la Barrera, 34150 Durango, Dgo.</p>
+                    </li>
+                </ul>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-lg font-bold text-slate-700">Navegación</h3>
+                <ul class="space-y-2 text-slate-500">
+                    <li class="">
+                        <a class="/propiedades/venta">Propiedades en Venta</a>
+                    </li>
+                    <li class="">
+                        <a href="/propiedades/renta" class="">Propiedades en Renta</a>
+                    </li>
+                    <li class="">
+                        <a href="/agentes" class="">Agentes</a>
+                    </li>
+                    <li class="">
+                        <a href="/nosotros" class="">Acerca de</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-lg font-bold text-slate-700">Legal</h3>
+                <ul class="space-y-2 text-slate-500">
+                    <li class="">
+                        <a class="/politica-privacidad">Politica de privacidad</a>
+                    </li>
+                    <li class="">
+                        <a href="/teminos-servicio" class="">Terminos de servicio</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="flex flex-wrap justify-center px-2 pt-6 gap-8">
+                <img class="w-32 my-auto contrast-0" src="/static/img/sibra_logo_white_256.webp" alt="logo_sibra">
+            </div>
+            <ul class="py-2 text-[9px] text-center text-slate-400">
+                <li>Creado por GG Marketing &copy; 2024</li>
+            </ul>
+        </footer>
+    </div>
+
+    <!-- GMap -->
+    <div class="hidden lg:block lg:w-[calc(40%-1rem)] fixed top-[138px] right-0 bottom-0 mb-2 mr-2 rounded-md overflow-hidden" id="prop-map">
+        <div class="w-full h-full" id="maps"></div>
+        <div 
+            class="absolute bottom-0 left-0 right-0 h-[42%] translate-y-full opacity-0 w-full bg-stone-50 rounded-t-xl shadow-slate-800 overflow-hidden" 
+            id="maps-card"
+            style="box-shadow: 0px -5px 3px 0px rgba(30, 41, 59, 0.3)">
+        </div>
+    </div>
+</div>
+{{end}}
+{{define "footer"}}
+<span class="hidden"></span>
+{{end}}
