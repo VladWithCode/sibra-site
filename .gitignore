@@ -9,6 +9,10 @@ cmd/*
 .env*
 
 # Ignore static
-static/properties/**/*
-static/users/**/*
+web/static/properties/*
+!web/static/properties/.keep
+
+web/static/users/*
+!web/static/users/sample.png
+!web/static/users/.keep
 
