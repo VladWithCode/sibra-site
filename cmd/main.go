@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	godotenv.Load(".env")
+	godotenv.Overload(".env")
 
 	dbPool, err := db.Connect()
 	if err != nil {
