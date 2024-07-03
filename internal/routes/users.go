@@ -18,7 +18,7 @@ import (
 )
 
 func RegisterUserRoutes(router *http.ServeMux) {
-	router.HandleFunc("POST /api/user", auth.WithAuthMiddleware(CreateUser))
+	router.HandleFunc("POST /api/user", auth.CheckAuthMiddleware(CreateUser))
 	router.HandleFunc("PUT /api/users/{id}", auth.WithAuthMiddleware(UpdateUser))
 	router.HandleFunc("PUT /api/users/{id}/password", auth.WithAuthMiddleware(UpdatePassword))
 	router.HandleFunc("PUT /api/users/{id}/pic", auth.WithAuthMiddleware(UpdateUserPicture))
@@ -46,9 +46,10 @@ func CreateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	phone := sql.NullString{}
 	phone.String = data.Phone
 
-	if a.Role != db.RoleAdmin {
-		data.Role = db.RoleUser
-	}
+	/*
+		if a.Role != db.RoleAdmin {
+			data.Role = db.RoleUser
+		} */
 
 	_, err = db.CreateUser(&db.User{
 		Id:       data.Id,
