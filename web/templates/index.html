@@ -32,13 +32,14 @@
 </script>
 <div class="px-4">
     <div class="relative h-[442px] rounded-lg bg-stone-500 overflow-hidden xl:h-[60vh]">
-        <img class="relative h-full object-cover object-[left_center] z-10 brightness-75 xl:w-full" src="/static/img/hero_large.webp" alt="Imagen de cabecera">
+        <img class="relative h-full w-full max-h-full object-cover object-[left_center] z-10 brightness-75 xl:w-full" src="/static/img/hero_large.webp" alt="Imagen de cabecera">
         <form
             action="/propiedades"
             class="absolute flex flex-col items-center justify-center inset-0 p-2 z-20"
             id="property-search"
             data-contract="venta">
-            <h1 class="text-zinc-50 font-bold text-2xl mb-10 xl:text-4xl" style="text-shadow: 0 0 10px rgba(22,22,24,1);">Encuentra tu hogar<br>de ensueño</h1>
+            <h1 class="text-zinc-50 font-bold text-2xl mb-10 xl:text-4xl 2xl:text-6xl" style="text-shadow: 0 0 10px rgba(22,22,24,1);">Encuentra tu hogar<br>de ensueño</h1>
+            <div class="py-4"></div>
             <div class="relative flex bg-slate-900 bg-opacity-80 text-stone-50 xl:text-lg rounded-lg mb-4 shadow-md shadow-slate-900">
                 <div class="absolute left-0 bg-zinc-50 text-transparent font-bold py-2 px-6 uppercase rounded-lg" id="contract-pill">venta</div>
                 <button
@@ -52,8 +53,8 @@
                     data-contract-btn="renta"
                     data-contract-active="false">Renta</button>
             </div>
-            <div class="xl:py-1"></div>
-            <div class="flex gap-0 items-center rounded-lg shadow-md shadow-slate-900">
+            <div class="py-2 xl:py-1"></div>
+            <!-- <div class="flex gap-0 items-center rounded-lg shadow-md shadow-slate-900">
                 <input 
                     class="pl-4 py-4 rounded-s-lg outline-indigo-800 text-sm xl:text-base" 
                     type="search" 
@@ -65,7 +66,12 @@
                         <use href="/static/svg/sprites.svg#search"></use>
                     </svg>
                 </button>
-            </div>            
+            </div> -->
+            <div class="flex items-center rounded-lg shadow-md shadow-slate-900 text-stone-50">
+                <button class="text-lg bg-slate-800 py-2 5 px-4 rounded-lg">
+                    Buscar
+                </button>
+            </div>
         </form>
     </div>
     <div class="py-8"></div>
