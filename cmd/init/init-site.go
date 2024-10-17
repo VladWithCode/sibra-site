@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"github.com/google/uuid"
@@ -14,13 +14,13 @@ func main() {
 
 	dbPool, err := db.Connect()
 	if err != nil {
-		fmt.Printf("Error while connecting to DB: %v", err)
+		log.Fatalf("Error while connecting to DB: %v\n", err)
 	}
 	defer dbPool.Close()
 
 	id, err := uuid.NewV7()
 	if err != nil {
-		panic(err)
+		log.Fatalf("Couldn't create ID: %v\n", err)
 	}
 	admin := db.User{
 		Id:            id.String(),
@@ -35,6 +35,8 @@ func main() {
 	_, err = db.CreateUser(&admin)
 
 	if err != nil {
-		panic(err)
+		log.Fatalf("Couldn't create user: %v", err)
 	}
+
+	log.Println("Created Successfully")
 }
