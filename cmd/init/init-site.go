@@ -25,8 +25,8 @@ func main() {
 	admin := db.User{
 		Id:            id.String(),
 		Name:          "admin",
-		Email:         os.Getenv("ADMIN_MAIL"),
-		Password:      os.Getenv("ADMIN_PW"),
+		Email:         os.Getenv("SBR_ADMIN_MAIL"),
+		Password:      os.Getenv("SBR_ADMIN_PW"),
 		Role:          db.RoleAdmin,
 		GoldenBoy:     true,
 		EmailVerified: true,
