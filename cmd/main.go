@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,9 +17,14 @@ func main() {
 
 	dbPool, err := db.Connect()
 	if err != nil {
-		fmt.Printf("Error while connecting to DB: %v", err)
+		panic(fmt.Sprintf("Error while connecting to DB: %v", err))
 	}
 	defer dbPool.Close()
+
+	// Ensure DB connection is working
+	if err = dbPool.Ping(context.Background()); err != nil {
+		panic(fmt.Sprintf("DB is not available: %v", err))
+	}
 
 	portStr := os.Getenv("PORT")
 	if portStr == "" {
