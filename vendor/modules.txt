@@ -1,3 +1,8 @@
+# github.com/a-h/templ v0.2.778
+## explicit; go 1.21
+github.com/a-h/templ
+github.com/a-h/templ/runtime
+github.com/a-h/templ/safehtml
 # github.com/cockroachdb/apd v1.1.0
 ## explicit
 github.com/cockroachdb/apd
@@ -53,7 +58,7 @@ github.com/shopspring/decimal
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/pbkdf2
-# golang.org/x/sync v0.7.0
+# golang.org/x/sync v0.8.0
 ## explicit; go 1.18
 golang.org/x/sync/semaphore
 # golang.org/x/text v0.14.0
