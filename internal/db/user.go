@@ -75,10 +75,6 @@ func CreateUser(user *User) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	if err != nil {
-		return "", err
-	}
-
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
 	if err != nil {
@@ -229,7 +225,7 @@ func TxVerifyUserEmail(ctx context.Context, tx pgx.Tx, userId string) error {
 	}
 
 	if tag.RowsAffected() == 0 {
-		return errors.New(fmt.Sprintf("No se encontró usuario con id %v", userId))
+		return fmt.Errorf("No se encontró usuario con id %v", userId)
 	}
 
 	return nil
@@ -256,7 +252,7 @@ func VerifyUserEmail(userId string) error {
 	}
 
 	if tag.RowsAffected() == 0 {
-		return errors.New(fmt.Sprintf("No se encontró usuario con id %v", userId))
+		return fmt.Errorf("No se encontró usuario con id %v", userId)
 	}
 
 	return nil
