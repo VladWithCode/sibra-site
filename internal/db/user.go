@@ -19,7 +19,7 @@ type User struct {
 	Username      string         `db:"username" json:"username"`
 	Role          string         `db:"role" json:"role"`
 	Email         string         `db:"email" json:"email"`
-	Phone         sql.NullString `json:"phone" db:"phone_number"`
+	Phone         sql.NullString `json:"phone" db:"phone"`
 	EmailVerified bool           `json:"emailVerified" db:"email_verified"`
 	PhoneVerified bool           `json:"phoneVerified" db:"phone_verified"`
 	GoldenBoy     bool           `db:"golden_boy"`
@@ -83,7 +83,7 @@ func CreateUser(user *User) (string, error) {
 
 	tag, err := conn.Exec(
 		ctx,
-		"INSERT INTO users (id, name, lastname, password, username, role, email, phone_number, img) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+		"INSERT INTO users (id, name, lastname, password, username, role, email, phone, img) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
 		user.Id,
 		user.Name,
 		user.Lastname,
@@ -194,7 +194,7 @@ func UpdateUser(user *User) error {
 
 	_, err = conn.Exec(
 		ctx,
-		"UPDATE users SET name = $1, lastname = $2, password = $3, username = $4, role = $5, email = $6, phone_number = $7, img = $8 WHERE id = $9",
+		"UPDATE users SET name = $1, lastname = $2, password = $3, username = $4, role = $5, email = $6, phone = $7, img = $8 WHERE id = $9",
 		user.Name,
 		user.Lastname,
 		user.Password,
