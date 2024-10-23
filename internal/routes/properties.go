@@ -23,8 +23,6 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
 
 	router.HandleFunc("POST /api/property", auth.WithAuthMiddleware(CreateProperty))
-	router.HandleFunc("PUT /api/property/{id}/update", auth.WithAuthMiddleware(CreateProperty))
-	router.HandleFunc("PUT /api/property/{id}/pictures", auth.WithAuthMiddleware(UploadPropertyPictures))
 	router.HandleFunc("DELETE /api/property/{id}/delete", auth.WithAuthMiddleware(DeletePropertyById))
 }
 
