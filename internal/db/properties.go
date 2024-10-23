@@ -188,6 +188,7 @@ func CreateProperty(prop *Property) error {
 		prop.Country,
 		prop.Price,
 		prop.PropType,
+		prop.Contract,
 		prop.Beds,
 		prop.Baths,
 		prop.SqMt,
