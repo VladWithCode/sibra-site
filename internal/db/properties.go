@@ -32,7 +32,7 @@ type Property struct {
 	Description       string         `json:"description" db:"description"`
 	City              string         `json:"city" db:"city"`
 	State             string         `json:"state" db:"state"`
-	Zip               string         `json:"zip" db:"zip_code"`
+	Zip               string         `json:"zip" db:"zip"`
 	NbHood            string         `json:"nbHood" db:"nb_hood"`
 	Country           string         `json:"country" db:"country"`
 	Price             float64        `json:"price" db:"price"`
@@ -178,7 +178,7 @@ func CreateProperty(prop *Property) error {
 
 	_, err = conn.Exec(
 		ctx,
-		"INSERT INTO properties (id, address, description, city, state, zip_code, country, price, property_type, beds, baths, square_mt, lot_size, year_built, listing_date, status, coords, features, lat, lon, nb_hood, agent, slug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, CASE WHEN $17::bytea IS NULL THEN NULL ELSE ST_SetSRID(ST_GeomFromWKB($17), 4326) END, $18, $19, $20, $21, $22, $23)",
+		"INSERT INTO properties (id, address, description, city, state, zip, country, price, property_type, contract, beds, baths, square_mt, lot_size, year_built, listing_date, status, coords, features, lat, lon, nb_hood, agent, slug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, CASE WHEN $18::bytea IS NULL THEN NULL ELSE ST_SetSRID(ST_GeomFromWKB($18), 4326) END, $19, $20, $21, $22, $23, $24)",
 		prop.Id,
 		prop.Address,
 		prop.Description,
@@ -333,7 +333,7 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 			description,
 			city,
 			state,
-			zip_code,
+			zip,
 			country,
 			price,
 			property_type,
@@ -502,7 +502,7 @@ func GetPropertiesForSearch(filter *PropertyFilter, limit, page int) ([]*Propert
 		address,
 		city,
 		state,
-		zip_code,
+		zip,
 		price,
 		beds,
 		baths,
@@ -513,12 +513,12 @@ func GetPropertiesForSearch(filter *PropertyFilter, limit, page int) ([]*Propert
 		slug,
 		to_tsvector(
 			'spanish',
-			address || ' ' || description || ' ' || city || ' ' || state || ' ' || zip_code || ' ' || property_type || ' ' || contract || ' ' || nb_hood
+			address || ' ' || description || ' ' || city || ' ' || state || ' ' || zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood
 		) @@ to_tsquery('spanish', 'venta') AS rank
 	FROM properties
 	WHERE to_tsvector(
 			'spanish',
-			address || ' ' || description || ' ' || city || ' ' || state || ' ' || zip_code || ' ' || property_type || ' ' || contract || ' ' || nb_hood
+			address || ' ' || description || ' ' || city || ' ' || state || ' ' || zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood
 		) @@ to_tsquery('spanish', 'venta')
 	ORDER BY rank DESC`
 
@@ -569,7 +569,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 
 	rows, err := conn.Query(
 		ctx,
-		"SELECT id, address, city, state, zip_code, price, beds, baths, square_mt, main_img, contract, nb_hood FROM properties WHERE ST_DWithin(coords, (SELECT coords FROM properties WHERE id = $1 AND contract = properties.contract), $2) AND id != $1 AND contract = (SELECT contract FROM properties WHERE id = $1)",
+		"SELECT id, address, city, state, zip, price, beds, baths, square_mt, main_img, contract, nb_hood FROM properties WHERE ST_DWithin(coords, (SELECT coords FROM properties WHERE id = $1 AND contract = properties.contract), $2) AND id != $1 AND contract = (SELECT contract FROM properties WHERE id = $1)",
 		id,
 		nearbyDistance,
 	)
@@ -619,7 +619,7 @@ func FindPropertyById(propId string) (property *Property, err error) {
 
 	row := conn.QueryRow(ctx, `
 		SELECT 
-			p.id, p.address, p.description, p.city, p.state, p.zip_code, p.country, p.price, p.property_type,
+			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
 			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.coords, p.features,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
 			u.name || ' ' || u.lastname AS agent_name,
