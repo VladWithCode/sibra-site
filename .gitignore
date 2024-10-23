@@ -8,6 +8,10 @@ cmd/*
 # Ignore env files
 .env*
 
+# Ignore templ generated files
+internal/templates/**/*.go
+internal/templates/*.go
+
 # Ignore static
 web/static/properties/*
 !web/static/properties/.keep
