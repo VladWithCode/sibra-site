@@ -11,6 +11,8 @@ cmd/*
 # Ignore templ generated files
 internal/templates/**/*.go
 internal/templates/*.go
+internal/templates/**/*.txt
+internal/templates/*.txt
 
 # Ignore static
 web/static/properties/*
