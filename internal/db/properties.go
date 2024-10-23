@@ -623,7 +623,7 @@ func FindPropertyById(propId string) (property *Property, err error) {
 			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.coords, p.features,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
 			u.name || ' ' || u.lastname AS agent_name,
-			u.phone_number AS agent_number,
+			u.phone AS agent_number,
 			u.img AS agent_img
 		FROM properties p  
 		LEFT JOIN users u ON p.agent = u.id 
