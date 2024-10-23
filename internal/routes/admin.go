@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"github.com/vladwithcode/sibra-site/internal"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
+	templates "github.com/vladwithcode/sibra-site/internal/templates/pages"
 )
 
 func RegisterAdminRoutes(router *customServeMux) {
@@ -20,6 +22,7 @@ func RegisterAdminRoutes(router *customServeMux) {
 	router.HandleFunc("GET /admin", auth.WithAuthMiddleware(RenderDashboard))
 	router.HandleFunc("GET /admin/propiedades", auth.WithAuthMiddleware(RenderAdminProperties))
 	router.HandleFunc("GET /admin/propiedades/nueva", auth.WithAuthMiddleware(RenderNewProperty))
+	router.HandleFunc("GET /admin/propiedades/editar/{id}", auth.WithAuthMiddleware(RenderUpdateProperty))
 	router.HandleFunc("GET /admin/propiedades/eliminar/{id}", auth.WithAuthMiddleware(RenderDeleteProperty))
 
 	router.HandleFunc("GET /admin/mi-usuario", auth.WithAuthMiddleware(RenderUserProfile))
@@ -105,13 +108,30 @@ func RenderNewProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 }
 
+func RenderUpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id := r.PathValue("id")
 
-	if err != nil {
-
-
+	property, err := db.FindPropertyById(id)
 
 	if err != nil {
+		fmt.Printf("Find prop err: %v\n", err)
+		err = templates.AdminLayout(
+			templates.ErrorPage(err, 500, "Ocurrio un error inesperado"),
+			"Error :( | Sibra Durango",
+		).Render(context.Background(), w)
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	err = templates.AdminLayout(
+		templates.EditProperty(property),
+		"Editar Propiedad | Sibra Durango",
+	).Render(context.Background(), w)
+
+	if err != nil {
+		panic(err)
 	}
 }
 
