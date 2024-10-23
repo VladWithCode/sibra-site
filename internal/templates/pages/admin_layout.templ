@@ -1,6 +1,7 @@
 package templates
 
 import "github.com/vladwithcode/sibra-site/internal/auth"
+import "github.com/vladwithcode/sibra-site/internal/templates/components"
 
 templ AdminLayout(contents templ.Component, auth *auth.Auth, title string) {
 	<!DOCTYPE html>
@@ -26,52 +27,7 @@ templ AdminLayout(contents templ.Component, auth *auth.Auth, title string) {
 		</head>
 		<body>
 			<div class="flex gap-0 w-screen h-screen overflow-hidden">
-				<div class="relative bg-stone-50 basis-auto shrink-0 grow-0 px-6 border-r border-slate-300 z-30" id="navbar">
-					<div class="relative flex h-14">
-						<img src="/static/img/sibra_logo_256.webp" alt="Logo de sibra durango" class="w-16 h-auto my-auto" id="navbar-logo"/>
-						<!-- <button class="rounded-full bg-white border border-slate-200 my-auto -mr-4 p-1 rotate-180 hover:bg-stone-50 hover:border-2 transition" id="navbar-toggler">
-                    <svg class="h-6 w-6 fill-slate-800">
-                    <use href="/static/svg/sprites.svg#angle"></use>
-                    </svg>
-                    </button> -->
-					</div>
-					<ul class="space-y-0.5">
-						<li class="relative text-stone-400 navbar-link" data-nav-href="/admin">
-							<a href="/admin" class="flex items-center text-sm py-2 gap-x-2">
-								<svg class="w-6 h-6 fill-none stroke-current">
-									<use href="/static/svg/cube.svg#cube"></use>
-								</svg>
-								<p class="">Inicio</p>
-							</a>
-						</li>
-						<li class="relative text-stone-400 navbar-link" data-nav-href="/admin/propiedades">
-							<a href="/admin/propiedades" class="flex items-center text-sm py-2 gap-x-2">
-								<svg class="w-6 h-6 fill-current">
-									<use href="/static/svg/home.svg#home"></use>
-								</svg>
-								<p class="">Propiedades</p>
-							</a>
-						</li>
-						<li class="relative text-stone-400 navbar-link" data-nav-href="/admin/usuarios">
-							<a href="/admin/mi-usuario" class="flex items-center text-sm py-2 gap-x-2">
-								<svg class="w-6 h-6 fill-current">
-									<use href="/static/svg/sprites.svg#user"></use>
-								</svg>
-								<p class="">Mi usuario</p>
-							</a>
-						</li>
-						if auth.Role == "admin" {
-							<li class="relative text-stone-400 navbar-link" data-nav-href="/admin/usuarios">
-								<a href="/admin/usuarios" class="flex items-center text-sm py-2 gap-x-2">
-									<svg class="w-6 h-6 fill-current">
-										<use href="/static/svg/users.svg#users"></use>
-									</svg>
-									<p class="">Usuarios</p>
-								</a>
-							</li>
-						}
-					</ul>
-				</div>
+                @templates.AdminSidebar(auth)
 				<div class="flex flex-col flex-auto overflow-y-auto overflow-x-hidden">
 					<div class="basis-14 grow-0 shrink-0 flex items-center bg-stone-50 border-b border-slate-300 px-8">
 						<h1 class="font-semibold">SIBRA</h1>
