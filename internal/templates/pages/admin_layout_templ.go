@@ -8,7 +8,9 @@ package templates
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func AdminLayout(contents templ.Component, title string) templ.Component {
+import "github.com/vladwithcode/sibra-site/internal/auth"
+
+func AdminLayout(contents templ.Component, auth *auth.Auth, title string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -42,7 +44,7 @@ func AdminLayout(contents templ.Component, title string) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/admin_layout.templ`, Line: 13, Col: 22}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/admin_layout.templ`, Line: 15, Col: 12}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -56,7 +58,7 @@ func AdminLayout(contents templ.Component, title string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(`//fonts.googleapis.com`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/admin_layout.templ`, Line: 17, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/admin_layout.templ`, Line: 18, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -69,13 +71,23 @@ func AdminLayout(contents templ.Component, title string) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(`//fonts.gstatic.com`)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/admin_layout.templ`, Line: 18, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/templates/pages/admin_layout.templ`, Line: 19, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=Crimson+Text:wght@400;600&amp;display=swap\" rel=\"stylesheet\"><link rel=\"stylesheet\" href=\"/static/styles.css\"><script src=\"/static/js/htmx.js\"></script><script src=\"/static/js/gsap.js\"></script></head><body>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\"><link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=Crimson+Text:wght@400;600&amp;display=swap\" rel=\"stylesheet\"><link rel=\"stylesheet\" href=\"/static/styles.css\"><script src=\"/static/js/htmx.js\"></script><script src=\"/static/js/gsap.js\"></script></head><body><div class=\"flex gap-0 w-screen h-screen overflow-hidden\"><div class=\"relative bg-stone-50 basis-auto shrink-0 grow-0 px-6 border-r border-slate-300 z-30\" id=\"navbar\"><div class=\"relative flex h-14\"><img src=\"/static/img/sibra_logo_256.webp\" alt=\"Logo de sibra durango\" class=\"w-16 h-auto my-auto\" id=\"navbar-logo\"><!-- <button class=\"rounded-full bg-white border border-slate-200 my-auto -mr-4 p-1 rotate-180 hover:bg-stone-50 hover:border-2 transition\" id=\"navbar-toggler\">\n                    <svg class=\"h-6 w-6 fill-slate-800\">\n                    <use href=\"/static/svg/sprites.svg#angle\"></use>\n                    </svg>\n                    </button> --></div><ul class=\"space-y-0.5\"><li class=\"relative text-stone-400 navbar-link\" data-nav-href=\"/admin\"><a href=\"/admin\" class=\"flex items-center text-sm py-2 gap-x-2\"><svg class=\"w-6 h-6 fill-none stroke-current\"><use href=\"/static/svg/cube.svg#cube\"></use></svg><p class=\"\">Inicio</p></a></li><li class=\"relative text-stone-400 navbar-link\" data-nav-href=\"/admin/propiedades\"><a href=\"/admin/propiedades\" class=\"flex items-center text-sm py-2 gap-x-2\"><svg class=\"w-6 h-6 fill-current\"><use href=\"/static/svg/home.svg#home\"></use></svg><p class=\"\">Propiedades</p></a></li><li class=\"relative text-stone-400 navbar-link\" data-nav-href=\"/admin/usuarios\"><a href=\"/admin/mi-usuario\" class=\"flex items-center text-sm py-2 gap-x-2\"><svg class=\"w-6 h-6 fill-current\"><use href=\"/static/svg/sprites.svg#user\"></use></svg><p class=\"\">Mi usuario</p></a></li>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if auth.Role == "admin" {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<li class=\"relative text-stone-400 navbar-link\" data-nav-href=\"/admin/usuarios\"><a href=\"/admin/usuarios\" class=\"flex items-center text-sm py-2 gap-x-2\"><svg class=\"w-6 h-6 fill-current\"><use href=\"/static/svg/users.svg#users\"></use></svg><p class=\"\">Usuarios</p></a></li>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ul></div><div class=\"flex flex-col flex-auto overflow-y-auto overflow-x-hidden\"><div class=\"basis-14 grow-0 shrink-0 flex items-center bg-stone-50 border-b border-slate-300 px-8\"><h1 class=\"font-semibold\">SIBRA</h1></div><div class=\"flex flex-col flex-auto py-2 px-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -83,7 +95,7 @@ func AdminLayout(contents templ.Component, title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></div></div></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

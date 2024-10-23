@@ -117,6 +117,7 @@ func RenderUpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) 
 		fmt.Printf("Find prop err: %v\n", err)
 		err = templates.AdminLayout(
 			templates.ErrorPage(err, 500, "Ocurrio un error inesperado"),
+			a,
 			"Error :( | Sibra Durango",
 		).Render(context.Background(), w)
 
@@ -127,6 +128,7 @@ func RenderUpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) 
 
 	err = templates.AdminLayout(
 		templates.EditProperty(property),
+		a,
 		"Editar Propiedad | Sibra Durango",
 	).Render(context.Background(), w)
 
