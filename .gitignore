@@ -22,3 +22,4 @@ web/static/users/*
 !web/static/users/sample.png
 !web/static/users/.keep
 
+web/static/styles.css
