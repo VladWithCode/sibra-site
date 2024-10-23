@@ -20,7 +20,6 @@ func RegisterAdminRoutes(router *customServeMux) {
 	router.HandleFunc("GET /admin", auth.WithAuthMiddleware(RenderDashboard))
 	router.HandleFunc("GET /admin/propiedades", auth.WithAuthMiddleware(RenderAdminProperties))
 	router.HandleFunc("GET /admin/propiedades/nueva", auth.WithAuthMiddleware(RenderNewProperty))
-	router.HandleFunc("GET /admin/propiedades/editar/{id}", auth.WithAuthMiddleware(RenderEditProperty))
 	router.HandleFunc("GET /admin/propiedades/eliminar/{id}", auth.WithAuthMiddleware(RenderDeleteProperty))
 
 	router.HandleFunc("GET /admin/mi-usuario", auth.WithAuthMiddleware(RenderUserProfile))
@@ -106,40 +105,13 @@ func RenderNewProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 }
 
-func RenderEditProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id := r.PathValue("id")
-	prop, err := db.FindPropertyById(id)
-	if err != nil {
-		fmt.Printf("Find err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-	templ, err := template.ParseFiles(
-		"web/templates/admin/layout.html",
-		"web/templates/admin/new-property.html",
-		"web/templates/admin/prop-form.html",
-		"web/templates/admin/pic-form.html",
-	)
 
 	if err != nil {
-		fmt.Printf("Parse err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
 
-	data := prop.ToMap()
 
-	err = templ.Execute(w, map[string]any{
-		"IsEditForm": true,
-		"User":       a,
-		"Prop":       prop,
-		"Data":       data,
-	})
 
 	if err != nil {
-		fmt.Printf("Execute err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
 	}
 }
 
