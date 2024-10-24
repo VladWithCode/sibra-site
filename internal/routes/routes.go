@@ -11,7 +11,7 @@ import (
 )
 
 func NewRouter() http.Handler {
-	router := http.NewServeMux()
+	router := NewCustomServeMux()
 
 	router.HandleFunc("GET /{$}", RenderIndex)
 	router.HandleFunc("GET /terminos-servicio", auth.CheckAuthMiddleware(RenderTerms))

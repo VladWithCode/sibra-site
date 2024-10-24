@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func RegisterPriceMapRoutes(router *http.ServeMux) {
+func RegisterPriceMapRoutes(router *customServeMux) {
 	router.HandleFunc("GET /mapa", RenderMap)
 }
 

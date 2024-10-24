@@ -18,7 +18,7 @@ import (
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
-func RegisterPropertyRoutes(router *http.ServeMux) {
+func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
 

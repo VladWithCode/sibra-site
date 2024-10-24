@@ -12,7 +12,7 @@ import (
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
-func RegisterAdminRoutes(router *http.ServeMux) {
+func RegisterAdminRoutes(router *customServeMux) {
 	// Signin
 	router.HandleFunc("GET /admin/iniciar-sesion", auth.CheckAuthMiddleware(RenderAdminSignIn))
 	router.HandleFunc("POST /admin/sign-in", auth.CheckAuthMiddleware(AdminSignIn))
