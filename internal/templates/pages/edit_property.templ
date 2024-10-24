@@ -3,11 +3,9 @@ package pages
 import (
 	"fmt"
 	"github.com/vladwithcode/sibra-site/internal/db"
+	"github.com/vladwithcode/sibra-site/internal/templates"
 )
 
-func cmpStr(str1, str2 string) bool {
-	return str1 == str2
-}
 
 templ EditProperty(property *db.Property) {
 	<h2 class="text-lg">Actualizar Propiedad</h2>
