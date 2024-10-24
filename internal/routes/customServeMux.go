@@ -31,7 +31,7 @@ func (csm *customServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	csm.ServeHTTP(w, r)
+	csm.ServeMux.ServeHTTP(w, r)
 }
 
 // Set the custom NotFoundHandler
