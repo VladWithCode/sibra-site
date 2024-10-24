@@ -1,0 +1,409 @@
+package components
+
+import (
+	"fmt"
+	"github.com/vladwithcode/sibra-site/internal/db"
+	"github.com/vladwithcode/sibra-site/internal/templates"
+)
+
+templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFields) {
+	<form
+		hx-put={ "/api/properties/" + property.Id }
+		hx-swap="outerHTML"
+		class="relative space-y-2 text-slate-800"
+		id="new-property-form"
+	>
+		<div class="absolute inset-0 bg-slate-700 opacity-60 hidden items-center justify-center rounded" id="loading-spinner">
+			<svg class="fill-slate-300 w-16 h-16 mx-auto animate-spin">
+				<use href="/static/svg/spinner.svg#spinner"></use>
+			</svg>
+			<p class="text-xl font-semibold text-slate-300">Cargando...</p>
+		</div>
+		<h3 class="font-bold text-slate-700">Informacion de la propiedad</h3>
+		<div class="flex gap-2">
+			<div class="basis-1/2 grow-0 space-y-1">
+				<label for="address" class="block text-xs text-slate-400 font-semibold">Domicilio</label>
+				<input
+					type="text"
+					name="address"
+					id="address"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["address"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="Gral. Anaya #101 int 4"
+					value={ property.Address }
+					required
+					maxlength="256"
+				/>
+				if (*invalidFields)["address"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["address"] }</p>
+				}
+			</div>
+			<div class="basis-1/2 grow-0 space-y-1">
+				<label for="nbHood" class="block text-xs text-slate-400 font-semibold">Colonia/Fracc.</label>
+				<input
+					type="text"
+					name="nbHood"
+					id="nbHood"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["nbHood"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="Col. Juan de la Barrera"
+					value={ property.NbHood }
+					required
+					maxlength="128"
+				/>
+				if (*invalidFields)["nbHood"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["nbHood"] }</p>
+				}
+			</div>
+		</div>
+		<div class="flex gap-2">
+			<div class="basis-full grow-0 space-y-1">
+				<label for="description" class="block text-xs text-slate-400 font-semibold">Descripción</label>
+				<input
+					type="text"
+					name="description"
+					id="description"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["description"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="Casa de 2 pisos con fachada naranja. 2 habitaciones y 1 baño."
+					value={ property.Description }
+					required
+					maxlength="512"
+				/>
+				if (*invalidFields)["description"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["description"] }</p>
+				}
+			</div>
+		</div>
+		<div class="flex gap-2">
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="city" class="block text-xs text-slate-400 font-semibold">Ciudad</label>
+				<input
+					type="text"
+					name="city"
+					id="city"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["city"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="Durango"
+					value={ property.City }
+					required
+					maxlength="128"
+				/>
+				if (*invalidFields)["city"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["city"] }</p>
+				}
+			</div>
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="state" class="block text-xs text-slate-400 font-semibold">Estado</label>
+				<input
+					type="text"
+					name="state"
+					id="state"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["state"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="Durango"
+					value={ property.State }
+					required
+					maxlength="128"
+				/>
+				if (*invalidFields)["state"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["state"] }</p>
+				}
+			</div>
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="zip" class="block text-xs text-slate-400 font-semibold">Código Postal</label>
+				<input
+					type="text"
+					name="zip"
+					id="zip"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["zip"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="34158"
+					value={ property.Zip }
+					required
+					maxlength="5"
+				/>
+				if (*invalidFields)["zip"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["zip"] }</p>
+				}
+			</div>
+		</div>
+		<div class="flex gap-2">
+			<div class="basis-1/2 grow-0 space-y-1">
+				<label for="country" class="block text-xs text-slate-400 font-semibold">País</label>
+				<input
+					type="text"
+					name="country"
+					id="country"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["country"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="México"
+					value={ property.Country }
+					maxlength="128"
+				/>
+				if (*invalidFields)["country"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["country"] }</p>
+				}
+			</div>
+			<div class="basis-1/2 grow-0 space-y-1">
+				<label for="price" class="block text-xs text-slate-400 font-semibold">Precio</label>
+				<input
+					type="text"
+					name="price"
+					id="price"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["price"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="2_800_000"
+					value={ fmt.Sprintf("%2f", property.Price) }
+					required
+				/>
+				<p class="text-xs font-bold text-slate-400">Si necesitas separar los números puedes hacerlo con '_' (ej. 2_000)</p>
+				if (*invalidFields)["price"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["price"] }</p>
+				}
+			</div>
+		</div>
+		<div class="flex gap-2">
+			<div class="basis-1/2 grow-0 space-y-1">
+				<label for="propType" class="block text-xs text-slate-400 font-semibold">Tipo de Propiedad</label>
+				<select
+					type="text"
+					name="propType"
+					id="propType"
+					class={ "w-full border-current rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["propType"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					required
+				>
+					<option value>Elige un tipo de propiedad</option>
+					<option value="casa" selected?={ templates.CmpStr(property.PropType, "casa") }>Casa </option>
+					<option value="apartamento" selected?={ templates.CmpStr(property.PropType, "apartamento") }>Apartamento </option>
+					<option value="terreno" selected?={ templates.CmpStr(property.PropType, "terreno") }>Terreno </option>
+				</select>
+				if (*invalidFields)["propType"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["propType"] }</p>
+				}
+			</div>
+			<div class="basis-1/2 grow-0 space-y-1">
+				<label for="lotSize" class="block text-xs text-slate-400 font-semibold">Construccion (m<sup>2</sup>)</label>
+				<input
+					type="text"
+					name="lotSize"
+					id="lotSize"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["lotSize"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="90"
+					value={ fmt.Sprintf("%2f", property.LotSize) }
+					required
+				/>
+				if (*invalidFields)["lotSize"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["lotSize"] }</p>
+				}
+			</div>
+		</div>
+		<div class="flex gap-2">
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="beds" class="block text-xs text-slate-400 font-semibold">Habitaciones</label>
+				<input
+					type="text"
+					name="beds"
+					id="beds"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["beds"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="3"
+					value={ fmt.Sprintf("%d", property.Beds) }
+					required
+				/>
+				if (*invalidFields)["beds"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["beds"] }</p>
+				}
+			</div>
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="baths" class="block text-xs text-slate-400 font-semibold">Baños</label>
+				<input
+					type="text"
+					name="baths"
+					id="baths"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["baths"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="3"
+					value={ fmt.Sprintf("%d", property.Beds) }
+					required
+				/>
+				if (*invalidFields)["baths"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["baths"] }</p>
+				}
+			</div>
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="sqMt" class="block text-xs text-slate-400 font-semibold">Superficie (m<sup>2</sup>)</label>
+				<input
+					type="text"
+					name="sqMt"
+					id="sqMt"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["sqMt"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="90"
+					value={ fmt.Sprintf("%f", property.SqMt) }
+					required
+				/>
+				if (*invalidFields)["sqMt"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["sqMt"] }</p>
+				}
+			</div>
+		</div>
+		<div class="flex gap-2">
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="yearBuilt" class="block text-xs text-slate-400 font-semibold">Año de Construcción</label>
+				<input
+					type="text"
+					name="yearBuilt"
+					id="yearBuilt"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["yearBuilt"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="2010"
+					value={ fmt.Sprintf("%d", property.YearBuilt) }
+				/>
+				if (*invalidFields)["yearBuilt"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["yearBuilt"] }</p>
+				}
+			</div>
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="status" class="block text-xs text-slate-400 font-semibold">Estatus</label>
+				<select
+					name="status"
+					id="status"
+					class={ "w-full border-current rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["status"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+				>
+					<option value="disponible" selected?={ templates.CmpStr(property.Status, "disponible") }>Disponible</option>
+					<option value="vendida" selected?={ templates.CmpStr(property.Status, "vendida") }>Vendida</option>
+					<option value="no_disponible" selected?={ templates.CmpStr(property.Status, "no_disponible") }>No disponible</option>
+				</select>
+				if (*invalidFields)["status"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["status"] }</p>
+				}
+			</div>
+			<div class="basis-1/3 grow-0 space-y-1">
+				<label for="contract" class="block text-xs text-slate-400 font-semibold">Tipo Contrato</label>
+				<select
+					name="contract"
+					id="contract"
+					class={ "w-full border-current rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["contract"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+				>
+					<option value="venta" selected?={ templates.CmpStr(property.Contract, "venta") }>Venta</option>
+					<option value="renta" selected?={ templates.CmpStr(property.Contract, "renta") }>Renta</option>
+				</select>
+				if (*invalidFields)["contract"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["contract"] }</p>
+				}
+			</div>
+		</div>
+		<div class="flex gap-2">
+			<div class="basis-1/2 grow-0 space-y-1">
+				<label for="lat" class="block text-xs text-slate-400 font-semibold">Latitud (coordenadas)</label>
+				<input
+					type="text"
+					name="lat"
+					id="lat"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["lat"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="24.100100"
+					value={ fmt.Sprintf("%f", property.Lat) }
+				/>
+				if (*invalidFields)["lat"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["lat"] }</p>
+				}
+			</div>
+			<div class="basis-1/2 grow-0 space-y-1">
+				<label for="lon" class="block text-xs text-slate-400 font-semibold">Longitud (coordenadas)</label>
+				<input
+					type="text"
+					name="lon"
+					id="lon"
+					class={ "w-full border-current rounded px-2 py-1 outline-none focus:ring-2 focus:ring-slate-600",
+                        templates.SelectClassName(
+                            (*invalidFields)["lon"] != "",
+                            "border-2 text-rose-500 bg-rose-500/15",
+                            "border",
+                        ) }
+					placeholder="-104.200300"
+					value={ fmt.Sprintf("%f", property.Lon) }
+				/>
+				if (*invalidFields)["lon"] != "" {
+					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["lon"] }</p>
+				}
+			</div>
+		</div>
+		<div class="flex justify-end pt-2">
+			<button class="basis-1/3 px-4 py-2 rounded bg-slate-700 text-stone-50" type="submit">Enviar</button>
+		</div>
+	</form>
+}

@@ -1,9 +1,9 @@
 package pages
 
 import (
-	"fmt"
 	"github.com/vladwithcode/sibra-site/internal/db"
 	"github.com/vladwithcode/sibra-site/internal/templates"
+	"github.com/vladwithcode/sibra-site/internal/templates/components"
 )
 
 
@@ -11,125 +11,6 @@ templ EditProperty(property *db.Property) {
 	<h2 class="text-lg">Actualizar Propiedad</h2>
 	<div class="py-2"></div>
 	<div class="flex gap-2" hx-ext="response-targets">
-		<form
-			hx-put={ "/api/properties/" + property.Id }
-			hx-swap="outerHTML"
-			class="relative shadow-md shadow-stone-300"
-			id="new-property_form"
-		>
-			<div class="absolute inset-0 bg-slate-700 opacity-60 hidden items-center justify-center rounded" id="loading-spinner">
-				<svg class="fill-slate-300 w-16 h-16 mx-auto animate-spin">
-					<use href="/static/svg/spinner.svg#spinner"></use>
-				</svg>
-				<p class="text-xl font-semibold text-slate-300">Cargando...</p>
-			</div>
-			<h3 class="font-bold text-slate-700">Informacion de la propiedad</h3>
-			<div class="flex gap-2">
-				<div class="basis-1/2 grow-0 space-y-1">
-					<label for="address" class="block text-xs text-slate-400 font-semibold">Domicilio</label>
-					<input type="text" name="address" id="address" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="Gral. Anaya #101 int 4" value={ property.Address } required/>
-				</div>
-				<div class="basis-1/2 grow-0 space-y-1">
-					<label for="nbHood" class="block text-xs text-slate-400 font-semibold">Colonia/Fracc.</label>
-					<input type="text" name="nbHood" id="nbHood" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="Col. Juan de la Barrera" value={ property.NbHood } required/>
-				</div>
-			</div>
-			<div class="flex gap-2">
-				<div class="basis-full grow-0 space-y-1">
-					<label for="description" class="block text-xs text-slate-400 font-semibold">Descripción</label>
-					<input type="text" name="description" id="description" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="Casa de 2 pisos con fachada naranja. 2 habitaciones y 1 baño." value={ property.Description } required/>
-				</div>
-			</div>
-			<div class="flex gap-2">
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="city" class="block text-xs text-slate-400 font-semibold">Ciudad</label>
-					<input type="text" name="city" id="city" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="Durango" value={ property.City } required/>
-				</div>
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="state" class="block text-xs text-slate-400 font-semibold">Estado</label>
-					<input type="text" name="state" id="state" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="Durango" value={ property.State } required/>
-				</div>
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="zip" class="block text-xs text-slate-400 font-semibold">Código Postal</label>
-					<input type="text" name="zip" id="zip" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="34158" value={ property.Zip } required/>
-				</div>
-			</div>
-			<div class="flex gap-2">
-				<div class="basis-1/2 grow-0 space-y-1">
-					<label for="country" class="block text-xs text-slate-400 font-semibold">País</label>
-					<input type="text" name="country" id="country" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="México" value={ property.Country }/>
-				</div>
-				<div class="basis-1/2 grow-0 space-y-1">
-					<label for="price" class="block text-xs text-slate-400 font-semibold">Precio</label>
-					<input type="text" name="price" id="price" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="2_800_000" value={ fmt.Sprintf("%2f", property.Price) } required/>
-					<p class="text-xs font-bold text-slate-400">Si necesitas separar los números puedes hacerlo con '_' (ej. 2_000)</p>
-				</div>
-			</div>
-			<div class="flex gap-2">
-				<div class="basis-1/2 grow-0 space-y-1">
-					<label for="propType" class="block text-xs text-slate-400 font-semibold">Tipo de Propiedad</label>
-					<select type="text" name="propType" id="propType" class="w-full border border-slate-400 rounded px-2 py-1" required>
-						<option value>Elige un tipo de propiedad</option>
-						<option value="casa" selected?={ cmpStr(property.PropType, "casa") }>Casa </option>
-						<option value="apartamento" selected?={ cmpStr(property.PropType, "apartamento") }>Apartamento </option>
-						<option value="terreno" selected?={ cmpStr(property.PropType, "terreno") }>Terreno </option>
-					</select>
-				</div>
-				<div class="basis-1/2 grow-0 space-y-1">
-					<label for="lotSize" class="block text-xs text-slate-400 font-semibold">Construccion (m<sup>2</sup>)</label>
-					<input type="text" name="lotSize" id="lotSize" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="90" value={ fmt.Sprintf("%2f", property.LotSize) } required/>
-				</div>
-			</div>
-			<div class="flex gap-2">
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="beds" class="block text-xs text-slate-400 font-semibold">Habitaciones</label>
-					<input type="text" name="beds" id="beds" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="3" value={ fmt.Sprintf("%d", property.Beds) } required/>
-				</div>
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="baths" class="block text-xs text-slate-400 font-semibold">Baños</label>
-					<input type="text" name="baths" id="baths" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="3" value={ fmt.Sprintf("%d", property.Beds) } required/>
-				</div>
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="sqMt" class="block text-xs text-slate-400 font-semibold">Superficie (m<sup>2</sup>)</label>
-					<input type="text" name="sqMt" id="sqMt" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="90" value={ fmt.Sprintf("%f", property.SqMt) } required/>
-				</div>
-			</div>
-			<div class="flex gap-2">
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="yearBuilt" class="block text-xs text-slate-400 font-semibold">Año de Construcción</label>
-					<input type="text" name="yearBuilt" id="yearBuilt" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="2010" value={ fmt.Sprintf("%d", property.YearBuilt) }/>
-				</div>
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="status" class="block text-xs text-slate-400 font-semibold">Estatus</label>
-					<select name="status" id="status" class="w-full border border-slate-400 rounded px-2 py-1.5">
-						<option value="disponible" selected?={ cmpStr(property.Status, "disponible") }>Disponible</option>
-						<option value="vendida" selected?={ cmpStr(property.Status, "vendida") }>Vendida</option>
-						<option value="no_disponible" selected?={ cmpStr(property.Status, "no_disponible") }>No disponible</option>
-					</select>
-				</div>
-				<div class="basis-1/3 grow-0 space-y-1">
-					<label for="contract" class="block text-xs text-slate-400 font-semibold">Tipo Contrato</label>
-					<select name="contract" id="contract" class="w-full border border-slate-400 rounded px-2 py-1.5">
-						<option value="venta" selected?={ cmpStr(property.Contract, "venta") }>Venta</option>
-						<option value="renta" selected?={ cmpStr(property.Contract, "renta") }>Renta</option>
-					</select>
-				</div>
-			</div>
-			<div class="flex gap-2">
-				<div class="basis-1/2 grow-0 space-y-1">
-					<label for="lat" class="block text-xs text-slate-400 font-semibold">Latitud (coordenadas)</label>
-					<input type="text" name="lat" id="lat" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="24.100100" value={ fmt.Sprintf("%f", property.Lat) }/>
-				</div>
-				<div class="basis-1/2 grow-0 space-y-1">
-					<label for="lon" class="block text-xs text-slate-400 font-semibold">Longitud (coordenadas)</label>
-					<input type="text" name="lon" id="lon" class="w-full border border-slate-400 rounded px-2 py-1" placeholder="-104.200300" value={ fmt.Sprintf("%f", property.Lon) }/>
-				</div>
-			</div>
-			<div class="py-0.5"></div>
-			<div class="py-1"></div>
-			<div class="flex justify-end">
-				<button class="basis-1/3 px-4 py-2 rounded bg-slate-700 text-stone-50" type="submit">Enviar</button>
-			</div>
-		</form>
+		@components.UpdatePropForm(property, &templates.InvalidFields{})
 	</div>
 }
