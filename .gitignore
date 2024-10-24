@@ -9,8 +9,8 @@ cmd/*
 .env*
 
 # Ignore templ generated files
-internal/templates/**/*.go
-internal/templates/*.go
+internal/templates/**/*_templ.go
+internal/templates/*_templ.go
 internal/templates/**/*.txt
 internal/templates/*.txt
 
