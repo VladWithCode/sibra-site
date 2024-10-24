@@ -1,7 +1,9 @@
 package pages
 
-import "github.com/vladwithcode/sibra-site/internal/auth"
-import "github.com/vladwithcode/sibra-site/internal/templates/components"
+import (
+	"github.com/vladwithcode/sibra-site/internal/auth"
+	"github.com/vladwithcode/sibra-site/internal/templates/components"
+)
 
 templ AdminLayout(contents templ.Component, auth *auth.Auth, title string) {
 	<!DOCTYPE html>
