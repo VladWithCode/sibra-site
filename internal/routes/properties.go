@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -16,6 +17,8 @@ import (
 	"github.com/vladwithcode/sibra-site/internal"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
+	"github.com/vladwithcode/sibra-site/internal/templates"
+	"github.com/vladwithcode/sibra-site/internal/templates/components"
 )
 
 func RegisterPropertyRoutes(router *customServeMux) {
@@ -23,6 +26,7 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
 
 	router.HandleFunc("POST /api/property", auth.WithAuthMiddleware(CreateProperty))
+	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthMiddleware(UpdateProperty))
 	router.HandleFunc("DELETE /api/property/{id}/delete", auth.WithAuthMiddleware(DeletePropertyById))
 }
 
@@ -242,6 +246,38 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 	if err != nil {
 		fmt.Printf("Error creating static dir for prop: %v\n", property.Id)
+	}
+}
+
+func UpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+	defer r.Body.Close()
+	newProperty := db.Property{}
+	err := json.NewDecoder(r.Body).Decode(&newProperty)
+
+	if err != nil {
+		fmt.Printf("parse form err: %v\n", err)
+		w.WriteHeader(400)
+		w.Write([]byte("No se pudo procesar el formulario"))
+		return
+	}
+	newProperty.Id = r.PathValue("id")
+
+	err = db.UpdateProperty(&newProperty)
+
+	if err != nil {
+		fmt.Printf("update err: %v\n", err)
+		w.WriteHeader(400)
+		w.Write([]byte("No se pudo actualizar la propiedad"))
+		return
+	}
+
+	err = components.UpdatePropForm(
+		&newProperty,
+		&templates.InvalidFields{},
+		true,
+	).Render(context.Background(), w)
+	if err != nil {
+		panic(err)
 	}
 }
 
