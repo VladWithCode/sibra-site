@@ -6,11 +6,10 @@ import (
 	"github.com/vladwithcode/sibra-site/internal/templates/components"
 )
 
-
 templ EditProperty(property *db.Property) {
 	<h2 class="text-lg">Actualizar Propiedad</h2>
 	<div class="py-2"></div>
 	<div class="flex gap-2" hx-ext="response-targets">
-		@components.UpdatePropForm(property, &templates.InvalidFields{})
+		@components.UpdatePropForm(property, &templates.InvalidFields{}, false)
 	</div>
 }
