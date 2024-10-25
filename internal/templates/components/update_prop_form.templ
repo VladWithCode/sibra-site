@@ -8,7 +8,7 @@ import (
 
 templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFields) {
 	<form
-		hx-put={ "/api/properties/" + property.Id }
+		hx-put={ "/api/property/" + property.Id }
 		hx-swap="outerHTML"
 		class="relative space-y-2 text-slate-800"
 		id="new-property-form"
