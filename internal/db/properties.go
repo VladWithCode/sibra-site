@@ -254,10 +254,8 @@ func UpdateProperty(property *Property) error {
 		lon = $22,
 		featured = $23,
 		featured_expires_at = $24,
-		main_img = $25,
-		imgs = $26,
-		agent = $27,
-		slug = $28
+		agent = $25,
+		slug = $26
 		WHERE id = $1`,
 		property.Id,
 		property.Address,
@@ -283,8 +281,6 @@ func UpdateProperty(property *Property) error {
 		property.Lon,
 		property.Featured,
 		property.FeaturedExpiresAt,
-		property.MainImg,
-		property.Images,
 		property.Agent,
 		property.Slug,
 	)
