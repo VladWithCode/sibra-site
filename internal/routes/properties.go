@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -28,6 +29,7 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("POST /api/property", auth.WithAuthMiddleware(CreateProperty))
 	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthMiddleware(UpdateProperty))
 	router.HandleFunc("DELETE /api/property/{id}/delete", auth.WithAuthMiddleware(DeletePropertyById))
+	router.HandleFunc("POST /api/property/pictures/{id}", auth.WithAuthMiddleware(UploadPropertyPictures))
 }
 
 func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
@@ -282,104 +284,54 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 }
 
 func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
-	templ, err := template.ParseFiles("web/templates/admin/pic-form.html")
-
-	if err != nil {
-		fmt.Printf("Parse invalid templ err: %v\n", err)
-		w.WriteHeader(500)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
 	id := r.PathValue("id")
-	err = r.ParseMultipartForm(90 << 20)
 
+	err := r.ParseMultipartForm(90 << 20)
 	if err != nil {
-		fmt.Printf("Parse form err: %v\n", err)
-		w.WriteHeader(500)
-		templ.Execute(w, map[string]any{
-			"UploadError": "Ocurrio un error al procesar las imagenes",
-			"Data":        map[string]any{"id": id},
-		})
+		fmt.Printf("parse form err: %v\n", err)
+		w.WriteHeader(400)
+		w.Write([]byte("El formulario no pudo ser procesado"))
 		return
 	}
 
-	prop, err := db.FindPropertyById(id)
+	property, err := db.FindPropertyById(id)
 
 	if err != nil {
 		fmt.Printf("Find err: %v\n", err)
-		w.WriteHeader(500)
-		templ.Execute(w, map[string]any{
-			"UploadError": "No se encontro la propiedad especificada",
-			"Data":        map[string]any{"id": prop.Id},
-		})
+		w.WriteHeader(404)
+		w.Write([]byte("No se encontró la propiedad solicitada"))
 		return
 	}
 
-	filePath := filepath.Join("web/static/properties", prop.Id)
+	filePath := filepath.Join("web/static/properties", property.Id)
+	err = os.MkdirAll(filePath, 0644)
 
-	mainPic, handle, err := r.FormFile("main-pic")
-	if err != nil {
-		fmt.Printf("Parse pic err: %v\n", err)
+	if err != nil && !os.IsExist(err) {
+		fmt.Printf("Create dir err: %v\n", err)
 		w.WriteHeader(500)
-		templ.Execute(w, map[string]any{
-			"UploadError": "E,rror al procesar la imagen principal",
-			"Data":        map[string]any{"id": prop.Id},
-		})
+		w.Write([]byte("Error al crear el directorio para la propiedad"))
 		return
 	}
-	defer mainPic.Close()
 
-	mainFileName := "main-pic" + filepath.Ext(handle.Filename)
-	file, err := os.Create(filepath.Join(filePath, mainFileName))
-	if err != nil {
-		fmt.Printf("Create main file %v\n", err)
-		w.WriteHeader(500)
-		templ.Execute(w, map[string]any{
-			"UploadError": "Error al procesar la imagen principal",
-			"Data":        map[string]any{"id": prop.Id},
-		})
-		return
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, mainPic)
-	if err != nil {
-		fmt.Printf("Copy err: %v\n", err)
-		w.WriteHeader(500)
-		templ.Execute(w, map[string]any{
-			"UploadError": "Error al procesar la imagen principal",
-			"Data":        map[string]any{"id": prop.Id},
-		})
-		return
-	}
-	prop.MainImg = mainFileName
-
-	pics := r.MultipartForm.File["pictures"]
-	for i, fileHeader := range pics {
+	pics := r.MultipartForm.File["pics"]
+	for _, fileHeader := range pics {
 		pic, err := fileHeader.Open()
+		fmt.Printf("pic: %v\n", pic)
 		if err != nil {
 			fmt.Printf("Open file err: %v\n", err)
 			w.WriteHeader(500)
-			templ.Execute(w, map[string]any{
-				"UploadError": "Error al procesar las imagenes",
-				"Data":        map[string]any{"id": prop.Id},
-			})
+			w.Write([]byte("Error al procesar las imagenes"))
 			return
 		}
 		defer pic.Close()
 
-		idx := fmt.Sprintf("%v", i)
-		fileName := prop.Id + "-" + idx + filepath.Ext(fileHeader.Filename)
+		fileName := time.Now().Format("20060102-150405") + "-" + uuid.NewString() + filepath.Ext(fileHeader.Filename)
 		filep := filepath.Join(filePath, fileName)
 		outFile, err := os.Create(filep)
 		if err != nil {
 			fmt.Printf("Create outfile err: %v\n", err)
 			w.WriteHeader(500)
-			templ.Execute(w, map[string]any{
-				"UploadError": "Error al procesar las imagenes",
-				"Data":        map[string]any{"id": prop.Id},
-			})
+			w.Write([]byte("Error al guardar las imagenes"))
 			return
 		}
 		defer outFile.Close()
@@ -388,35 +340,72 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 		if err != nil {
 			fmt.Printf("Write file err: %v\n", err)
 			w.WriteHeader(500)
-			templ.Execute(w, map[string]any{
-				"UploadError": "Error al procesar las imagenes",
-				"Data":        map[string]any{"id": prop.Id},
-			})
+			w.Write([]byte("Error al guardar las imagenes"))
 			return
 		}
 
-		prop.Images = append(prop.Images, fileName)
+		property.Images = append(property.Images, fileName)
 	}
 
-	// Save changes
-	err = db.UpdatePropertyImages(prop.Id, prop.Images)
-	err = db.UpdatePropertyMainImg(prop.Id, prop.MainImg)
+	mainPic, handle, err := r.FormFile("main-pic")
+	if err != nil && !strings.Contains(err.Error(), "no such file") {
+		fmt.Printf("Parse pic err: %v\n", err)
+		w.WriteHeader(500)
+		w.Write([]byte("Error al procesar la imagen"))
+		return
+	}
+
+	if handle != nil {
+		defer mainPic.Close()
+
+		mainFileName := "main-pic" + filepath.Ext(handle.Filename)
+		file, err := os.Create(filepath.Join(filePath, mainFileName))
+		if err != nil {
+			fmt.Printf("Create main file err: %v\n", err)
+			w.WriteHeader(500)
+			w.Write([]byte("Error al guardar la imagen principal"))
+			return
+		}
+		defer file.Close()
+
+		_, err = io.Copy(file, mainPic)
+		if err != nil {
+			fmt.Printf("Copy err: %v\n", err)
+			w.WriteHeader(500)
+			w.Write([]byte("Error al guardar la imagen principal"))
+			return
+		}
+		property.MainImg = mainFileName
+	}
+
+	delPicIds := r.MultipartForm.Value["delPics"]
+	if len(delPicIds) > 0 {
+		newPics := [12]string{}
+		i := 0
+		for _, img := range property.Images {
+			if !slices.Contains(delPicIds, img) && img != "" {
+				newPics[i] = img
+				i++
+			}
+		}
+
+		property.Images = newPics[:i]
+	}
+
+	err = db.UpdatePropertyImages(property.Id, property.Images)
+	err = db.UpdatePropertyMainImg(property.Id, property.MainImg)
 
 	if err != nil {
 		fmt.Printf("Write file err: %v\n", err)
 		w.WriteHeader(500)
-		templ.Execute(w, map[string]any{
-			"UploadError": "Error al procesar las imagenes",
-			"Data":        map[string]any{"id": prop.Id},
-		})
+		w.Write([]byte("Error al procesar las imagenes"))
 		return
 	}
 
-	templ.Execute(w, map[string]any{
-		"UploadSuccess": true,
-		"ResultMessage": "Las imagenes se subieron con exito",
-		"Data":          map[string]any{"id": prop.Id},
-	})
+	err = components.UpdatePropImagesForm(property, true).Render(context.Background(), w)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func DeletePropertyById(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
