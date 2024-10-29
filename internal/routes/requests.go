@@ -11,7 +11,7 @@ import (
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
-func RegisterRequestsRouter(r *http.ServeMux) {
+func RegisterRequestsRouter(r *customServeMux) {
 	r.HandleFunc("POST /api/requests", CreateRequest)
 }
 

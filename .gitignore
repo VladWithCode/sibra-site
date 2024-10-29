@@ -8,6 +8,12 @@ cmd/*
 # Ignore env files
 .env*
 
+# Ignore templ generated files
+internal/templates/**/*_templ.go
+internal/templates/*_templ.go
+internal/templates/**/*.txt
+internal/templates/*.txt
+
 # Ignore static
 web/static/properties/*
 !web/static/properties/.keep
@@ -17,3 +23,4 @@ web/static/users/*
 !web/static/users/.keep
 web/static/styles.css
 
+web/static/styles.css

@@ -23,3 +23,32 @@ a[disabled] {
     opacity: .90;
 }
 
+.is-new-pic {
+    position: relative;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: translate(-50%, -50%);
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 999px;
+        background-color: rgb(240 50 80);
+        box-shadow: 0px 0px 8px 2px rgb(0 0 0/.3);
+    }
+}
+.is-del-pic {
+    scale: 0.98;
+
+    img {
+        opacity: 0.6;
+    }
+    .restore-btn {
+        visibility: visible;
+    }
+    .del-btn {
+        visibility: hidden;
+    }
+}

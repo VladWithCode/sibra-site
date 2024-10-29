@@ -11,7 +11,7 @@ import (
 )
 
 func NewRouter() http.Handler {
-	router := http.NewServeMux()
+	router := NewCustomServeMux()
 
 	router.HandleFunc("GET /{$}", RenderIndex)
 	router.HandleFunc("GET /terminos-servicio", auth.CheckAuthMiddleware(RenderTerms))
@@ -33,6 +33,8 @@ func NewRouter() http.Handler {
 	// *Might change it to serve static files through nginx
 	fs := http.FileServer(http.Dir("web/static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static/", fs))
+
+	router.NotFoundHandleFunc(auth.CheckAuthMiddleware(render404Page))
 
 	return router
 }
@@ -157,6 +159,24 @@ func RenderSignin(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
 	}
 
 	templ.Execute(w, data)
+}
+
+func render404Page(w http.ResponseWriter, _ *http.Request, auth *auth.Auth) {
+	templ, err := template.ParseFiles("web/templates/layout.html", "web/templates/404.html")
+
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		panic(err)
+	}
+
+	err = templ.Execute(w, map[string]any{
+		"User": auth,
+	})
+
+	if err != nil {
+		fmt.Printf("err: %v\n", err)
+		panic(err)
+	}
 }
 
 type ErrorParams struct {

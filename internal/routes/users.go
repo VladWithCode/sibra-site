@@ -17,7 +17,7 @@ import (
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
-func RegisterUserRoutes(router *http.ServeMux) {
+func RegisterUserRoutes(router *customServeMux) {
 	router.HandleFunc("POST /api/user", auth.CheckAuthMiddleware(CreateUser))
 	router.HandleFunc("PUT /api/users/{id}", auth.WithAuthMiddleware(UpdateUser))
 	router.HandleFunc("PUT /api/users/{id}/password", auth.WithAuthMiddleware(UpdatePassword))

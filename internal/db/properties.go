@@ -212,6 +212,86 @@ func CreateProperty(prop *Property) error {
 	return nil
 }
 
+func UpdateProperty(property *Property) error {
+	conn, err := GetPool()
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	wkbCoords, err := property.GetWKBCoords()
+
+	if err != nil {
+		return err
+	}
+
+	_, err = conn.Exec(
+		ctx,
+		`UPDATE properties SET 
+		address = $2,
+		description = $3,
+		city = $4,
+		state = $5,
+		zip = $6,
+		nb_hood = $7,
+		country = $8,
+		price = $9,
+		property_type = $10,
+		contract = $11,
+		beds = $12,
+		baths = $13,
+		square_mt = $14,
+		lot_size = $15,
+		listing_date = $16,
+		year_built = $17,
+		status = $18,
+		coords = $19,
+		features = $20,
+		lat = $21,
+		lon = $22,
+		featured = $23,
+		featured_expires_at = $24,
+		agent = $25,
+		slug = $26
+		WHERE id = $1`,
+		property.Id,
+		property.Address,
+		property.Description,
+		property.City,
+		property.State,
+		property.Zip,
+		property.NbHood,
+		property.Country,
+		property.Price,
+		property.PropType,
+		property.Contract,
+		property.Beds,
+		property.Baths,
+		property.SqMt,
+		property.LotSize,
+		property.ListingDate,
+		property.YearBuilt,
+		property.Status,
+		wkbCoords,
+		property.Features,
+		property.Lat,
+		property.Lon,
+		property.Featured,
+		property.FeaturedExpiresAt,
+		property.Agent,
+		property.Slug,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetPaginationData(filter *PropertyFilter, limit, page int) (paginationData *Pagination, err error) {
 	conn, err := GetPool()
 	if err != nil {
