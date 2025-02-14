@@ -24,3 +24,5 @@ web/static/users/*
 web/static/styles.css
 
 web/static/styles.css
+
+node_modules/
