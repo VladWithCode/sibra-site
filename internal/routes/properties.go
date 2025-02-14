@@ -30,6 +30,7 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthMiddleware(UpdateProperty))
 	router.HandleFunc("DELETE /api/property/{id}/delete", auth.WithAuthMiddleware(DeletePropertyById))
 	router.HandleFunc("POST /api/property/pictures/{id}", auth.WithAuthMiddleware(UploadPropertyPictures))
+	// router.HandleFunc("DELETE /api/property/pictures/{id}", auth.WithAuthMiddleware(UploadPropertyPictures))
 }
 
 func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {

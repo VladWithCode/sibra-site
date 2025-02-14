@@ -1,5 +1,7 @@
 package templates
 
+import "github.com/google/uuid"
+
 // Map of [fieldName]: validateMsg fields of a form
 type InvalidFields map[string]string
 
@@ -15,4 +17,8 @@ func SelectClassName(condition bool, cn1, cn2 string) string {
 	}
 
 	return cn2
+}
+
+func NewUUID() string {
+	return uuid.NewString()
 }
