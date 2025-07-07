@@ -405,8 +405,8 @@
                     <p class="col-start-2 row-start-1 text-slate-900 font-bold capitalize">{{.PropType}}</p>
                 </div>
                 <div class="basis-full md:basis-1/2 grid grid-cols-2">
-                    <p class="col-start-1 row-start-1 text-slate-500 font-light">Agregada el</p>
-                    <p class="col-start-2 row-start-1 text-slate-900 font-bold">{{FormatDate .ListingDate}}</p>
+                    <p class="col-start-1 row-start-1 text-slate-500 font-light">Precio/m²</p>
+                    <p class="col-start-2 row-start-1 text-slate-900 font-bold" data-val="{{CalcPricePerM .Price .SqMt}}" id="price-per-mt">${{CalcPricePerM .Price .SqMt}}</p>
                 </div>
             </div>
         </div>
