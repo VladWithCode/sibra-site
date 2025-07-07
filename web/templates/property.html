@@ -401,20 +401,12 @@
             <div class="py-2"></div>
             <div class="flex flex-wrap gap-y-3">
                 <div class="basis-full md:basis-1/2 grid grid-cols-2">
-                    <p class="col-start-1 row-start-1 text-slate-500 font-light">Año de construcción</p>
-                    <p class="col-start-2 row-start-1 text-slate-900 font-bold">{{.YearBuilt}}</p>
-                </div>
-                <div class="basis-full md:basis-1/2 grid grid-cols-2">
                     <p class="col-start-1 row-start-1 text-slate-500 font-light">Tipo</p>
                     <p class="col-start-2 row-start-1 text-slate-900 font-bold capitalize">{{.PropType}}</p>
                 </div>
                 <div class="basis-full md:basis-1/2 grid grid-cols-2">
                     <p class="col-start-1 row-start-1 text-slate-500 font-light">Agregada el</p>
                     <p class="col-start-2 row-start-1 text-slate-900 font-bold">{{FormatDate .ListingDate}}</p>
-                </div>
-                <div class="basis-full md:basis-1/2 grid grid-cols-2">
-                    <p class="col-start-1 row-start-1 text-slate-500 font-light">Precio/m²</p>
-                    <p class="col-start-2 row-start-1 text-slate-900 font-bold" data-val="{{CalcPricePerM .Price .SqMt}}" id="price-per-mt">${{CalcPricePerM .Price .SqMt}}</p>
                 </div>
             </div>
         </div>
