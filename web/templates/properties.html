@@ -305,7 +305,11 @@
                         <p class="bg-stone-50 text-slate-800 p-1 rounded">{{.Contract}}</p>
                     </div>
                     <div class="h-48">
-                        <img class="w-full max-h-full object-cover object-center" src="/static/properties/{{.Id}}/{{.MainImg}}" alt="Foto propiedad en {{.Address}}">
+                        {{if .MainImg}}
+                            <img class="w-full max-h-full object-cover object-center" src="/static/properties/{{.Id}}/{{.MainImg}}" alt="Foto propiedad en {{.Address}}">
+                        {{else}}
+                        <img class="w-full max-h-full object-cover object-center" src="/static/properties/{{.Id}}/{{index .Images 0}}" alt="Foto propiedad en {{.Address}}">
+                        {{end}}
                     </div>
                 </div>
                 <div class="flex justify-between mb-1">
