@@ -340,7 +340,7 @@
             {{if ne .MainImg ""}}
             <img src="/static/properties/{{.Id}}/{{.MainImg}}" alt="Imagen propiedad en {{.Address}}" class="w-full h-auto max-h-full object-center object-cover xl:rounded-md">
             {{else}}
-            <img src="/static/properties/{{.Id}}/{{.Images.0}}" alt="Imagen propiedad en {{.Address}}" class="w-full h-auto max-h-full object-center object-cover xl:rounded-md">
+            <img src="/static/properties/{{.Id}}/{{index .Images 0}}" alt="Imagen propiedad en {{.Address}}" class="w-full h-auto max-h-full object-center object-cover xl:rounded-md">
             {{end}}
         </div>
     </div>
