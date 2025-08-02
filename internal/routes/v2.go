@@ -84,9 +84,17 @@ func RenderMapV2(w http.ResponseWriter, r *http.Request) {
 
 func RenderPropertiesV2(w http.ResponseWriter, r *http.Request) {
 	contract := r.PathValue("contract")
-	// TODO: Implement property filtering logic from original handler
-	component := pages.Properties(contract, []*db.Property{}, nil)
-	component.Render(context.Background(), w)
+	filter := db.PropertyFilter{
+		Contract: &contract,
+	}
+	props, err := db.GetProperties(&filter, db.DefaultPageSize, 1)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		pages.Properties(contract, []*db.Property{}, nil).Render(r.Context(), w)
+		return
+	}
+
+	pages.Properties(contract, props, nil).Render(context.Background(), w)
 }
 
 func RenderPropertyV2(w http.ResponseWriter, r *http.Request) {
