@@ -14,55 +14,28 @@ func getRowSpan(idx int) string {
 
 templ Index(featProps []*db.Property, newProps []*db.Property, user *auth.Auth) {
 	@layouts.Base("Sibra Durango", user) {
-		<script>
-			document.addEventListener("DOMContentLoaded", e => {
-				let searchForm = document.getElementById("property-search")
-				let contractPill = document.getElementById("contract-pill")
-				let contractBtns = document.querySelectorAll("[data-contract-btn]")
-
-				for (let btn of contractBtns) {
-					let contract = btn.dataset.contractBtn
-					let offsetLeft = btn.offsetLeft
-					btn.addEventListener("click", () => {
-						let currentBtn = document.querySelector("[data-contract-active=\"true\"]")
-						if (currentBtn === btn)
-							return
-
-						let currentContract = searchForm.dataset.contract
-						let tl = gsap.timeline({ duration: 0.2 })
-						searchForm.dataset.contract = contract
-						tl.to(contractPill, { x: `${offsetLeft}px` })
-						tl.to(btn, { fontWeight: "bold", color: "#334155" }, "<")
-						tl.to(currentBtn, { fontWeight: "normal", color: "#fafaf9" }, "<")
-
-						currentBtn.dataset.contractActive = "false"
-						btn.dataset.contractActive = "true"
-
-						searchForm.action = searchForm.action.replace(currentContract, contract)
-					})
-				}
-
-				searchForm.action += "/venta"
-			})
-		</script>
 		<div class="px-4">
-			<div class="relative h-[442px] rounded-lg bg-stone-500 overflow-hidden xl:h-[60vh]">
-				<img class="relative h-full w-full max-h-full object-cover object-[left_center] z-10 brightness-75 xl:w-full" src="/static/img/hero_large.webp" alt="Imagen de cabecera"/>
+			<div class="relative h-[80vh] rounded-lg bg-stone-500 overflow-hidden xl:h-[60vh]">
+				<img class="absolute inset-0 h-full max-w-full object-cover object-left z-0 brightness-75 xl:w-full" src="/static/img/hero.png" alt="Imagen de cabecera"/>
 				<form
 					action="/propiedades"
-					class="absolute flex flex-col items-center justify-center inset-0 p-2 z-20"
+					class="absolute flex flex-col items-center justify-center gap-8 inset-0 p-4 z-10"
 					id="property-search"
-					data-contract="venta">
-					<h1 class="text-zinc-50 font-bold text-2xl mb-10 xl:text-4xl 2xl:text-6xl" style="text-shadow: 0 0 10px rgba(22,22,24,1);">Encuentra tu hogar<br/>de ensueño</h1>
-					<div class="flex items-center rounded-lg h-10 w-6/7 mx-auto">
-						<input 
-							class="w-5/6 h-full px-2 bg-stone-50 rounded-s-lg outline-indigo-800 text-sm" 
-							type="search" 
-							name="search" 
+					data-contract="venta"
+				>
+					<h1 class="text-light font-bold text-center text-4xl xl:text-4xl 2xl:text-6xl" style="text-shadow: 0 0 10px rgba(22,22,24,1);">
+						Encuentra tu hogar de ensueño
+					</h1>
+					<div class="flex items-stretch rounded-lg h-10 mx-auto">
+						<input
+							class="flex-1 basis-full pl-4 pr-2 bg-stone-50 rounded-s-lg outline-indigo-800 placeholder:text-dark/30"
+							type="search"
+							name="search"
 							id="home_search"
-							placeholder="Tierra Blanca, 34139..."/>
-						<button class="grow bg-slate-800 h-full px-4 rounded-e-lg" type="submit">
-							<svg class="w-6 h-6 rounded-s fill-zinc-50">
+							placeholder="Tierra Blanca, 34139..."
+						/>
+						<button class="flex-1 basis-auto bg-secondary px-4 rounded-e-lg" type="submit">
+							<svg class="w-6 h-6 fill-light">
 								<use href="/static/svg/sprites.svg#search"></use>
 							</svg>
 						</button>
@@ -71,28 +44,30 @@ templ Index(featProps []*db.Property, newProps []*db.Property, user *auth.Auth) 
 			</div>
 			<div class="py-8"></div>
 			<div class="">
-				<div class="px-4">
-					<h2 class="text-4xl font-bold text-zinc-800 text-center">Propiedades<br/>Destacadas</h2>
-					<div class="py-3"></div>
-					<p class="px-4 text-center text-zinc-700">
-					Estas son las propiedades que Sibra Durango ha elegido como destacadas.<br/> Aquí encontrarás una selección exclusiva de inmuebles que hemos elegido por su excelente ubicación, diseño, y valor.
+				<div class="space-y-2">
+					<h2 class="text-2xl font-bold font-tight text-dark mb-4">Propiedades Destacadas</h2>
+					<p class="text-dark/80">
+						Aquí encontrarás una selección exclusiva de inmuebles que hemos elegido por su excelente ubicación, diseño, y valor.
 					</p>
 				</div>
 				<div class="py-3"></div>
-				<div class="grid grid-flow-col grid-rows-2 auto-cols-[17.5rem] h-[27rem] gap-4 overflow-auto py-4 mx-auto">
+				<div class="grid grid-flow-col grid-rows-2 auto-cols-[17.5rem] h-96 gap-4 overflow-auto py-4 mx-auto">
 					for idx, prop := range featProps {
 						@components.PropertyCardWithRowSpan(prop, getRowSpan(idx))
 					}
 				</div>
 			</div>
-			<div class="py-8"></div>
-			@components.CardSection()
+			/* <div class="py-8"></div>
+			@components.CardSection() */
 			<div class="py-8"></div>
 			<div class="">
-				<h2 class="text-3xl font-bold text-zinc-800 text-center">Propiedades Nuevas</h2>
+				<h2 class="text-2xl font-bold text-dark text-center">Propiedades Nuevas</h2>
 				<div class="py-3"></div>
-				<p class="max-w-[30ch] px-4 text-center text-zinc-700 mx-auto">
-				Estas son las propiedades más nuevas en nuestro catalogo.<br/> Encuentra grandes oportunidades para comenzar o expandir tu patrimonio con ayuda de Sibra Durango.
+				<p class="px-4 text-center text-dark/80 mx-auto mb-4">
+					Estas son las propiedades más nuevas en nuestro catalogo.
+				</p>
+				<p class="px-4 text-center text-dark/80 mx-auto">
+					Encuentra grandes oportunidades para comenzar o expandir tu patrimonio con ayuda de Sibra Durango.
 				</p>
 				<div class="py-3"></div>
 				<div class="flex gap-4 overflow-auto py-4 mx-auto">
@@ -104,20 +79,22 @@ templ Index(featProps []*db.Property, newProps []*db.Property, user *auth.Auth) 
 				</div>
 			</div>
 			<div class="py-8"></div>
-			<form 
+			<form
 				hx-get="/propiedades/todas"
-				class="flex flex-wrap items-center justify-center gap-y-8">
+				class="flex flex-wrap items-center justify-center gap-y-8"
+			>
 				<div class="basis-full shrink-0 text-center">
 					<h2 class="text-xl font-bold">Busca algún vecindario</h2>
 					<div class="py-1"></div>
 					<p class="text-sm text-stone-400">Ciudad, Colonia, Código Postal</p>
 				</div>
-				<input 
-					type="search" 
-					name="search" 
+				<input
+					type="search"
+					name="search"
 					id="general-search"
 					class="pl-3 pr-1 py-4 bg-slate-200 basis-3/4 rounded-s-md outline-offset-2 outline-slate-400 focus:outline-2"
-					placeholder="Buscar por Ciudad, Código Postal, Estado..."/>
+					placeholder="Buscar por Ciudad, Código Postal, Estado..."
+				/>
 				<button class="shrink text-stone-50 bg-rose-600 rounded-e-md px-2 py-4" type="submit">Buscar</button>
 			</form>
 			<div class="py-8"></div>

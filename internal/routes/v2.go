@@ -18,6 +18,8 @@ func RegisterV2Routes(router *customServeMux) {
 	router.HandleFunc("GET /mapa", RenderMapV2)
 	router.HandleFunc("GET /propiedades/{contract}", RenderPropertiesV2)
 	router.HandleFunc("GET /propiedades/{contract}/{id}", RenderPropertyV2)
+	router.HandleFunc("GET /terrenos", RenderProjectsV2)
+	router.HandleFunc("GET /terrenos/{id}", RenderProjectDetailV2)
 
 	// Admin routes
 	router.HandleFunc("GET /v2/admin/{$}", auth.WithAuthMiddleware(RenderDashboardV2))
@@ -121,5 +123,16 @@ func RenderUpdatePropertyV2(w http.ResponseWriter, r *http.Request, user *auth.A
 
 func RenderUserProfileV2(w http.ResponseWriter, r *http.Request, user *auth.Auth) {
 	component := pages.AdminUserProfile(user)
+	component.Render(context.Background(), w)
+}
+
+func RenderProjectsV2(w http.ResponseWriter, r *http.Request) {
+	component := pages.Projects()
+	component.Render(context.Background(), w)
+}
+
+func RenderProjectDetailV2(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	component := pages.ProjectDetail(id)
 	component.Render(context.Background(), w)
 }
