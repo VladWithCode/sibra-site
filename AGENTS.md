@@ -24,3 +24,5 @@
 - **Database**: PostgreSQL with pgx driver, connection pooling, transaction support
 - **Auth**: JWT tokens in HTTP-only cookies, custom middleware for auth checks
 - **Frontend**: HTMX + Tailwind CSS, mix of Go templates and templ components
+- **Templates**: V1 routes use Go html/template, V2 routes use templ components
+- **Migration**: /v2 endpoints provide templ-based versions of all pages
