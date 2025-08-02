@@ -214,7 +214,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 		Agent:       a.Id,
 	}
 
-	property.SetCoordPoint()
+	property.SyncLatLon()
 	property.SetSlug()
 
 	err = db.CreateProperty(&property)
