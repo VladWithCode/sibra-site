@@ -23,8 +23,8 @@ import (
 )
 
 func RegisterPropertyRoutes(router *customServeMux) {
-	router.HandleFunc("GET /propiedades/{contract}", FindProperties)
-	router.HandleFunc("GET /propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
+	router.HandleFunc("GET /old/propiedades/{contract}", FindProperties)
+	router.HandleFunc("GET /old/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
 
 	router.HandleFunc("POST /api/property", auth.WithAuthMiddleware(CreateProperty))
 	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthMiddleware(UpdateProperty))

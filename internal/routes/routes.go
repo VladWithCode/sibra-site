@@ -13,9 +13,9 @@ import (
 func NewRouter() http.Handler {
 	router := NewCustomServeMux()
 
-	router.HandleFunc("GET /{$}", RenderIndex)
-	router.HandleFunc("GET /terminos-servicio", auth.CheckAuthMiddleware(RenderTerms))
-	router.HandleFunc("GET /politica-privacidad", auth.CheckAuthMiddleware(RenderPrivacy))
+	router.HandleFunc("GET /old/{$}", RenderIndex)
+	router.HandleFunc("GET /old/terminos-servicio", auth.CheckAuthMiddleware(RenderTerms))
+	router.HandleFunc("GET /old/politica-privacidad", auth.CheckAuthMiddleware(RenderPrivacy))
 
 	// V2 routes with templ components
 	RegisterV2Routes(router)
@@ -29,8 +29,8 @@ func NewRouter() http.Handler {
 
 	// Signup/Signin
 	//router.HandleFunc("GET /registrarse", auth.CheckAuthMiddleware(RenderSignin))
-	router.HandleFunc("GET /iniciar-sesion", auth.CheckAuthMiddleware(RenderSignin))
-	router.HandleFunc("GET /signin", auth.CheckAuthMiddleware(RenderSignin))
+	router.HandleFunc("GET /old/iniciar-sesion", auth.CheckAuthMiddleware(RenderSignin))
+	router.HandleFunc("GET /old/signin", auth.CheckAuthMiddleware(RenderSignin))
 
 	// Serve static
 	// *Might change it to serve static files through nginx

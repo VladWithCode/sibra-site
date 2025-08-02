@@ -11,13 +11,13 @@ import (
 
 func RegisterV2Routes(router *customServeMux) {
 	// Public routes
-	router.HandleFunc("GET /v2/{$}", RenderIndexV2)
-	router.HandleFunc("GET /v2/terminos-servicio", auth.CheckAuthMiddleware(RenderTermsV2))
-	router.HandleFunc("GET /v2/politica-privacidad", auth.CheckAuthMiddleware(RenderPrivacyV2))
-	router.HandleFunc("GET /v2/iniciar-sesion", auth.CheckAuthMiddleware(RenderSigninV2))
-	router.HandleFunc("GET /v2/mapa", RenderMapV2)
-	router.HandleFunc("GET /v2/propiedades/{contract}", RenderPropertiesV2)
-	router.HandleFunc("GET /v2/propiedades/{contract}/{id}", RenderPropertyV2)
+	router.HandleFunc("GET /{$}", RenderIndexV2)
+	router.HandleFunc("GET /terminos-servicio", auth.CheckAuthMiddleware(RenderTermsV2))
+	router.HandleFunc("GET /politica-privacidad", auth.CheckAuthMiddleware(RenderPrivacyV2))
+	router.HandleFunc("GET /iniciar-sesion", auth.CheckAuthMiddleware(RenderSigninV2))
+	router.HandleFunc("GET /mapa", RenderMapV2)
+	router.HandleFunc("GET /propiedades/{contract}", RenderPropertiesV2)
+	router.HandleFunc("GET /propiedades/{contract}/{id}", RenderPropertyV2)
 
 	// Admin routes
 	router.HandleFunc("GET /v2/admin/{$}", auth.WithAuthMiddleware(RenderDashboardV2))
