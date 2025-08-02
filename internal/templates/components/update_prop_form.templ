@@ -393,7 +393,7 @@ templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFiel
                         ) }
 				>
 					<option value="venta" selected?={ templates.CmpStr(property.Contract, "venta") }>Venta</option>
-					<option value="renta" selected?={ templates.CmpStr(property.Contract, "renta") }>Renta</option>
+					// <option value="renta" selected?={ templates.CmpStr(property.Contract, "renta") }>Renta</option>
 				</select>
 				if (*invalidFields)["contract"] != "" {
 					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["contract"] }</p>

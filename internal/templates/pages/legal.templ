@@ -1,0 +1,45 @@
+package pages
+
+import "github.com/vladwithcode/sibra-site/internal/auth"
+import "github.com/vladwithcode/sibra-site/internal/templates/layouts"
+
+templ Legal(pageType string, user *auth.Auth) {
+	@layouts.Base(getTitle(pageType), user) {
+		<div class="px-4 py-8 max-w-4xl mx-auto">
+			if pageType == "terms" {
+				@TermsContent()
+			} else if pageType == "privacy" {
+				@PrivacyContent()
+			}
+		</div>
+	}
+}
+
+func getTitle(pageType string) string {
+	if pageType == "terms" {
+		return "Términos de Servicio - Sibra Durango"
+	}
+	return "Política de Privacidad - Sibra Durango"
+}
+
+templ TermsContent() {
+	<h1 class="text-3xl font-bold mb-6">Términos de Servicio</h1>
+	<div class="prose max-w-none">
+		<p class="mb-4">Estos términos de servicio rigen el uso de nuestros servicios inmobiliarios.</p>
+		<h2 class="text-2xl font-semibold mt-6 mb-4">1. Aceptación de términos</h2>
+		<p class="mb-4">Al utilizar nuestros servicios, usted acepta estos términos en su totalidad.</p>
+		<h2 class="text-2xl font-semibold mt-6 mb-4">2. Servicios ofrecidos</h2>
+		<p class="mb-4">Sibra Durango ofrece servicios de intermediación inmobiliaria para la compra, venta y renta de propiedades.</p>
+	</div>
+}
+
+templ PrivacyContent() {
+	<h1 class="text-3xl font-bold mb-6">Política de Privacidad</h1>
+	<div class="prose max-w-none">
+		<p class="mb-4">En Sibra Durango respetamos su privacidad y nos comprometemos a proteger sus datos personales.</p>
+		<h2 class="text-2xl font-semibold mt-6 mb-4">1. Información que recopilamos</h2>
+		<p class="mb-4">Recopilamos información necesaria para brindar nuestros servicios inmobiliarios.</p>
+		<h2 class="text-2xl font-semibold mt-6 mb-4">2. Uso de la información</h2>
+		<p class="mb-4">Utilizamos su información únicamente para los fines relacionados con nuestros servicios.</p>
+	</div>
+}

@@ -17,6 +17,9 @@ func NewRouter() http.Handler {
 	router.HandleFunc("GET /terminos-servicio", auth.CheckAuthMiddleware(RenderTerms))
 	router.HandleFunc("GET /politica-privacidad", auth.CheckAuthMiddleware(RenderPrivacy))
 
+	// V2 routes with templ components
+	RegisterV2Routes(router)
+
 	// Api router
 	RegisterPropertyRoutes(router)
 	RegisterPriceMapRoutes(router)
