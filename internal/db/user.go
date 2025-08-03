@@ -13,8 +13,7 @@ import (
 
 type User struct {
 	Id            string         `db:"id" json:"id"`
-	Name          string         `db:"name" json:"name"`
-	Lastname      string         `db:"lastname" json:"lastname"`
+	Fullname      string         `db:"name" json:"name"`
 	Password      string         `db:"password" json:"password"`
 	Username      string         `db:"username" json:"username"`
 	Role          string         `db:"role" json:"role"`
@@ -56,8 +55,7 @@ const (
 
 type UserDTO struct {
 	Id       string `json:"id"`
-	Name     string `json:"name"`
-	Lastname string `json:"lastname"`
+	Fullname string `json:"name"`
 	Password string `json:"password"`
 	Username string `json:"username"`
 	Role     string `json:"role"`
@@ -83,10 +81,9 @@ func CreateUser(user *User) (string, error) {
 
 	tag, err := conn.Exec(
 		ctx,
-		"INSERT INTO users (id, name, lastname, password, username, role, email, phone, img) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+		"INSERT INTO users (id, name, password, username, role, email, phone, img) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
 		user.Id,
-		user.Name,
-		user.Lastname,
+		user.Fullname,
 		hashedPassword,
 		user.Username,
 		user.Role,
@@ -124,8 +121,7 @@ func GetUserById(id string) (*User, error) {
 		id,
 	).Scan(
 		&user.Id,
-		&user.Name,
-		&user.Lastname,
+		&user.Fullname,
 		&user.Password,
 		&user.Username,
 		&user.Role,
@@ -162,8 +158,7 @@ func GetUserByUsername(username string) (*User, error) {
 		username,
 	).Scan(
 		&user.Id,
-		&user.Name,
-		&user.Lastname,
+		&user.Fullname,
 		&user.Password,
 		&user.Username,
 		&user.Role,
@@ -194,9 +189,8 @@ func UpdateUser(user *User) error {
 
 	_, err = conn.Exec(
 		ctx,
-		"UPDATE users SET name = $1, lastname = $2, password = $3, username = $4, role = $5, email = $6, phone = $7, img = $8 WHERE id = $9",
-		user.Name,
-		user.Lastname,
+		"UPDATE users SET name = $1, password = $2, username = $3, role = $4, email = $5, phone = $6, img = $7 WHERE id = $8",
+		user.Fullname,
 		user.Password,
 		user.Username,
 		user.Role,

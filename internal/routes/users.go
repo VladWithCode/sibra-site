@@ -53,8 +53,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 	_, err = db.CreateUser(&db.User{
 		Id:       data.Id,
-		Name:     data.Name,
-		Lastname: data.Lastname,
+		Fullname: data.Fullname,
 		Password: data.Password,
 		Phone:    phone,
 		Role:     data.Role,
@@ -154,8 +153,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 		return
 	}
 
-	user.Name = name
-	user.Lastname = lastname
+	user.Fullname = name
 	user.Phone.String = phone
 	user.Phone.Valid = phone != ""
 	user.Email = email

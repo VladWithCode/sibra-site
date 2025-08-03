@@ -40,7 +40,7 @@ func CreateToken(user *db.User) (string, error) {
 	t = jwt.NewWithClaims(jwt.SigningMethodHS256, AuthClaims{
 		user.Id,
 		user.Username,
-		user.Name + " " + user.Lastname,
+		user.Fullname,
 		user.Role,
 
 		jwt.RegisteredClaims{
