@@ -58,39 +58,42 @@ templ Index(featProps []*db.Property, newProps []*db.Property, user *auth.Auth) 
 			@components.CardSection() */
 		<div class="px-4 py-8 bg-dark space-y-4">
 			<h2 class="text-xl font-bold text-light/90">Precalificación Infonavit</h2>
-            <p class="text-light/70">Te ayudamos con el proceso de tu precalificación Infonavit.</p>
+			<p class="text-light/70">Te ayudamos con el proceso de tu precalificación Infonavit.</p>
 		</div>
 		<div class="px-4 py-8 space-y-4">
 			<h2 class="text-xl font-bold text-dark/90">Propiedades Nuevas</h2>
 			<p class="text-dark/70 mx-auto">
 				Estas son las propiedades más nuevas en nuestro catalogo.
 			</p>
-			<div class="flex gap-4 overflow-auto py-4 mx-auto">
+			<div class="flex items-stretch gap-4 overflow-auto py-4 mx-auto">
 				for _, prop := range newProps {
-					<div class="basis-4/5 grow-0 shrink-0 md:basis-72">
+					<div class="basis-4/5 grow-0 shrink-0 md:basis-72 [&>div]:h-full">
 						@components.PropertyCard(prop)
 					</div>
 				}
 			</div>
 		</div>
-		<div class="py-8"></div>
 		<form
 			hx-get="/propiedades/todas"
-			class="flex flex-wrap items-center justify-center gap-y-8"
+			class="flex flex-wrap items-center justify-center gap-y-8 py-8"
 		>
 			<div class="basis-full shrink-0 text-center">
 				<h2 class="text-xl font-bold">Busca algún vecindario</h2>
 				<div class="py-1"></div>
 				<p class="text-sm text-stone-400">Ciudad, Colonia, Código Postal</p>
 			</div>
-			<input
-				type="search"
-				name="search"
-				id="general-search"
-				class="pl-3 pr-1 py-4 bg-slate-200 basis-3/4 rounded-s-md outline-offset-2 outline-slate-400 focus:outline-2"
-				placeholder="Buscar por Ciudad, Código Postal, Estado..."
-			/>
-			<button class="shrink text-stone-50 bg-rose-600 rounded-e-md px-2 py-4" type="submit">Buscar</button>
+			<div class="relative w-80 h-12 border border-gray-200 rounded-md focus-within:border-primary">
+				<input
+					type="search"
+					name="search"
+					id="general-search"
+					class="absolute inset-0 pl-2 pr-20 py-4 bg-light basis-3/4 rounded-md outline-primary focus:outline-2"
+					placeholder="Buscar por Ciudad, Código Postal, Estado..."
+				/>
+				<button class="absolute z-10 right-0 inset-y-0 text-light/90 bg-secondary rounded-e-md h-full w-20" type="submit">
+					Buscar
+				</button>
+			</div>
 		</form>
 		<div class="py-8"></div>
 	}

@@ -29,7 +29,7 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("POST /api/property", auth.WithAuthMiddleware(CreateProperty))
 	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthMiddleware(UpdateProperty))
 	router.HandleFunc("DELETE /api/property/{id}/delete", auth.WithAuthMiddleware(DeletePropertyById))
-	router.HandleFunc("POST /api/property/pictures/{id}", auth.WithAuthMiddleware(UploadPropertyPictures))
+	router.HandleFunc("POST /api/property/pictures/{id}", UploadPropertyPictures)
 	// router.HandleFunc("DELETE /api/property/pictures/{id}", auth.WithAuthMiddleware(UploadPropertyPictures))
 }
 
@@ -284,7 +284,7 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 }
 
-func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func UploadPropertyPictures(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
 	err := r.ParseMultipartForm(90 << 20)
