@@ -26,3 +26,6 @@ web/static/styles.css
 web/static/styles.css
 
 node_modules/
+
+# Ignore tailwind
+tailwind.config.js
