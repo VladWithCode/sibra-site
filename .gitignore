@@ -27,5 +27,5 @@ web/static/styles.css
 
 node_modules/
 
-# Only for lsp stuff
+# Ignore tailwind
 tailwind.config.js
