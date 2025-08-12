@@ -26,11 +26,11 @@ body {
     max-width: 100vw;
     overflow: hidden auto;
     min-height: 100%;
+    font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .page {
     min-height: calc(100vh - 64px);
-    font-family: 'Plus Jakarta Sans', sans-serif;
     max-width: 100%;
     overflow: hidden auto;
 }

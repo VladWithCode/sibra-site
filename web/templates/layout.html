@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es-MX">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,7 +15,9 @@
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Crimson+Text:wght@400;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css" />
     <script src="/static/js/htmx.js"></script>
     <script src="/static/js/gsap.js"></script>
@@ -22,6 +25,7 @@
     {{block "head" .}}
     {{end}}
 </head>
+
 <body>
     {{block "header" .}}
     <script>
@@ -31,38 +35,29 @@
             let navBtnOpen = document.getElementById("nav-btn-open")
 
             navBtnClose.addEventListener("click", () => {
-                let tl = gsap.timeline({ ease: "power2.inOut", duration: 0.3 })
-                tl.to(navMobileMenu, { x: "100%" })
+                let tl = gsap.timeline({ease: "power2.inOut", duration: 0.3})
+                tl.to(navMobileMenu, {x: "100%"})
             })
 
             navBtnOpen.addEventListener("click", () => {
-                let tl = gsap.timeline({ ease: "power2.inOut", duration: 0.3 })
-                tl.to(navMobileMenu, { x: "0%" })
+                let tl = gsap.timeline({ease: "power2.inOut", duration: 0.3})
+                tl.to(navMobileMenu, {x: "0%"})
             })
         })
     </script>
     <header class="h-16 top-0">
-        <div class="h-16 w-full bg-stone-50 fixed flex items-center px-2 z-40">
+        <div class="h-16 w-full bg-stone-50 fixed flex justify-between items-center gap-4 px-2 z-40">
             <a href="/">
-                <img src="/static/img/sibra_logo_256.webp" alt="Sibra logo" class="bg-stone-50 w-16 my-auto">
+                <img src="/static/img/sibra_logo_256.webp" alt="Sibra logo" class="bg-stone-50 h-8 xl:h-12 xl:w-auto my-auto">
             </a>
-            <div class="xl:px-6"></div>
             <ul class="hidden xl:flex gap-8">
                 <li class="font-semibold">
                     <a href="/">Inicio</a>
                 </li>
                 <li class="font-semibold">
-                    <a href="/propiedades/venta">Comprar</a>
-                </li>
-                <li class="font-semibold">
-                    <a href="/propiedades/renta">Rentar</a>
+                    <a href="/propiedades/venta">Propiedades en Venta</a>
                 </li>
             </ul>
-            <div class="hidden xl:block ml-auto">
-                <button class="border border-slate-400 text-slate-600 bg-stone-50 font-semibold rounded px-4 py-2 hover:bg-stone-200">
-                    Iniciar sesión <div class="inline-block px-1">/</div> Registrarse
-                </button>
-            </div>
             <button class="shrink space-y-1 my-auto ml-auto xl:hidden" id="nav-btn-open">
                 <div class="w-5 h-0.5 bg-stone-800"></div>
                 <div class="w-5 h-0.5 bg-stone-800"></div>
@@ -84,21 +79,19 @@
                     <a href="/">Inicio</a>
                 </li>
                 <li class="text-lg underline underline-offset-2 font-semibold">
-                    <a href="/propiedades/venta">Comprar</a>
-                </li>
-                <li class="text-lg underline underline-offset-2 font-semibold">
-                    <a href="/propiedades/renta">Rentar</a>
+                    <a href="/propiedades/venta">Propiedades en Venta</a>
                 </li>
             </ul>
             <div class="mt-auto mb-4 mx-auto">
-                <img src="/static/img/sibra_logo_256.webp" alt="Logo de Sibra durango" class="w-32 h-auto object-center">
+                <img src="/static/img/sibra_logo_256.webp" alt="Logo de Sibra durango"
+                    class="w-32 h-auto object-center">
             </div>
         </div>
     </header>
     {{end}}
 
     <main class="page text-stone-900" style="min-height: calc(100vh-4rem);" id="main-content">
-    {{template "content" .}}
+        {{template "content" .}}
     </main>
 
     {{block "footer" .}}
@@ -107,24 +100,37 @@
             <div class="mx-auto w-full flex flex-col gap-6 xl:flex-row xl:justify-center xl:gap-[10%]">
                 <div class="space-y-4 flex-auto xl:max-w-[30%]">
                     <h3 class="text-lg font-bold text-slate-700">Sibra Durango</h3>
-                    <ul class="space-y-1 text-slate-500">
+                    <ul class="space-y-2 text-slate-500">
                         <li class="flex items-center gap-2">
                             <svg class="w-5 h-5 fill-current">
                                 <use href="/static/svg/sprites.svg#phone"></use>
                             </svg>
-                            <p class="">618-194-1145</p>
+                            <a href="tel:6181941145" class="text-slate-800 underline underline-offset-2">
+                                618-194-1145
+                            </a>
+                        </li>
+                        <li class="flex items-center gap-2">
+                            <svg class="w-5 h-5 fill-current">
+                                <use href="/static/svg/sprites.svg#phone"></use>
+                            </svg>
+                            <a href="tel:6691129742" class="text-slate-800 underline underline-offset-2">
+                                669-112-9742
+                            </a>
                         </li>
                         <li class="flex items-center gap-2">
                             <svg class="w-5 h-5 fill-current">
                                 <use href="/static/svg/sprites.svg#email"></use>
                             </svg>
-                            <p class="">sibradgo_bienes@outlook.com</p>
+                            <a href="mailto:sibradgo_bienes@outlook.com"
+                                class="text-slate-800 underline underline-offset-2">
+                                sibradgo_bienes@outlook.com
+                            </a>
                         </li>
                         <li class="flex items-start gap-2">
                             <svg class="w-5 h-5 fill-current mt-1">
                                 <use href="/static/svg/sprites.svg#location_pin"></use>
                             </svg>
-                            <p class="">Gral. Anaya 101, Juan de la Barrera, 34150 Durango, Dgo.</p>
+                            <p class="">C. Cancer #132. Fracc. Sahop, 34190 Durango, Dgo.</p>
                         </li>
                     </ul>
                 </div>
@@ -133,9 +139,6 @@
                     <ul class="space-y-2 text-slate-500">
                         <li class="">
                             <a href="/propiedades/venta">Propiedades en Venta</a>
-                        </li>
-                        <li class="">
-                            <a href="/propiedades/renta" class="">Propiedades en Renta</a>
                         </li>
                         <li class="">
                             <a href="/agentes" class="">Agentes</a>
@@ -158,7 +161,8 @@
                 </div>
             </div>
             <div class="flex flex-wrap justify-center px-2 pt-6 gap-8 xl:w-full xl:pt-16">
-                <img class="w-32 my-auto contrast-0 xl:w-48" src="/static/img/sibra_logo_white_256.webp" alt="logo_sibra">
+                <img class="w-32 my-auto contrast-0 xl:w-48" src="/static/img/sibra_logo_white_256.webp"
+                    alt="logo_sibra">
             </div>
             <ul class="py-2 text-[9px] text-center text-slate-400 xl:mx-auto xl:pt-6">
                 <li>Creado por GG Marketing &copy; 2024</li>
@@ -167,4 +171,5 @@
     </footer>
     {{end}}
 </body>
+
 </html>

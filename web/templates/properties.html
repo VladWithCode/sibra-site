@@ -307,7 +307,7 @@
                     <div class="h-48">
                         {{if .MainImg}}
                             <img class="w-full max-h-full object-cover object-center" src="/static/properties/{{.Id}}/{{.MainImg}}" alt="Foto propiedad en {{.Address}}">
-                        {{else}}
+                        {{else if gt (len .Images) 0}}
                         <img class="w-full max-h-full object-cover object-center" src="/static/properties/{{.Id}}/{{index .Images 0}}" alt="Foto propiedad en {{.Address}}">
                         {{end}}
                     </div>
