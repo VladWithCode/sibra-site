@@ -1,0 +1,17 @@
+package components
+
+templ CardSection() {
+    <section class="flex flex-col gap-y-12 px-6 py-8">
+        @Card("Titulo", "Descripción", "Botón")
+    </section>
+}
+
+templ Card(title, description, cta string) {
+	<a class="flex flex-col gap-y-4 p-6 bg-white border border-stone-300 rounded-lg shadow-md">
+		<div class="flex flex-col gap-y-2">
+			<h2 class="text-2xl font-bold">{ title }</h2>
+			<p class="text-sm text-stone-500">{ description }</p>
+		</div>
+		<div class="flex justify-end"> { cta } </div>
+	</a>
+}

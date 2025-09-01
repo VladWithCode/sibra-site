@@ -2,38 +2,10 @@ package components
 
 import "github.com/vladwithcode/sibra-site/internal/auth"
 
-templ AdminSidebar(auth *auth.Auth) {
-	<script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", () => {
-            // Select active navlink
-            let path = window.location.pathname
-            if (path === "/admin") {
-                let startLink = document.querySelectorAll('[data-nav-href="/admin"]')
-                startLink?.classList.replace("text-stone-400", "text-stone-700")
-                startLink?.classList.add("font-bold")
-                return
-            }
-
-            let navLinks = document.querySelectorAll(`[data-nav-href]:not([data-nav-href="/admin"])`)
-            for (l of navLinks) {
-                if (path.startsWith(l.dataset.navHref)) {
-                    l.classList.replace("text-stone-400", "text-stone-700")
-                    l.classList.add("font-bold")
-                } else {
-                    l.classList.replace("text-stone-700", "text-stone-400")
-                    l.classList.remove("font-bold")
-                }
-            }
-        })
-    </script>
+templ AdminSidebar(user *auth.Auth) {
 	<div class="relative bg-stone-50 basis-auto shrink-0 grow-0 px-6 border-r border-slate-300 z-30" id="navbar">
 		<div class="relative flex h-14">
 			<img src="/static/img/sibra_logo_256.webp" alt="Logo de sibra durango" class="w-16 h-auto my-auto" id="navbar-logo"/>
-			<!-- <button class="rounded-full bg-white border border-slate-200 my-auto -mr-4 p-1 rotate-180 hover:bg-stone-50 hover:border-2 transition" id="navbar-toggler">
-                    <svg class="h-6 w-6 fill-slate-800">
-                    <use href="/static/svg/sprites.svg#angle"></use>
-                    </svg>
-                    </button> -->
 		</div>
 		<ul class="space-y-0.5">
 			<li class="relative text-stone-400 navbar-link" data-nav-href="/admin">
@@ -60,7 +32,7 @@ templ AdminSidebar(auth *auth.Auth) {
 					<p class="">Mi usuario</p>
 				</a>
 			</li>
-			if auth.Role == "admin" {
+			if user != nil && user.Role == "admin" {
 				<li class="relative text-stone-400 navbar-link" data-nav-href="/admin/usuarios">
 					<a href="/admin/usuarios" class="flex items-center text-sm py-2 gap-x-2">
 						<svg class="w-6 h-6 fill-current">

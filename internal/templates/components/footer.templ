@@ -1,0 +1,67 @@
+package components
+
+templ Footer() {
+	<footer class="text-stone-800 bg-slate-100 px-4 pt-6 space-y-8 font-medium">
+		<div class="xl:max-w-screen-xl xl:mx-auto xl:flex xl:flex-wrap xl:justify-between">
+			<div class="mx-auto w-full flex flex-col gap-6 xl:flex-row xl:justify-center xl:gap-[10%]">
+				<div class="space-y-4 flex-auto xl:max-w-[30%]">
+					<h3 class="text-lg font-bold text-slate-700">Sibra Durango</h3>
+					<ul class="space-y-1 text-slate-500">
+						<li class="flex items-center gap-2">
+							<svg class="w-5 h-5 fill-current">
+								<use href="/static/svg/sprites.svg#phone"></use>
+							</svg>
+							<p class="">618-194-1145</p>
+						</li>
+						<li class="flex items-center gap-2">
+							<svg class="w-5 h-5 fill-current">
+								<use href="/static/svg/sprites.svg#email"></use>
+							</svg>
+							<p class="">sibradgo_bienes@outlook.com</p>
+						</li>
+						<li class="flex items-start gap-2">
+							<svg class="w-5 h-5 fill-current mt-1">
+								<use href="/static/svg/sprites.svg#location_pin"></use>
+							</svg>
+							<p class="">Gral. Anaya 101, Juan de la Barrera, 34150 Durango, Dgo.</p>
+						</li>
+					</ul>
+				</div>
+				<div class="space-y-2 flex-auto">
+					<h3 class="text-lg font-bold text-slate-700">Navegación</h3>
+					<ul class="space-y-2 text-slate-500">
+						<li class="">
+							<a href="/propiedades/venta">Propiedades en Venta</a>
+						</li>
+                        <li class="">
+                            <a href="/terrenos">Terrenos y proyectos</a>
+                        </li>
+						<li class="">
+							<a href="/agentes" class="">Agentes</a>
+						</li>
+						<li class="">
+							<a href="/nosotros" class="">Acerca de</a>
+						</li>
+					</ul>
+				</div>
+				<div class="space-y-2 flex-auto">
+					<h3 class="text-lg font-bold text-slate-700">Legal</h3>
+					<ul class="space-y-2 text-slate-500">
+						<li class="">
+							<a href="/politica-privacidad">Politica de privacidad</a>
+						</li>
+						<li class="">
+							<a href="/terminos-servicio" class="">Terminos de servicio</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="flex flex-wrap justify-center px-2 pt-6 gap-8 xl:w-full xl:pt-16">
+				<img class="w-32 my-auto contrast-0 xl:w-48" src="/static/img/sibra_logo_white_256.webp" alt="logo_sibra"/>
+			</div>
+			<ul class="py-2 text-[9px] text-center text-slate-400 xl:mx-auto xl:pt-6">
+				<li>Creado por GG Marketing &copy; 2024</li>
+			</ul>
+		</div>
+	</footer>
+}

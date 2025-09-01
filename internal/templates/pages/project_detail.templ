@@ -1,0 +1,122 @@
+package pages
+
+import "github.com/vladwithcode/sibra-site/internal/templates/layouts"
+import "fmt"
+
+type ProjectDetails struct {
+	Name         string
+	Description  string
+	Location     string
+	LocationInfo string
+	Features     []string
+	Picture      string
+	Gallery      []string
+}
+
+var projects = map[string]ProjectDetails{
+	"colinas-del-mar": ProjectDetails{
+		Name:         "Colinas del Mar",
+		Description:  "Lotificación en Mazatlán, Sin.",
+		Location:     "Mazatlán, Sin.",
+		LocationInfo: "Colinas del Mar es una colina de la costa de Sinaloa, en el estado de Sinaloa, México.",
+		Picture:      "/static/img/land_plot.png",
+		Gallery: []string{
+			"/static/img/land_plot.png",
+			"/static/img/land_plot_2.png",
+			"/static/img/land-5.jpg",
+		},
+		Features: []string{
+			"Pista para correr",
+			"Piscina",
+			"Asadores",
+		},
+	},
+	"colonia-emperador": ProjectDetails{
+		Name:         "Colonia Emperador",
+		Description:  "Lotificación en Durango, Dgo.",
+		Location:     "Durango, Dgo.",
+		LocationInfo: "Colonia Emperador es una colonia de la ciudad de Durango, en el estado de Durango, México.",
+		Picture:      "/static/img/land_plot_2.png",
+		Gallery: []string{
+			"/static/img/land_plot_2.png",
+			"/static/img/land_plot_3.png",
+			"/static/img/land_plot_4.png",
+		},
+		Features: []string{
+			"Pista para correr",
+			"Piscina",
+			"Asadores",
+		},
+	},
+	"villa-emperador": ProjectDetails{
+		Name:         "Villa Emperador",
+		Description:  "Lotificación en Durango, Dgo.",
+		Location:     "Durango, Dgo.",
+		LocationInfo: "Villa Emperador es una colonia de la ciudad de Durango, en el estado de Durango, México.",
+		Picture:      "/static/img/land_plot_3.png",
+		Gallery: []string{
+			"/static/img/land_plot_3.png",
+			"/static/img/land_plot_4.png",
+			"/static/img/land_plot_5.png",
+		},
+		Features: []string{
+			"Pista para correr",
+			"Piscina",
+			"Asadores",
+		},
+	},
+}
+
+templ ProjectDetail(id string) {
+	@layouts.Base("Project Detail", nil) {
+		{{ detail := getProjectDetails(id) }}
+		<div class="relative z-0 p-2">
+			<div class="absolute inset-0 p-2 z-0">
+				<img
+					src={ detail.Picture }
+					alt={ fmt.Sprintf("Imágen del proyecto %s ubicado en %s", detail.Name, detail.Location) }
+					class="w-full h-full object-cover object-center rounded-sm brightness-80"
+				/>
+			</div>
+			<div class="relative px-4 pt-32 pb-8 inset-0 z-10 bg-linear-to-b from-primary/20 to-dark rounded-sm">
+				<h1 class="text-4xl font-medium tracking-tight text-white">
+					{ detail.Name }
+				</h1>
+			</div>
+		</div>
+		<section class="px-4 py-8 space-y-4">
+			<h2 class="text-2xl font-semibold text-dark">Sobre { detail.Name }</h2>
+			<div class="py-4 space-y-1">
+				<h3 class="font-bold text-dark/80">Ubicado en { detail.Location }</h3>
+				<p class="text-current/60">{ detail.LocationInfo }</p>
+			</div>
+			<div class="p-4 space-y-2 text-light bg-dark -mx-4">
+				<h3 class="font-bold text-light/80">Amenidades</h3>
+				<ul class="space-y-1 list-disc list-inside">
+					for _, feature := range detail.Features {
+						<li class="text-current/60">{ feature }</li>
+					}
+				</ul>
+			</div>
+		</section>
+		<section class="px-4 py-8 space-y-4">
+			<h2 class="text-2xl font-semibold text-dark">Fotos de { detail.Name }</h2>
+			<div class="h-60 grid grid-cols-2 grid-rows-2 items-center justify-items-center gap-2 text-center">
+                <img src={detail.Gallery[0]} alt="" class="h-full object-cover object-center shadow rounded-sm col-start-1 row-span-2">
+                <img src={detail.Gallery[1]} alt="" class="h-full object-cover object-center shadow rounded-sm col-start-2">
+                <img src={detail.Gallery[2]} alt="" class="h-full object-cover object-center shadow rounded-sm col-start-2">
+			</div>
+		</section>
+
+        <section class="p-8 flex items-center">
+            <div class="flex-1 bg-gray-50 rounded-sm border border-gray-100 shadow p-4 py-8 space-y-8 text-center">
+                <h2 class="text-2xl font-medium tracking-tight text-dark/80">¡No esperes más!</h2>
+                <a href="/contacto" class="block text-xl text-light font-extrabold w-full p-4 rounded bg-secondary">¡Contáctanos!</a>
+            </div>
+        </section>
+	}
+}
+
+func getProjectDetails(id string) ProjectDetails {
+	return projects[id]
+}

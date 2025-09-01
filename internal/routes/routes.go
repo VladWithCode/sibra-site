@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"fmt"
 	"html/template"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"github.com/vladwithcode/sibra-site/internal"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
+	"github.com/vladwithcode/sibra-site/internal/templates/pages"
 )
 
 func NewRouter() http.Handler {
@@ -100,44 +102,14 @@ func RenderIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func RenderPrivacy(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
-	templ, err := template.ParseFiles("web/templates/layout.html", "web/templates/privacy.html")
-
-	if err != nil {
-		fmt.Printf("Parse templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	err = templ.Execute(w, map[string]any{
-		"User": auth,
-	})
-
-	if err != nil {
-		fmt.Printf("Exec templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
+func RenderTerms(w http.ResponseWriter, r *http.Request, user *auth.Auth) {
+	component := pages.Legal("terms", user)
+	component.Render(context.Background(), w)
 }
 
-func RenderTerms(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
-	templ, err := template.ParseFiles("web/templates/layout.html", "web/templates/terms.html")
-
-	if err != nil {
-		fmt.Printf("Parse templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	err = templ.Execute(w, map[string]any{
-		"User": auth,
-	})
-
-	if err != nil {
-		fmt.Printf("Exec templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
+func RenderPrivacy(w http.ResponseWriter, r *http.Request, user *auth.Auth) {
+	component := pages.Legal("privacy", user)
+	component.Render(context.Background(), w)
 }
 
 func RenderSignin(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {

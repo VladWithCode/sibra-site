@@ -1,5 +1,15 @@
 package properties
 
-templ ForYou(props []*Prop) {
-    
+import "github.com/vladwithcode/sibra-site/internal/db"
+import "fmt"
+
+templ ForYou(props []*db.Property) {
+    <div class="for-you-section">
+        for _, prop := range props {
+            <div class="property-item">
+                <h3>{ prop.Address }</h3>
+                <p>{ fmt.Sprintf("%.2f", prop.Price) }</p>
+            </div>
+        }
+    </div>
 }
