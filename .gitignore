@@ -1,16 +1,10 @@
 # Ignore binaries
 cmd/*
-
-# Do not ignore go files in cmd
 !cmd/*.go
 !cmd/**/*.go
 
 # Ignore env files
 .env*
-
-# Ignore templ generated files
-internal/templates/**/*.txt
-internal/templates/*.txt
 
 # Ignore static
 web/static/properties/*
@@ -19,11 +13,14 @@ web/static/properties/*
 web/static/users/*
 !web/static/users/sample.png
 !web/static/users/.keep
-web/static/styles.css
 
-web/static/styles.css
-
-node_modules/
-
-# Ignore tailwind
-tailwind.config.js
+# Ignore frontend files
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+count.txt
+.env
+.nitro
+.tanstack
