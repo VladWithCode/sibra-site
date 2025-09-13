@@ -1,7 +1,7 @@
 # Ignore binaries
 cmd/*
 !cmd/*.go
-cmd/**/*
+cmd/**
 !cmd/**/*.go
 
 # Ignore env files
