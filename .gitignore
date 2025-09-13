@@ -1,5 +1,5 @@
 # Ignore binaries
-cmd/*
+cmd/**/*
 !cmd/*.go
 !cmd/**/*.go
 
