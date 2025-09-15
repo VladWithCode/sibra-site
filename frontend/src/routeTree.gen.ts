@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicNosotrosRouteImport } from './routes/_public/nosotros'
+import { Route as PublicContactoRouteImport } from './routes/_public/contacto'
 
 const PublicRoute = PublicRouteImport.update({
   id: '/_public',
@@ -27,27 +28,40 @@ const PublicNosotrosRoute = PublicNosotrosRouteImport.update({
   path: '/nosotros',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicContactoRoute = PublicContactoRouteImport.update({
+  id: '/contacto',
+  path: '/contacto',
+  getParentRoute: () => PublicRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/contacto': typeof PublicContactoRoute
   '/nosotros': typeof PublicNosotrosRoute
   '/': typeof PublicIndexRoute
 }
 export interface FileRoutesByTo {
+  '/contacto': typeof PublicContactoRoute
   '/nosotros': typeof PublicNosotrosRoute
   '/': typeof PublicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteWithChildren
+  '/_public/contacto': typeof PublicContactoRoute
   '/_public/nosotros': typeof PublicNosotrosRoute
   '/_public/': typeof PublicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/nosotros' | '/'
+  fullPaths: '/contacto' | '/nosotros' | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/nosotros' | '/'
-  id: '__root__' | '/_public' | '/_public/nosotros' | '/_public/'
+  to: '/contacto' | '/nosotros' | '/'
+  id:
+    | '__root__'
+    | '/_public'
+    | '/_public/contacto'
+    | '/_public/nosotros'
+    | '/_public/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -77,15 +91,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicNosotrosRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/contacto': {
+      id: '/_public/contacto'
+      path: '/contacto'
+      fullPath: '/contacto'
+      preLoaderRoute: typeof PublicContactoRouteImport
+      parentRoute: typeof PublicRoute
+    }
   }
 }
 
 interface PublicRouteChildren {
+  PublicContactoRoute: typeof PublicContactoRoute
   PublicNosotrosRoute: typeof PublicNosotrosRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
+  PublicContactoRoute: PublicContactoRoute,
   PublicNosotrosRoute: PublicNosotrosRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
