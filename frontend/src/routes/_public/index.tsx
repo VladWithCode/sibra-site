@@ -3,17 +3,16 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel';
 import { useCallback, useEffect, useState, type PropsWithChildren } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import heroImg from '../../../public/hero.png';
-import aboutImg from '../../../public/sample.webp';
-import agentImg2 from '../../../public/agent_showcase_2.jpg';
+import { Card, CardContent } from '@/components/ui/card';
 import { Clock, Phone } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SecondaryLinkButton } from '@/components/sibra_buttons';
 import { ConnectIcon } from '@/components/icons/connect';
 import { FacebookIcon } from '@/components/icons/facebook';
 import { InstagramIcon } from '@/components/icons/instagram';
-import { ImgPlaceholder } from '@/components/ui/img-placeholder';
+import heroImg from '../../../public/hero.png';
+import aboutImg from '../../../public/sample.webp';
+import agentImg2 from '../../../public/agent_showcase_2.jpg';
 
 export const Route = createFileRoute('/_public/')({
     component: RouteComponent,
