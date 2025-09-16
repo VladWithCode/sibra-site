@@ -20,19 +20,19 @@ export function Footer() {
                         <div className="space-y-3">
                             <div className="flex items-center gap-3 text-sm">
                                 <Phone className="h-4 w-4 text-primary flex-shrink-0" />
-                                <span className="text-foreground">(555) 123-4567</span>
+                                <span className="text-foreground">(669) 112-9742</span>
+                            </div>
+                            <div className="flex items-center gap-3 text-sm">
+                                <Phone className="h-4 w-4 text-primary flex-shrink-0" />
+                                <span className="text-foreground">(618) 194-1145</span>
                             </div>
                             <div className="flex items-center gap-3 text-sm">
                                 <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                                <span className="text-foreground">info@premierrealestate.com</span>
+                                <span className="text-foreground">contacto@sibra.mx</span>
                             </div>
                             <div className="flex items-start gap-3 text-sm">
                                 <MapPin className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                <span className="text-foreground">
-                                    123 Main Street
-                                    <br />
-                                    Downtown, NY 10001
-                                </span>
+                                <span className="text-foreground">C. Cancer #132. Fracc. Sahop, 34190 Durango, Dgo.</span>
                             </div>
                         </div>
                     </div>
@@ -119,7 +119,9 @@ export function Footer() {
                         </p>
                         <div className="space-y-3">
                             <Input type="email" placeholder="Ingrese su correo electrónico" className="bg-background border-border" />
-                            <Button className="w-full border-2 border-sbr-green bg-sbr-green hover:bg-accent/90 active:bg-sbr-green text-gray-100 hover:text-sbr-green active:text-gray-100 font-bold tracking-wide active:scale-95 cursor-pointer">Suscribirse</Button>
+                            <Button className="w-full border-2 border-sbr-green bg-sbr-green hover:bg-accent/90 active:bg-sbr-green text-gray-100 hover:text-sbr-green active:text-gray-100 font-bold tracking-wide active:scale-95 cursor-pointer">
+                                Suscribirse
+                            </Button>
                         </div>
 
                         {/* Social Media */}
@@ -148,20 +150,20 @@ export function Footer() {
                 {/* Bottom Bar */}
                 <div className="mt-12 pt-8 border-t border-border">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <p className="text-sm text-muted-foreground">
-                            © 2025 SIBRA Bienes Raíces. Todos los derechos reservados.
-                        </p>
-                        <div className="flex gap-6 text-sm">
-                            <Link to="/terminos-y-condiciones" className="text-muted-foreground hover:text-primary transition-colors">
+                        <div className="flex gap-6 text-xs">
+                            <Link to="/terminos-y-condiciones" className="text-center text-muted-foreground hover:text-primary transition-colors">
                                 Términos de Servicio
                             </Link>
-                            <Link to="/politica-de-privacidad" className="text-muted-foreground hover:text-primary transition-colors">
+                            <Link to="/politica-de-privacidad" className="text-center text-muted-foreground hover:text-primary transition-colors">
                                 Política de Privacidad
                             </Link>
-                            <Link to="/politica-de-cookies" className="text-muted-foreground hover:text-primary transition-colors">
+                            <Link to="/politica-de-cookies" className="text-center text-muted-foreground hover:text-primary transition-colors">
                                 Política de Cookies
                             </Link>
                         </div>
+                        <p className="text-xs text-muted-foreground text-center">
+                            © 2025 SIBRA Bienes Raíces. Todos los derechos reservados.
+                        </p>
                     </div>
                 </div>
             </div>
