@@ -108,7 +108,7 @@ function RouteComponent() {
             </section>
             <section className="relative z-0">
                 <div className="absolute inset-0 z-0">
-                    <img className="w-full max-h-full object-cover object-center" src="/sample.webp" alt="" />
+                    <img className="w-full h-full object-cover object-center" src="/sample.webp" alt="" />
                 </div>
                 <div className="relative z-10 text-gray-100 text-center bg-linear-to-br from-sbr-blue-dark/60 to-sbr-blue/60 px-6 pt-24 py-18 space-y-1">
                     <h2 className="relative text-3xl font-semibold">
