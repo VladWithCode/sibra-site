@@ -11,7 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PublicRouteImport } from './routes/_public'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicTerrenosRouteImport } from './routes/_public/terrenos'
+import { Route as PublicTerminosYCondicionesRouteImport } from './routes/_public/terminos-y-condiciones'
+import { Route as PublicPropiedadesRouteImport } from './routes/_public/propiedades'
+import { Route as PublicPoliticaDePrivacidadRouteImport } from './routes/_public/politica-de-privacidad'
 import { Route as PublicNosotrosRouteImport } from './routes/_public/nosotros'
+import { Route as PublicIniciarSesionRouteImport } from './routes/_public/iniciar-sesion'
+import { Route as PublicInfonavitRouteImport } from './routes/_public/infonavit'
+import { Route as PublicFavoritosRouteImport } from './routes/_public/favoritos'
 import { Route as PublicContactoRouteImport } from './routes/_public/contacto'
 
 const PublicRoute = PublicRouteImport.update({
@@ -23,9 +30,46 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicRoute,
 } as any)
+const PublicTerrenosRoute = PublicTerrenosRouteImport.update({
+  id: '/terrenos',
+  path: '/terrenos',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicTerminosYCondicionesRoute =
+  PublicTerminosYCondicionesRouteImport.update({
+    id: '/terminos-y-condiciones',
+    path: '/terminos-y-condiciones',
+    getParentRoute: () => PublicRoute,
+  } as any)
+const PublicPropiedadesRoute = PublicPropiedadesRouteImport.update({
+  id: '/propiedades',
+  path: '/propiedades',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicPoliticaDePrivacidadRoute =
+  PublicPoliticaDePrivacidadRouteImport.update({
+    id: '/politica-de-privacidad',
+    path: '/politica-de-privacidad',
+    getParentRoute: () => PublicRoute,
+  } as any)
 const PublicNosotrosRoute = PublicNosotrosRouteImport.update({
   id: '/nosotros',
   path: '/nosotros',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicIniciarSesionRoute = PublicIniciarSesionRouteImport.update({
+  id: '/iniciar-sesion',
+  path: '/iniciar-sesion',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicInfonavitRoute = PublicInfonavitRouteImport.update({
+  id: '/infonavit',
+  path: '/infonavit',
+  getParentRoute: () => PublicRoute,
+} as any)
+const PublicFavoritosRoute = PublicFavoritosRouteImport.update({
+  id: '/favoritos',
+  path: '/favoritos',
   getParentRoute: () => PublicRoute,
 } as any)
 const PublicContactoRoute = PublicContactoRouteImport.update({
@@ -36,31 +80,79 @@ const PublicContactoRoute = PublicContactoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/contacto': typeof PublicContactoRoute
+  '/favoritos': typeof PublicFavoritosRoute
+  '/infonavit': typeof PublicInfonavitRoute
+  '/iniciar-sesion': typeof PublicIniciarSesionRoute
   '/nosotros': typeof PublicNosotrosRoute
+  '/politica-de-privacidad': typeof PublicPoliticaDePrivacidadRoute
+  '/propiedades': typeof PublicPropiedadesRoute
+  '/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
+  '/terrenos': typeof PublicTerrenosRoute
   '/': typeof PublicIndexRoute
 }
 export interface FileRoutesByTo {
   '/contacto': typeof PublicContactoRoute
+  '/favoritos': typeof PublicFavoritosRoute
+  '/infonavit': typeof PublicInfonavitRoute
+  '/iniciar-sesion': typeof PublicIniciarSesionRoute
   '/nosotros': typeof PublicNosotrosRoute
+  '/politica-de-privacidad': typeof PublicPoliticaDePrivacidadRoute
+  '/propiedades': typeof PublicPropiedadesRoute
+  '/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
+  '/terrenos': typeof PublicTerrenosRoute
   '/': typeof PublicIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteWithChildren
   '/_public/contacto': typeof PublicContactoRoute
+  '/_public/favoritos': typeof PublicFavoritosRoute
+  '/_public/infonavit': typeof PublicInfonavitRoute
+  '/_public/iniciar-sesion': typeof PublicIniciarSesionRoute
   '/_public/nosotros': typeof PublicNosotrosRoute
+  '/_public/politica-de-privacidad': typeof PublicPoliticaDePrivacidadRoute
+  '/_public/propiedades': typeof PublicPropiedadesRoute
+  '/_public/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
+  '/_public/terrenos': typeof PublicTerrenosRoute
   '/_public/': typeof PublicIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/contacto' | '/nosotros' | '/'
+  fullPaths:
+    | '/contacto'
+    | '/favoritos'
+    | '/infonavit'
+    | '/iniciar-sesion'
+    | '/nosotros'
+    | '/politica-de-privacidad'
+    | '/propiedades'
+    | '/terminos-y-condiciones'
+    | '/terrenos'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/contacto' | '/nosotros' | '/'
+  to:
+    | '/contacto'
+    | '/favoritos'
+    | '/infonavit'
+    | '/iniciar-sesion'
+    | '/nosotros'
+    | '/politica-de-privacidad'
+    | '/propiedades'
+    | '/terminos-y-condiciones'
+    | '/terrenos'
+    | '/'
   id:
     | '__root__'
     | '/_public'
     | '/_public/contacto'
+    | '/_public/favoritos'
+    | '/_public/infonavit'
+    | '/_public/iniciar-sesion'
     | '/_public/nosotros'
+    | '/_public/politica-de-privacidad'
+    | '/_public/propiedades'
+    | '/_public/terminos-y-condiciones'
+    | '/_public/terrenos'
     | '/_public/'
   fileRoutesById: FileRoutesById
 }
@@ -84,11 +176,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRoute
     }
+    '/_public/terrenos': {
+      id: '/_public/terrenos'
+      path: '/terrenos'
+      fullPath: '/terrenos'
+      preLoaderRoute: typeof PublicTerrenosRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/terminos-y-condiciones': {
+      id: '/_public/terminos-y-condiciones'
+      path: '/terminos-y-condiciones'
+      fullPath: '/terminos-y-condiciones'
+      preLoaderRoute: typeof PublicTerminosYCondicionesRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/propiedades': {
+      id: '/_public/propiedades'
+      path: '/propiedades'
+      fullPath: '/propiedades'
+      preLoaderRoute: typeof PublicPropiedadesRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/politica-de-privacidad': {
+      id: '/_public/politica-de-privacidad'
+      path: '/politica-de-privacidad'
+      fullPath: '/politica-de-privacidad'
+      preLoaderRoute: typeof PublicPoliticaDePrivacidadRouteImport
+      parentRoute: typeof PublicRoute
+    }
     '/_public/nosotros': {
       id: '/_public/nosotros'
       path: '/nosotros'
       fullPath: '/nosotros'
       preLoaderRoute: typeof PublicNosotrosRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/iniciar-sesion': {
+      id: '/_public/iniciar-sesion'
+      path: '/iniciar-sesion'
+      fullPath: '/iniciar-sesion'
+      preLoaderRoute: typeof PublicIniciarSesionRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/infonavit': {
+      id: '/_public/infonavit'
+      path: '/infonavit'
+      fullPath: '/infonavit'
+      preLoaderRoute: typeof PublicInfonavitRouteImport
+      parentRoute: typeof PublicRoute
+    }
+    '/_public/favoritos': {
+      id: '/_public/favoritos'
+      path: '/favoritos'
+      fullPath: '/favoritos'
+      preLoaderRoute: typeof PublicFavoritosRouteImport
       parentRoute: typeof PublicRoute
     }
     '/_public/contacto': {
@@ -103,13 +244,27 @@ declare module '@tanstack/react-router' {
 
 interface PublicRouteChildren {
   PublicContactoRoute: typeof PublicContactoRoute
+  PublicFavoritosRoute: typeof PublicFavoritosRoute
+  PublicInfonavitRoute: typeof PublicInfonavitRoute
+  PublicIniciarSesionRoute: typeof PublicIniciarSesionRoute
   PublicNosotrosRoute: typeof PublicNosotrosRoute
+  PublicPoliticaDePrivacidadRoute: typeof PublicPoliticaDePrivacidadRoute
+  PublicPropiedadesRoute: typeof PublicPropiedadesRoute
+  PublicTerminosYCondicionesRoute: typeof PublicTerminosYCondicionesRoute
+  PublicTerrenosRoute: typeof PublicTerrenosRoute
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
 const PublicRouteChildren: PublicRouteChildren = {
   PublicContactoRoute: PublicContactoRoute,
+  PublicFavoritosRoute: PublicFavoritosRoute,
+  PublicInfonavitRoute: PublicInfonavitRoute,
+  PublicIniciarSesionRoute: PublicIniciarSesionRoute,
   PublicNosotrosRoute: PublicNosotrosRoute,
+  PublicPoliticaDePrivacidadRoute: PublicPoliticaDePrivacidadRoute,
+  PublicPropiedadesRoute: PublicPropiedadesRoute,
+  PublicTerminosYCondicionesRoute: PublicTerminosYCondicionesRoute,
+  PublicTerrenosRoute: PublicTerrenosRoute,
   PublicIndexRoute: PublicIndexRoute,
 }
 
