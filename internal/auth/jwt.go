@@ -15,9 +15,9 @@ import (
 type AccessLevel int
 
 const (
-	User AccessLevel = iota
-	Editor
-	Admin
+	AccessLevelUser AccessLevel = iota
+	AccessLevelEditor
+	AccessLevelAdmin
 )
 
 type Role string
@@ -35,17 +35,18 @@ type Auth struct {
 	Role     string
 }
 
-func (a *Auth) HasAccess(role Role) bool {
-	switch role {
-	case AdminRole:
-		return a.Role == string(AdminRole)
-	case EditorRole:
-		return a.Role == string(EditorRole) || a.Role == string(AdminRole)
-	case UserRole:
-		return a.Role == string(UserRole) || a.Role == string(EditorRole) || a.Role == string(AdminRole)
-	default:
-		return false
+func (a *Auth) HasAccess(reqLv AccessLevel) bool {
+	var roleLv AccessLevel = 0
+	switch a.Role {
+	case db.RoleUser:
+		roleLv = AccessLevelUser
+	case db.RoleEditor:
+		roleLv = AccessLevelEditor
+	case db.RoleAdmin:
+		roleLv = AccessLevelAdmin
 	}
+
+	return roleLv >= reqLv
 }
 
 type AuthedHandler func(w http.ResponseWriter, r *http.Request, auth *Auth)
