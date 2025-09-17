@@ -12,11 +12,40 @@ import (
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
+type AccessLevel int
+
+const (
+	User AccessLevel = iota
+	Editor
+	Admin
+)
+
+type Role string
+
+const (
+	AdminRole  Role = "admin"
+	EditorRole Role = "editor"
+	UserRole   Role = "user"
+)
+
 type Auth struct {
 	Id       string
 	Username string
 	Fullname string
 	Role     string
+}
+
+func (a *Auth) HasAccess(role Role) bool {
+	switch role {
+	case AdminRole:
+		return a.Role == string(AdminRole)
+	case EditorRole:
+		return a.Role == string(EditorRole) || a.Role == string(AdminRole)
+	case UserRole:
+		return a.Role == string(UserRole) || a.Role == string(EditorRole) || a.Role == string(AdminRole)
+	default:
+		return false
+	}
 }
 
 type AuthedHandler func(w http.ResponseWriter, r *http.Request, auth *Auth)
