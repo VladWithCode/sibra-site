@@ -5,6 +5,7 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/com
 import { useCallback, useEffect, useState, type PropsWithChildren } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SecondaryLinkButton } from '@/components/sibra_buttons';
+import { HomeIcon, LoanIcon, ProjectsIcon, SellHomeIcon } from '@/components/icons/icons';
 
 export const Route = createFileRoute('/_public/')({
     component: RouteComponent,
@@ -55,7 +56,9 @@ function RouteComponent() {
                 <div className="grid grid-cols-1 auto-rows-auto gap-6">
                     <Card>
                         <CardContent className="space-y-4">
-                            <div className="w-40 aspect-square bg-gray-200 rounded-full mx-auto"></div>
+                            <div className="flex items-center justify-center w-40 aspect-square text-sbr-green rounded-full mx-auto">
+                                <ProjectsIcon className="size-40" />
+                            </div>
                             <h3 className="text-2xl font-bold text-center">Desarrollos</h3>
                             <p className="text-current/60 px-6">
                                 Encuentra un lugar para tu familia o conoce los desarrollos que el equipo de <span className="font-bold text-sbr-blue-light/80">SIBRA</span> tiene en la ciudad.
@@ -67,7 +70,9 @@ function RouteComponent() {
                     </Card>
                     <Card>
                         <CardContent className="space-y-4">
-                            <div className="w-40 aspect-square bg-gray-200 rounded-full mx-auto"></div>
+                            <div className="flex items-center justify-center w-40 aspect-square text-sbr-green rounded-full mx-auto">
+                                <HomeIcon className="size-40" />
+                            </div>
                             <h3 className="text-2xl font-bold text-center">Comprar</h3>
                             <p className="text-current/60 px-6">
                                 ¿Buscas una casa, apartamento o alguna vivienda para ti y tu familia?
@@ -80,7 +85,9 @@ function RouteComponent() {
                     </Card>
                     <Card>
                         <CardContent className="space-y-4">
-                            <div className="w-40 aspect-square bg-gray-200 rounded-full mx-auto"></div>
+                            <div className="flex items-center justify-center w-40 aspect-square text-sbr-green rounded-full mx-auto">
+                                <SellHomeIcon className="size-32" />
+                            </div>
                             <h3 className="text-2xl font-bold text-center">Vender</h3>
                             <p className="text-current/60 px-6">
                                 Si lo que buscas es vender tu propiedad, <span className="font-bold text-sbr-blue-light/80">SIBRA</span> es tu solución inteligente.
@@ -93,7 +100,9 @@ function RouteComponent() {
                     </Card>
                     <Card>
                         <CardContent className="space-y-4">
-                            <div className="w-40 aspect-square bg-gray-200 rounded-full mx-auto"></div>
+                            <div className="flex items-center justify-center w-40 aspect-square text-sbr-green rounded-full mx-auto">
+                                <LoanIcon className="size-36" />
+                            </div>
                             <h3 className="text-2xl font-bold text-center">Precalificaciones</h3>
                             <p className="text-current/60 px-6">
                                 En <span className="font-bold text-sbr-blue-light/80">SIBRA</span>, estamos comprometidos en ayudarte a encontrar la vivienda de tus sueños.
