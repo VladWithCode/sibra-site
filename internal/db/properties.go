@@ -102,7 +102,7 @@ type Property struct {
 	NbHood            string         `json:"nbHood" db:"nb_hood"`
 	Country           string         `json:"country" db:"country"`
 	Price             float64        `json:"price" db:"price"`
-	PropType          string         `json:"propType" db:"property_type"`
+	PropertyType      string         `json:"propType" db:"property_type"`
 	Contract          string         `json:"contract" db:"contract"`
 	Beds              int            `json:"beds" db:"beds"`
 	Baths             int            `json:"baths" db:"baths"`
@@ -231,7 +231,7 @@ func CreateProperty(prop *Property) error {
 		prop.Zip,
 		prop.Country,
 		prop.Price,
-		prop.PropType,
+		prop.PropertyType,
 		prop.Contract,
 		prop.Beds,
 		prop.Baths,
@@ -307,7 +307,7 @@ func UpdateProperty(property *Property) error {
 		property.NbHood,
 		property.Country,
 		property.Price,
-		property.PropType,
+		property.PropertyType,
 		property.Contract,
 		property.Beds,
 		property.Baths,
@@ -586,7 +586,7 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 			&prop.Zip,
 			&prop.Country,
 			&prop.Price,
-			&prop.PropType,
+			&prop.PropertyType,
 			&prop.Beds,
 			&prop.Baths,
 			&prop.SqMt,
@@ -726,7 +726,7 @@ func FindPropertyById(propId string) (property *Property, err error) {
 		&property.Zip,
 		&property.Country,
 		&property.Price,
-		&property.PropType,
+		&property.PropertyType,
 		&property.Beds,
 		&property.Baths,
 		&property.SqMt,

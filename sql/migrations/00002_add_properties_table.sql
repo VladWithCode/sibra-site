@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS properties (
     lat DOUBLE PRECISION DEFAULT 0.0,
     lon DOUBLE PRECISION DEFAULT 0.0,
     earth_coords POINT, -- New earthdistance column
-    featured_started_at TIMESTAMPTZ,
+    featured BOOLEAN DEFAULT FALSE,
     featured_expires_at TIMESTAMPTZ,
     main_img VARCHAR(256) DEFAULT '',
     imgs VARCHAR(256)[],
