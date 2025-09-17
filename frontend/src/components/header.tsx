@@ -1,7 +1,7 @@
-import { Heart, Home, LucideX, User } from "lucide-react";
+import { Heart, Home, LucideX } from "lucide-react";
 import { Button } from "./ui/button";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "./ui/navigation-menu";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
 import { useRef } from "react";
@@ -141,14 +141,14 @@ export function HeaderSidebar() {
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
-            <SidebarFooter className="bg-gray-300">
-                <Link to="/iniciar-sesion" className="flex items-center gap-3 text-gray-700">
-                    <span className="bg-gray-100 p-2 rounded-full">
-                        <User className="size-4" />
-                    </span>
-                    <span className="font-semibold text-sm">Iniciar sesión</span>
-                </Link>
-            </SidebarFooter>
+            {/* <SidebarFooter className="bg-gray-300"> */}
+            {/*     <Link to="/iniciar-sesion" className="flex items-center gap-3 text-gray-700"> */}
+            {/*         <span className="bg-gray-100 p-2 rounded-full"> */}
+            {/*             <User className="size-4" /> */}
+            {/*         </span> */}
+            {/*         <span className="font-semibold text-sm">Iniciar sesión</span> */}
+            {/*     </Link> */}
+            {/* </SidebarFooter> */}
         </Sidebar>
     );
 }
@@ -182,6 +182,14 @@ const mainNavigationItems = linkOptions([
 ]);
 
 const secondaryNavigationItems = linkOptions([
+    {
+        label: "Contacto",
+        to: "/contacto",
+    },
+    {
+        label: "Acerca de Nosotros",
+        to: "/nosotros",
+    },
     {
         label: "Terminos y condiciones",
         to: "/terminos-y-condiciones",
