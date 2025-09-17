@@ -4,25 +4,71 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
+import { useRef } from "react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
 
 export function Header() {
+    const header = useRef<HTMLDivElement>(null)
+    const pageTop = useRef<HTMLDivElement>(null)
+    const tl = useRef<gsap.core.Timeline>(null)
+    useGSAP(() => {
+        if (!pageTop.current || !header.current) return
+        tl.current = gsap.timeline({
+            paused: true,
+            defaults: {
+                duration: 0.3,
+                ease: "power1.inOut",
+            },
+        });
+        tl.current.set(header.current, { position: "fixed", y: "-3rem" });
+        tl.current.to(header.current, {
+            y: "0rem",
+            opacity: "1",
+            backgroundColor: "var(--color-sbr-blue-light)",
+        });
+
+        const obsv = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!tl.current) return;
+
+                if (!entry.isIntersecting) {
+                    tl.current.play();
+                } else {
+                    tl.current.reverse();
+                }
+            });
+        });
+        obsv.observe(pageTop.current);
+
+        return () => {
+            obsv.disconnect();
+        }
+    }, { dependencies: [pageTop.current] })
+
     return (
-        <header className="absolute top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-4">
-            <div className="flex items-center justify-between gap-6 text-gray-50 px-1">
-                <div className="flex-auto grow-0">
-                    <div className="xl:hidden">
-                        <SidebarTrigger />
+        <>
+            <div className="absolute top-[60%] inset-x-0 z-0 h-0" ref={pageTop} data-page-top></div>
+            <header
+                className="absolute top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 transition-colors data-[inView=false]:sticky data-[inView=false]:bg-sbr-blue-light"
+                ref={header}
+            >
+                <div className="flex items-center justify-between gap-6 text-gray-50">
+                    <div className="flex-auto grow-0">
+                        <div className="xl:hidden">
+                            <SidebarTrigger className="stroke-current" />
+                        </div>
+                        <div className="hidden xl:block">
+                            <HeaderNavigationMenu />
+                        </div>
                     </div>
-                    <div className="hidden xl:block">
-                        <HeaderNavigationMenu />
-                    </div>
+                    <div className="flex-auto hidden"></div>
+                    <Link to="/" className="flex-auto grow-0">
+                        <img src="/sibra_logo_white_256.webp" alt="Sibra logo" className="h-8 w-auto" />
+                    </Link>
                 </div>
-                <div className="flex-auto hidden"></div>
-                <div className="flex-auto grow-0">
-                    <img src="/sibra_logo_white_256.webp" alt="Sibra logo" className="h-8 w-auto" />
-                </div>
-            </div>
-        </header>
+            </header >
+        </>
     );
 }
 
