@@ -40,7 +40,7 @@ func CreateToken(user *db.User) (string, error) {
 	t = jwt.NewWithClaims(jwt.SigningMethodHS256, AuthClaims{
 		user.Id,
 		user.Username,
-		user.Name + " " + user.Lastname,
+		user.Fullname,
 		user.Role,
 
 		jwt.RegisteredClaims{
@@ -57,7 +57,7 @@ func ParseToken(tokenStr string) (*jwt.Token, error) {
 		k = os.Getenv("JWT_SECRET")
 	)
 
-	t, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+	t, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method %v", t.Header["alg"])
 		}

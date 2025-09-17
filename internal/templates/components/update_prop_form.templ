@@ -9,8 +9,8 @@ import (
 var scriptHandle = templ.NewOnceHandle()
 
 templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFields, successfulUpdate bool) {
-    @scriptHandle.Once() {
-        <script>
+	@scriptHandle.Once() {
+		<script>
             function initForm() {
                 let resetTimerID = null
                 htmx.on("htmx:afterSwap", e => {
@@ -40,7 +40,7 @@ templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFiel
 
             initForm()
         </script>
-    }
+	}
 	<form
 		hx-put={ "/api/property/" + property.Id }
 		hx-swap="outerHTML"
@@ -48,7 +48,7 @@ templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFiel
 		id="new-property-form"
 		hx-ext="json-enc"
 		hx-vals={ "{\"agent\":\"" + property.Agent + "\"}" }
-        hx-select="#new-property-form"
+		hx-select="#new-property-form"
 		data-successful-update?={ successfulUpdate }
 	>
 		<div class="absolute inset-0 bg-dark/80 opacity-60 hidden items-center justify-center rounded" id="loading-spinner">
@@ -372,9 +372,9 @@ templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFiel
                             "border",
                         ) }
 				>
-					<option value="disponible" selected?={ templates.CmpStr(property.Status, "disponible") }>Disponible</option>
-					<option value="vendida" selected?={ templates.CmpStr(property.Status, "vendida") }>Vendida</option>
-					<option value="no_disponible" selected?={ templates.CmpStr(property.Status, "no_disponible") }>No disponible</option>
+					<option value="disponible" selected?={ templates.CmpStr(string(property.Status), string(db.PropertyStatusPublished)) }>Disponible</option>
+					<option value="vendida" selected?={ templates.CmpStr(string(property.Status), string(db.PropertyStatusPublished)) }>Vendida</option>
+					<option value="no_disponible" selected?={ templates.CmpStr(string(property.Status), string(db.PropertyStatusInactive)) }>No disponible</option>
 				</select>
 				if (*invalidFields)["status"] != "" {
 					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["status"] }</p>

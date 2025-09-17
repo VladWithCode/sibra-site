@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"os"
@@ -15,16 +16,33 @@ import (
 	"github.com/vladwithcode/sibra-site/internal"
 )
 
-const OrderDirectionASC string = "ASC"
-const OrderDirectionDESC string = "DESC"
-const OrderByListingDate string = "listing_date"
-const OrderByPrice string = "price"
-const OrderBySqMt string = "square_mt"
-const OrderByLotSize string = "lot_size"
-const NearbyDistanceClose int = 1000
-const NearbyDistanceNormal int = 2000
-const NearbyDistanceFar int = 5000
-const DefaultPageSize int = 10
+var (
+	ErrInvalidPointValue = errors.New("invalid point value")
+)
+
+const (
+	OrderDirectionASC    string = "ASC"
+	OrderDirectionDESC   string = "DESC"
+	OrderByListingDate   string = "listing_date"
+	OrderByPrice         string = "price"
+	OrderBySqMt          string = "square_mt"
+	OrderByLotSize       string = "lot_size"
+	NearbyDistanceClose  int    = 1000
+	NearbyDistanceNormal int    = 2000
+	NearbyDistanceFar    int    = 5000
+	DefaultPageSize      int    = 10
+)
+
+type PropertyStatus string
+
+const (
+	PropertyStatusDraft         PropertyStatus = "borrador"
+	PropertyStatusArchived      PropertyStatus = "archivada"
+	PropertyStatusPublished     PropertyStatus = "publicada"
+	PropertyStatusPendingReview PropertyStatus = "en revisión"
+	PropertyStatusSold          PropertyStatus = "vendida"
+	PropertyStatusInactive      PropertyStatus = "inactiva"
+)
 
 // Point represents a geographic point with latitude and longitude
 type Point struct {
@@ -33,7 +51,7 @@ type Point struct {
 }
 
 // Scan implements the sql.Scanner interface for Point
-func (p *Point) Scan(value interface{}) error {
+func (p *Point) Scan(value any) error {
 	if value == nil {
 		return nil
 	}
@@ -61,7 +79,7 @@ func (p *Point) Scan(value interface{}) error {
 		p.Lat = lat
 		return nil
 	default:
-		return fmt.Errorf("cannot scan %T into Point", value)
+		return fmt.Errorf("%w: cannot scan %T into Point", ErrInvalidPointValue, value)
 	}
 }
 
@@ -91,7 +109,7 @@ type Property struct {
 	LotSize           float64        `json:"lotSize" db:"lot_size"`
 	ListingDate       time.Time      `json:"listingDate" db:"listing_date"`
 	YearBuilt         int            `json:"yearBuilt" db:"year_built"`
-	Status            string         `json:"status" db:"status"`
+	Status            PropertyStatus `json:"status" db:"status"`
 	Coords            *Point         `json:"coords" db:"earth_coords"`
 	Features          map[string]any `json:"features" db:"features"`
 	Lat               float64        `json:"lat" db:"lat"`
@@ -175,16 +193,7 @@ type PropertyFilter struct {
 	WithinMeters *int     `json:"withinMeters"`
 }
 
-type InvalidPropertyFields struct {
-	Price     bool
-	LotSize   bool
-	Beds      bool
-	Baths     bool
-	SqMt      bool
-	YearBuilt bool
-	Lat       bool
-	Lon       bool
-}
+type InvalidPropertyFields map[string]bool
 
 func CreateProperty(prop *Property) error {
 	conn, err := GetPool()
@@ -202,8 +211,8 @@ func CreateProperty(prop *Property) error {
 	_, err = conn.Exec(
 		ctx,
 		`INSERT INTO properties (
-			id, address, description, city, state, zip, country, price, property_type, 
-			contract, beds, baths, square_mt, lot_size, year_built, listing_date, 
+			id, address, description, city, state, zip, country, price, property_type,
+			contract, beds, baths, square_mt, lot_size, year_built, listing_date,
 			status, earth_coords, features, lat, lon, nb_hood, agent, slug
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
 		prop.Id,
@@ -254,7 +263,7 @@ func UpdateProperty(property *Property) error {
 
 	_, err = conn.Exec(
 		ctx,
-		`UPDATE properties SET 
+		`UPDATE properties SET
 		address = $2,
 		description = $3,
 		city = $4,
@@ -316,9 +325,9 @@ func UpdateProperty(property *Property) error {
 	return nil
 }
 
-func buildFilterConditions(filter *PropertyFilter) ([]string, []interface{}, int) {
+func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
 	var queryConditions []string
-	var queryParams []interface{}
+	var queryParams []any
 	nextParamIdx := 1
 
 	if filter.Contract != nil {
@@ -397,8 +406,8 @@ func buildFilterConditions(filter *PropertyFilter) ([]string, []interface{}, int
 	// Full-text search
 	if filter.TextSearch != nil && *filter.TextSearch != "" {
 		queryConditions = append(queryConditions, fmt.Sprintf(`
-			to_tsvector('spanish', 
-				address || ' ' || description || ' ' || city || ' ' || state || ' ' || 
+			to_tsvector('spanish',
+				address || ' ' || description || ' ' || city || ' ' || state || ' ' ||
 				zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood
 			) @@ plainto_tsquery('spanish', $%d)`, nextParamIdx))
 		queryParams = append(queryParams, *filter.TextSearch)
@@ -578,14 +587,14 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 
 	rows, err := conn.Query(
 		ctx,
-		`SELECT 
-			p2.id, p2.address, p2.city, p2.state, p2.zip, p2.price, 
+		`SELECT
+			p2.id, p2.address, p2.city, p2.state, p2.zip, p2.price,
 			p2.beds, p2.baths, p2.square_mt, p2.main_img, p2.contract, p2.nb_hood,
 			earth_distance(p1.earth_coords, p2.earth_coords) as distance
 		 FROM properties p1
 		 CROSS JOIN properties p2
-		 WHERE p1.id = $1 
-		   AND p2.id != $1 
+		 WHERE p1.id = $1
+		   AND p2.id != $1
 		   AND p2.contract = p1.contract
 		   AND earth_distance(p1.earth_coords, p2.earth_coords) <= $2
 		 ORDER BY distance`,
@@ -639,15 +648,15 @@ func FindPropertyById(propId string) (property *Property, err error) {
 	defer cancel()
 
 	row := conn.QueryRow(ctx, `
-		SELECT 
+		SELECT
 			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
 			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
 			u.name || ' ' || u.lastname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
-		FROM properties p  
-		LEFT JOIN users u ON p.agent = u.id 
+		FROM properties p
+		LEFT JOIN users u ON p.agent = u.id
 		WHERE p.id = $1
 	`, propId)
 

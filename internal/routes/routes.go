@@ -2,8 +2,10 @@ package routes
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 
 	"github.com/vladwithcode/sibra-site/internal"
@@ -153,34 +155,23 @@ func render404Page(w http.ResponseWriter, _ *http.Request, auth *auth.Auth) {
 
 type ErrorParams struct {
 	ErrorMessage string
-	ElementId    string
-	ElementClass string
+	Etc          map[string]any
 }
 
 func respondWithError(w http.ResponseWriter, code int, params ErrorParams) {
-	w.Header().Set("Content-Type", "text/plain")
-	if code == http.StatusInternalServerError {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Ocurrio un error inesperado en el servidor"))
-		return
+	w.Header().Set("Content-Type", "application/json")
+	response := map[string]any{
+		"error": params.ErrorMessage,
+		"etc":   params.Etc,
+	}
+	if response["error"] == "" {
+		response["error"] = "Ocurrio un error inesperado en el servidor"
 	}
 
-	templ, err := template.ParseFiles("web/templates/responses/error.html")
-
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("Ocurrio un error inesperado en el servidor"))
-		return
-	}
-
-	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(code)
-	err = templ.Execute(w, params)
-
+	err := json.NewEncoder(w).Encode(response)
 	if err != nil {
-		w.Header().Set("Content-Type", "text/plain")
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(params.ErrorMessage))
-		return
+		http.Error(w, "Ocurrio un error inesperado en el servidor", http.StatusInternalServerError)
+		log.Printf("Error: %v\n", err)
 	}
 }

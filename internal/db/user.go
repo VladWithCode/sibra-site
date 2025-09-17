@@ -53,17 +53,6 @@ const (
 	RoleUser   string = "user"
 )
 
-type UserDTO struct {
-	Id       string `json:"id"`
-	Fullname string `json:"name"`
-	Password string `json:"password"`
-	Username string `json:"username"`
-	Role     string `json:"role"`
-	Email    string `json:"email"`
-	Phone    string `json:"phone"`
-	Img      string `json:"img"`
-}
-
 func CreateUser(user *User) (string, error) {
 	conn, err := GetPool()
 	if err != nil {
@@ -240,7 +229,6 @@ func VerifyUserEmail(userId string) error {
 		"UPDATE users SET email_verified = TRUE WHERE id = $1",
 		userId,
 	)
-
 	if err != nil {
 		return err
 	}

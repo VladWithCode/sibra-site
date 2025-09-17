@@ -26,9 +26,9 @@ CREATE TABLE IF NOT EXISTS properties (
     lat DOUBLE PRECISION DEFAULT 0.0,
     lon DOUBLE PRECISION DEFAULT 0.0,
     earth_coords POINT, -- New earthdistance column
-    featured BOOL DEFAULT false,
-    featured_expires_at TIMESTAMPTZ DEFAULT NOW(),
-    main_img varchar(256) DEFAULT '',
+    featured_started_at TIMESTAMPTZ,
+    featured_expires_at TIMESTAMPTZ,
+    main_img VARCHAR(256) DEFAULT '',
     imgs VARCHAR(256)[],
     agent UUID NOT NULL,
     slug VARCHAR(512),

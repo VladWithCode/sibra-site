@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -23,9 +24,8 @@ import (
 )
 
 func RegisterPropertyRoutes(router *customServeMux) {
-	router.HandleFunc("GET /propiedades/{contract}", FindProperties)
-	router.HandleFunc("GET /propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
-
+	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
+	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
 	router.HandleFunc("POST /api/property", auth.WithAuthMiddleware(CreateProperty))
 	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthMiddleware(UpdateProperty))
 	router.HandleFunc("DELETE /api/property/{id}/delete", auth.WithAuthMiddleware(DeletePropertyById))
@@ -34,216 +34,42 @@ func RegisterPropertyRoutes(router *customServeMux) {
 }
 
 func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
-	err := r.ParseForm()
-
+	property := db.Property{}
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+	err := decoder.Decode(&property)
 	if err != nil {
-		fmt.Printf("Parse form err: %v\n", err)
 		respondWithError(w, 400, ErrorParams{
 			ErrorMessage: "El formulario contiene información erronea.",
 		})
+		log.Printf("Malformed json data: %v\n", err)
 		return
 	}
 
-	templ, err := template.ParseFiles("web/templates/admin/prop-form.html", "web/templates/admin/pic-form.html")
-
-	if err != nil {
-		fmt.Printf("Parse invalid templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	isFormInvalid := false
-	invalidFields := db.InvalidPropertyFields{}
-	id, err := uuid.NewV7()
-
-	if err != nil {
-		fmt.Printf("Create uuid err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	strLat := r.Form.Get("lat")
-	if strLat == "" {
-		strLat = "0"
-	}
-	lat, err := strconv.ParseFloat(strLat, 64)
-	if err != nil {
-		invalidFields.Lat = true
-		isFormInvalid = true
-	}
-	strLon := r.Form.Get("lon")
-	if strLon == "" {
-		strLon = "0"
-	}
-	lon, err := strconv.ParseFloat(strLon, 64)
-	if err != nil {
-		invalidFields.Lon = true
-		isFormInvalid = true
-	}
-
-	var feats map[string]any
-	if r.Form.Get("features") != "" {
-		err = json.Unmarshal([]byte(r.Form.Get("features")), &feats)
-		if err != nil {
-			fmt.Printf("feats Parse form err: %v\n", err)
-			respondWithError(w, 400, ErrorParams{
-				ErrorMessage: "El formulario contiene información erronea.",
-			})
-			return
-		}
-	}
-
-	strPrice := r.Form.Get("price")
-	if strPrice == "" {
-		strPrice = "0"
-	}
-	price, err := strconv.ParseFloat(strPrice, 64)
-	if err != nil {
-		invalidFields.Price = true
-		isFormInvalid = true
-	}
-
-	strBeds := r.Form.Get("beds")
-	if strBeds == "" {
-		strBeds = "0"
-	}
-	beds, err := strconv.Atoi(r.Form.Get("beds"))
-	if err != nil {
-		invalidFields.Beds = true
-		isFormInvalid = true
-	}
-
-	strBaths := r.Form.Get("baths")
-	if strBaths == "" {
-		strBaths = "0"
-	}
-	baths, err := strconv.Atoi(strBaths)
-	if err != nil {
-		invalidFields.Baths = true
-		isFormInvalid = true
-	}
-
-	strSqMt := r.Form.Get("sqMt")
-	if strSqMt == "" {
-		strSqMt = "0"
-	}
-	sqMt, err := strconv.ParseFloat(strSqMt, 64)
-	if err != nil {
-		invalidFields.SqMt = true
-		isFormInvalid = true
-	}
-
-	strLotSize := r.Form.Get("lotSize")
-	if strLotSize == "" {
-		strLotSize = "0"
-	}
-	lotSize, err := strconv.ParseFloat(strLotSize, 64)
-	if err != nil {
-		invalidFields.LotSize = true
-		isFormInvalid = true
-	}
-
-	strYearBuilt := r.Form.Get("yearBuilt")
-	if strYearBuilt == "" {
-		strYearBuilt = "0"
-	}
-	yearBuilt, err := strconv.Atoi(strYearBuilt)
-	if err != nil {
-		invalidFields.YearBuilt = true
-		isFormInvalid = true
-	}
-
-	var listingDate time.Time
-	if r.Form.Get("listingDate") != "" {
-		listingDate, err = time.Parse("2006-01-02", r.Form.Get("listingDate"))
-		if err != nil {
-			fmt.Printf("date Parse form err: %v\n", err)
-			respondWithError(w, 400, ErrorParams{
-				ErrorMessage: "El formulario contiene información erronea.",
-			})
-			return
-		}
-	} else {
-		listingDate = time.Now()
-	}
-
-	data := map[string]string{}
-	for k, v := range r.Form {
-		data[k] = v[0]
-	}
-
-	if isFormInvalid {
-		w.WriteHeader(500)
-		err = templ.Execute(w, map[string]any{
-			"Data":       data,
-			"Invalid":    invalidFields,
-			"PicSwapOob": true,
-		})
-
-		if err != nil {
-			fmt.Printf("Execute invalid templ err: %v\n", err)
-			respondWithError(w, 500, ErrorParams{})
-			return
-		}
-
-		return
-	}
-
-	property := db.Property{
-		Id:          id.String(),
-		Address:     r.Form.Get("address"),
-		NbHood:      r.Form.Get("nbHood"),
-		Description: r.Form.Get("description"),
-		City:        r.Form.Get("city"),
-		State:       r.Form.Get("state"),
-		Zip:         r.Form.Get("zip"),
-		Country:     r.Form.Get("country"),
-		Status:      r.Form.Get("status"),
-		PropType:    r.Form.Get("propType"),
-		Contract:    r.Form.Get("contract"),
-		Price:       price,
-		Beds:        beds,
-		Baths:       baths,
-		SqMt:        sqMt,
-		LotSize:     lotSize,
-		YearBuilt:   yearBuilt,
-		ListingDate: listingDate,
-		Lat:         lat,
-		Lon:         lon,
-		Features:    feats,
-		Agent:       a.Id,
-	}
-
-	property.SetCoordPoint()
+	id := uuid.Must(uuid.NewV7()).String()
+	property.Id = id
 	property.SetSlug()
+	property.SyncLatLon()
 
 	err = db.CreateProperty(&property)
-
 	if err != nil {
-		fmt.Printf("Create err: %v\n", err)
-		w.WriteHeader(400)
-		err = templ.Execute(w, map[string]any{
-			"RegisterError": err.Error(),
-			"Data":          data,
-			"PicSwapOob":    true,
+		respondWithError(w, 400, ErrorParams{
+			ErrorMessage: "Error al crear la propiedad",
 		})
+		log.Printf("Create err: %v\n", err)
 		return
 	}
 
-	data["id"] = property.Id
-
-	err = templ.Execute(w, map[string]any{
-		"IsEditForm": true,
-		"Data":       data,
-		"Success":    true,
-		"PicSwapOob": true,
+	resData, err := json.Marshal(map[string]any{
+		"property": property,
 	})
-
 	if err != nil {
-		fmt.Printf("Parse templ err: %v\n", err)
 		respondWithError(w, 500, ErrorParams{})
 		return
 	}
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(resData)
 
 	err = property.CreateStaticDir()
 

@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -26,7 +25,7 @@ func RegisterUserRoutes(router *customServeMux) {
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
-	data := db.UserDTO{}
+	data := db.User{}
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
@@ -43,8 +42,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id, _ := uuid.NewV7()
 	data.Id = id.String()
 
-	phone := sql.NullString{}
-	phone.String = data.Phone
+	phone := data.Phone
 
 	/*
 		if a.Role != db.RoleAdmin {
@@ -53,8 +51,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 	_, err = db.CreateUser(&db.User{
 		Id:       data.Id,
-		Name:     data.Name,
-		Lastname: data.Lastname,
+		Fullname: data.Fullname,
 		Password: data.Password,
 		Phone:    phone,
 		Role:     data.Role,
@@ -97,8 +94,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id := r.PathValue("id")
 	user, err := db.GetUserById(id)
 
-	name := r.FormValue("name")
-	lastname := r.FormValue("lastname")
+	fullname := r.FormValue("fullname")
 	phone := r.FormValue("phone")
 	email := r.FormValue("email")
 
@@ -112,8 +108,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 				"Id": id,
 			},
 			"Data": map[string]any{
-				"name":     name,
-				"lastname": lastname,
+				"fullname": fullname,
 				"email":    email,
 				"phone":    phone,
 			},
@@ -130,23 +125,13 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	isFormInvalid := false
 	invalid := db.InvalidFields{}
 
-	if name == "" {
-		invalid["Name"] = true
-		isFormInvalid = true
-	}
-	if email == "" {
-		invalid["Email"] = true
-		isFormInvalid = true
-	}
-
 	if isFormInvalid {
 		w.WriteHeader(400)
 		templ.ExecuteTemplate(w, "edit-user-form", map[string]any{
 			"Invalid": invalid,
 			"User":    user,
 			"Data": map[string]any{
-				"name":     name,
-				"lastname": lastname,
+				"fullname": fullname,
 				"email":    email,
 				"phone":    phone,
 			},
@@ -154,8 +139,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 		return
 	}
 
-	user.Name = name
-	user.Lastname = lastname
+	user.Fullname = fullname
 	user.Phone.String = phone
 	user.Phone.Valid = phone != ""
 	user.Email = email
@@ -172,8 +156,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 				"Id": id,
 			},
 			"Data": map[string]any{
-				"name":     name,
-				"lastname": lastname,
+				"fullname": fullname,
 				"email":    email,
 				"phone":    phone,
 			},
