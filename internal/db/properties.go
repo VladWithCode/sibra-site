@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/vladwithcode/sibra-site/internal"
 )
 
@@ -173,20 +174,27 @@ type PropertyWithNearby struct {
 }
 
 type PropertyFilter struct {
-	Beds           *int     `json:"beds"`
-	Baths          *int     `json:"baths"`
-	MinPrice       *float64 `json:"minPrice"`
-	MaxPrice       *float64 `json:"maxPrice"`
-	City           *string  `json:"city"`
-	State          *string  `json:"state"`
-	Contract       *string  `json:"contract"`
-	PropType       *string  `json:"propType"`
-	Zip            *string  `json:"zip"`
-	NbHood         *string  `json:"nbHood"`
-	Featured       *bool    `json:"featured"`
-	OrderBy        *string  `json:"orderBy"`
-	OrderDirection *string  `json:"orderDirection"`
-	TextSearch     *string  `json:"textSearch"`
+	Beds           *int            `json:"beds"`
+	Baths          *int            `json:"baths"`
+	MinPrice       *float64        `json:"minPrice"`
+	MaxPrice       *float64        `json:"maxPrice"`
+	MinSqMt        *float64        `json:"minSqMt"`
+	MaxSqMt        *float64        `json:"maxSqMt"`
+	MinLotSize     *float64        `json:"minLotSize"`
+	MaxLotSize     *float64        `json:"maxLotSize"`
+	MinYearBuilt   *int            `json:"minYearBuilt"`
+	MaxYearBuilt   *int            `json:"maxYearBuilt"`
+	City           *string         `json:"city"`
+	State          *string         `json:"state"`
+	Contract       *string         `json:"contract"`
+	PropType       *string         `json:"propType"`
+	Zip            *string         `json:"zip"`
+	NbHood         *string         `json:"nbHood"`
+	Status         *PropertyStatus `json:"status"`
+	Featured       *bool           `json:"featured"`
+	OrderBy        *string         `json:"orderBy"`
+	OrderDirection *string         `json:"orderDirection"`
+	TextSearch     *string         `json:"textSearch"`
 	// New fields for location-based searches
 	NearLat      *float64 `json:"nearLat"`
 	NearLon      *float64 `json:"nearLon"`
@@ -348,6 +356,42 @@ func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
 		nextParamIdx++
 	}
 
+	if filter.MinSqMt != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`square_mt >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MinSqMt)
+		nextParamIdx++
+	}
+
+	if filter.MaxSqMt != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`square_mt <= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MaxSqMt)
+		nextParamIdx++
+	}
+
+	if filter.MinLotSize != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`lot_size >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MinLotSize)
+		nextParamIdx++
+	}
+
+	if filter.MaxLotSize != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`lot_size <= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MaxLotSize)
+		nextParamIdx++
+	}
+
+	if filter.MinYearBuilt != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`year_built >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MinYearBuilt)
+		nextParamIdx++
+	}
+
+	if filter.MaxYearBuilt != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`year_built <= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MaxYearBuilt)
+		nextParamIdx++
+	}
+
 	if filter.Beds != nil {
 		queryConditions = append(queryConditions, fmt.Sprintf(`beds >= $%d`, nextParamIdx))
 		queryParams = append(queryParams, *filter.Beds)
@@ -390,6 +434,12 @@ func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
 		nextParamIdx++
 	}
 
+	if filter.Status != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`status = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Status)
+		nextParamIdx++
+	}
+
 	if filter.Featured != nil {
 		queryConditions = append(queryConditions, fmt.Sprintf(`featured = $%d`, nextParamIdx))
 		queryParams = append(queryParams, *filter.Featured)
@@ -408,7 +458,8 @@ func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
 		queryConditions = append(queryConditions, fmt.Sprintf(`
 			to_tsvector('spanish',
 				address || ' ' || description || ' ' || city || ' ' || state || ' ' ||
-				zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood
+				zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood || ' ' ||
+				CAST(year_built AS TEXT) || ' ' || CAST(beds AS TEXT) || ' ' || CAST(baths AS TEXT)
 			) @@ plainto_tsquery('spanish', $%d)`, nextParamIdx))
 		queryParams = append(queryParams, *filter.TextSearch)
 		nextParamIdx++
@@ -717,7 +768,39 @@ func FindPropertyById(propId string) (property *Property, err error) {
 	return
 }
 
-func UpdatePropertyImages(id string, images []string) error {
+func UpdatePropertyImages(property *Property) error {
+	conn, err := GetPool()
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	args := pgx.NamedArgs{
+		"images":   property.Images,
+		"main_img": property.MainImg,
+		"id":       property.Id,
+	}
+
+	_, err = tx.Exec(
+		ctx,
+		"UPDATE properties SET images = @images, main_img = @main_img WHERE id = @id",
+		args,
+	)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func UpdatePropertyImgs(id string, images []string) error {
 	conn, err := GetPool()
 	if err != nil {
 		return err

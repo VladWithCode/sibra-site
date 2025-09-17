@@ -7,7 +7,7 @@ import (
 )
 
 func RegisterPriceMapRoutes(router *customServeMux) {
-	router.HandleFunc("GET /mapa", RenderMap)
+	router.HandleFunc("GET /api/mapa", RenderMap)
 }
 
 func RenderMap(w http.ResponseWriter, r *http.Request) {

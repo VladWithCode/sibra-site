@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -19,8 +20,6 @@ import (
 	"github.com/vladwithcode/sibra-site/internal"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
-	"github.com/vladwithcode/sibra-site/internal/templates"
-	"github.com/vladwithcode/sibra-site/internal/templates/components"
 )
 
 func RegisterPropertyRoutes(router *customServeMux) {
@@ -60,54 +59,43 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 		return
 	}
 
-	resData, err := json.Marshal(map[string]any{
+	respondWithJSON(w, 200, map[string]any{
 		"property": property,
+		"success":  true,
 	})
-	if err != nil {
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-	w.Header().Add("Content-Type", "application/json")
-	w.WriteHeader(200)
-	w.Write(resData)
 
 	err = property.CreateStaticDir()
-
 	if err != nil {
 		fmt.Printf("Error creating static dir for prop: %v\n", property.Id)
 	}
 }
 
 func UpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+	property := db.Property{}
+	err := json.NewDecoder(r.Body).Decode(&property)
 	defer r.Body.Close()
-	newProperty := db.Property{}
-	err := json.NewDecoder(r.Body).Decode(&newProperty)
-
 	if err != nil {
-		fmt.Printf("parse form err: %v\n", err)
-		w.WriteHeader(400)
-		w.Write([]byte("No se pudo procesar el formulario"))
-		return
-	}
-	newProperty.Id = r.PathValue("id")
-
-	err = db.UpdateProperty(&newProperty)
-
-	if err != nil {
-		fmt.Printf("update err: %v\n", err)
-		w.WriteHeader(400)
-		w.Write([]byte("No se pudo actualizar la propiedad"))
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "El formulario contiene información inválida",
+		})
+		log.Printf("Error decoding request body: %v", err)
 		return
 	}
 
-	err = components.UpdatePropForm(
-		&newProperty,
-		&templates.InvalidFields{},
-		true,
-	).Render(context.Background(), w)
+	property.Id = r.PathValue("id")
+	err = db.UpdateProperty(&property)
 	if err != nil {
-		panic(err)
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar la propiedad",
+		})
+		log.Printf("Error updating property: %v", err)
+		return
 	}
+
+	resData, err := json.Marshal(map[string]any{
+		"success": true,
+	})
+	respondWithJSON(w, http.StatusCreated, resData)
 }
 
 func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
@@ -115,18 +103,19 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 
 	err := r.ParseMultipartForm(90 << 20)
 	if err != nil {
-		fmt.Printf("parse form err: %v\n", err)
-		w.WriteHeader(400)
-		w.Write([]byte("El formulario no pudo ser procesado"))
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "El formulario no pudo ser procesado. Asegurate de que el archivo no exceda el tamaño máximo permitido (90MB).",
+		})
+		log.Printf("Error parsing multipart form: %v\n", err)
 		return
 	}
 
 	property, err := db.FindPropertyById(id)
-
 	if err != nil {
-		fmt.Printf("Find err: %v\n", err)
-		w.WriteHeader(404)
-		w.Write([]byte("No se encontró la propiedad solicitada"))
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding property: %v\n", err)
 		return
 	}
 
@@ -134,20 +123,21 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 	err = os.MkdirAll(filePath, 0644)
 
 	if err != nil && !os.IsExist(err) {
-		fmt.Printf("Create dir err: %v\n", err)
-		w.WriteHeader(500)
-		w.Write([]byte("Error al crear el directorio para la propiedad"))
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error creating directory: %v\n", err)
 		return
 	}
 
 	pics := r.MultipartForm.File["pics"]
 	for _, fileHeader := range pics {
 		pic, err := fileHeader.Open()
-		fmt.Printf("pic: %v\n", pic)
 		if err != nil {
-			fmt.Printf("Open file err: %v\n", err)
-			w.WriteHeader(500)
-			w.Write([]byte("Error al procesar las imagenes"))
+			respondWithError(w, http.StatusInternalServerError, ErrorParams{
+				ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+			})
+			log.Printf("Error opening file [pics]: %v\n", err)
 			return
 		}
 		defer pic.Close()
@@ -156,18 +146,20 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 		filep := filepath.Join(filePath, fileName)
 		outFile, err := os.Create(filep)
 		if err != nil {
-			fmt.Printf("Create outfile err: %v\n", err)
-			w.WriteHeader(500)
-			w.Write([]byte("Error al guardar las imagenes"))
+			respondWithError(w, http.StatusInternalServerError, ErrorParams{
+				ErrorMessage: "Error al guardar las imagenes",
+			})
+			log.Printf("Error while creating file [pics]: %v", err)
 			return
 		}
 		defer outFile.Close()
 
 		_, err = io.Copy(outFile, pic)
 		if err != nil {
-			fmt.Printf("Write file err: %v\n", err)
-			w.WriteHeader(500)
-			w.Write([]byte("Error al guardar las imagenes"))
+			respondWithError(w, http.StatusInternalServerError, ErrorParams{
+				ErrorMessage: "Error al guardar las imagenes",
+			})
+			log.Printf("Error while writing file [pics]: %v", err)
 			return
 		}
 
@@ -176,9 +168,10 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 
 	mainPic, handle, err := r.FormFile("main-pic")
 	if err != nil && !strings.Contains(err.Error(), "no such file") {
-		fmt.Printf("Parse pic err: %v\n", err)
-		w.WriteHeader(500)
-		w.Write([]byte("Error al procesar la imagen"))
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Error al guardar las imagenes",
+		})
+		log.Printf("Error while reading main pic [main]: %v\n", err)
 		return
 	}
 
@@ -188,18 +181,20 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 		mainFileName := "main-pic" + filepath.Ext(handle.Filename)
 		file, err := os.Create(filepath.Join(filePath, mainFileName))
 		if err != nil {
-			fmt.Printf("Create main file err: %v\n", err)
-			w.WriteHeader(500)
-			w.Write([]byte("Error al guardar la imagen principal"))
+			respondWithError(w, http.StatusInternalServerError, ErrorParams{
+				ErrorMessage: "Error al guardar la imagen principal",
+			})
+			log.Printf("Error while creating file [main]: %v\n", err)
 			return
 		}
 		defer file.Close()
 
 		_, err = io.Copy(file, mainPic)
 		if err != nil {
-			fmt.Printf("Copy err: %v\n", err)
-			w.WriteHeader(500)
-			w.Write([]byte("Error al guardar la imagen principal"))
+			respondWithError(w, http.StatusInternalServerError, ErrorParams{
+				ErrorMessage: "Error al guardar la imagen principal",
+			})
+			log.Printf("Error while copying image [main]: %v\n", err)
 			return
 		}
 		property.MainImg = mainFileName
@@ -219,77 +214,49 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 		property.Images = newPics[:i]
 	}
 
-	err = db.UpdatePropertyImages(property.Id, property.Images)
-	err = db.UpdatePropertyMainImg(property.Id, property.MainImg)
-
+	err = db.UpdatePropertyImages(property)
 	if err != nil {
-		fmt.Printf("Write file err: %v\n", err)
-		w.WriteHeader(500)
-		w.Write([]byte("Error al procesar las imagenes"))
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar las imágenes de la propiedad",
+		})
+		log.Printf("UpdatePropertyImages err: %v\n", err)
 		return
 	}
 
-	err = components.UpdatePropImagesForm(property, true).Render(context.Background(), w)
-	if err != nil {
-		panic(err)
-	}
+	respondWithJSON(w, http.StatusCreated, map[string]any{
+		"success": true,
+	})
 }
 
 func DeletePropertyById(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id := r.PathValue("id")
+
 	err := db.DeletePropertyById(id)
-
 	if err != nil {
-		if strings.Contains(err.Error(), "no rows in result set") {
-			respondWithError(w, 404, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
-			return
-		}
-
-		fmt.Printf("Find err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al eliminar la propiedad",
+		})
 		return
 	}
 
-	w.Header().Add("HX-Redirect", "/admin/propiedades")
-	w.WriteHeader(200)
-	w.Write([]byte("Propiedad eliminada"))
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+	})
 }
 
 func FindSingleProperty(w http.ResponseWriter, r *http.Request) {
 	propId := r.PathValue("id")
 
 	prop, err := db.FindPropertyById(propId)
-
 	if err != nil {
-		fmt.Printf("Find err: %v\n", err)
-		respondWithError(w, 404, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
+		respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
+		log.Printf("Error while finding property: %v\n", err)
 		return
 	}
 
-	templ, err := template.New("layout.html").Funcs(template.FuncMap{
-		"FormatMoney": internal.FormatMoney,
-		"FormatDate":  internal.FormatDate,
-		"CalcPricePerM": func(p, sqM float64) string {
-			ppM := p / sqM
-			return fmt.Sprintf("%.2f/m²", ppM)
-		},
-	}).ParseFiles("web/templates/layout.html", "web/templates/property.html")
-
-	if err != nil {
-		fmt.Printf("Parse template err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	err = templ.Execute(w, map[string]any{
-		"Prop": prop,
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"property": prop,
 	})
-
-	if err != nil {
-		fmt.Printf("Execute template err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
 }
 
 func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
@@ -301,49 +268,24 @@ func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 
 	prop, err := db.FindPropertyById(id)
 	if err != nil {
-		if strings.Contains(err.Error(), "no rows") {
-			respondWithError(w, 404, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
 		}
-		fmt.Printf("err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{})
+		log.Printf("Error finding property: %v\n", err)
 		return
 	}
 
 	nearbyProps, err := db.FindNearbyProperties(id, nearbyDistance)
-
-	if err != nil && !strings.Contains(err.Error(), "no rows") {
-		fmt.Printf("err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	templ, err := template.New("layout.html").Funcs(template.FuncMap{
-		"FormatMoney": internal.FormatMoney,
-		"FormatDate":  internal.FormatDate,
-		"SetField":    internal.SetField,
-		"GetImgSpan":  internal.GetImgSpan,
-		"CalcPricePerM": func(p, sqM float64) string {
-			ppM := p / sqM
-			return fmt.Sprintf("%.2f/m²", ppM)
-		},
-	}).ParseFiles("web/templates/layout.html", "web/templates/property.html", "web/templates/request-form.html")
-
 	if err != nil {
-		fmt.Printf("Parse template err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
+		log.Printf("Error finding nearby properties: %v\n", err)
 		return
 	}
 
-	err = templ.Execute(w, map[string]any{
-		"Prop":        prop,
-		"NearbyProps": nearbyProps,
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"property":         prop,
+		"nearbyProperties": nearbyProps,
 	})
-
-	if err != nil {
-		fmt.Printf("Execute template err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
 }
 
 func FindProperties(w http.ResponseWriter, r *http.Request) {

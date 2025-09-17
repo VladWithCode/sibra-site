@@ -17,28 +17,22 @@ import (
 func NewRouter() http.Handler {
 	router := NewCustomServeMux()
 
-	router.HandleFunc("GET /{$}", RenderIndex)
-	router.HandleFunc("GET /terminos-servicio", auth.CheckAuthMiddleware(RenderTerms))
-	router.HandleFunc("GET /politica-privacidad", auth.CheckAuthMiddleware(RenderPrivacy))
-
 	// Api router
+	// RegisterAdminRoutes(router)
 	RegisterPropertyRoutes(router)
 	RegisterPriceMapRoutes(router)
-	RegisterAdminRoutes(router)
 	RegisterUserRoutes(router)
 	RegisterRequestsRouter(router)
 
 	// Signup/Signin
-	//router.HandleFunc("GET /registrarse", auth.CheckAuthMiddleware(RenderSignin))
-	router.HandleFunc("GET /iniciar-sesion", auth.CheckAuthMiddleware(RenderSignin))
-	router.HandleFunc("GET /signin", auth.CheckAuthMiddleware(RenderSignin))
+	router.HandleFunc("GET /api/iniciar-sesion", auth.CheckAuthMiddleware(RenderSignin))
 
 	// Serve static
 	// *Might change it to serve static files through nginx
 	fs := http.FileServer(http.Dir("web/static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
-	router.NotFoundHandleFunc(auth.CheckAuthMiddleware(render404Page))
+	// router.NotFoundHandleFunc(auth.CheckAuthMiddleware(render404Page))
 
 	return router
 }
@@ -120,37 +114,6 @@ func RenderSignin(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
 		return
 	}
 
-	templ, err := template.ParseFiles("web/templates/layout.html", "web/templates/sign-in.html")
-
-	if err != nil {
-		fmt.Println(err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	data := map[string]any{
-		"User": auth,
-	}
-
-	templ.Execute(w, data)
-}
-
-func render404Page(w http.ResponseWriter, _ *http.Request, auth *auth.Auth) {
-	templ, err := template.ParseFiles("web/templates/layout.html", "web/templates/404.html")
-
-	if err != nil {
-		fmt.Printf("err: %v\n", err)
-		panic(err)
-	}
-
-	err = templ.Execute(w, map[string]any{
-		"User": auth,
-	})
-
-	if err != nil {
-		fmt.Printf("err: %v\n", err)
-		panic(err)
-	}
 }
 
 type ErrorParams struct {
@@ -159,7 +122,6 @@ type ErrorParams struct {
 }
 
 func respondWithError(w http.ResponseWriter, code int, params ErrorParams) {
-	w.Header().Set("Content-Type", "application/json")
 	response := map[string]any{
 		"error": params.ErrorMessage,
 		"etc":   params.Etc,
@@ -168,8 +130,13 @@ func respondWithError(w http.ResponseWriter, code int, params ErrorParams) {
 		response["error"] = "Ocurrio un error inesperado en el servidor"
 	}
 
+	respondWithJSON(w, code, response)
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, data any) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	err := json.NewEncoder(w).Encode(response)
+	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
 		http.Error(w, "Ocurrio un error inesperado en el servidor", http.StatusInternalServerError)
 		log.Printf("Error: %v\n", err)
