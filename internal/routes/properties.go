@@ -23,6 +23,7 @@ import (
 )
 
 func RegisterPropertyRoutes(router *customServeMux) {
+	router.HandleFunc("GET /api/propiedades/destacadas", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
 	router.HandleFunc("POST /api/property", auth.WithAuthMiddleware(CreateProperty))
@@ -241,6 +242,19 @@ func DeletePropertyById(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success": true,
+	})
+}
+
+func FindFeaturedProperties(w http.ResponseWriter, r *http.Request) {
+	props, err := db.FindFeaturedProperties()
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{})
+		log.Printf("Error finding featured properties: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"properties": props,
 	})
 }
 

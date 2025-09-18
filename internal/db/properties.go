@@ -626,6 +626,64 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 	return
 }
 
+func FindFeaturedProperties() ([]*Property, error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	var properties []*Property
+
+	rows, err := conn.Query(
+		ctx,
+		`SELECT
+            id, address, city, state, zip, nb_hood, price, property_type, contract,
+            beds, baths, square_mt, lot_size, listing_date, main_img, imgs, slug
+        FROM properties
+        WHERE featured = true`,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var property Property
+		err = rows.Scan(
+			&property.Id,
+			&property.Address,
+			&property.City,
+			&property.State,
+			&property.Zip,
+			&property.NbHood,
+			&property.Price,
+			&property.PropertyType,
+			&property.Contract,
+			&property.Beds,
+			&property.Baths,
+			&property.SqMt,
+			&property.LotSize,
+			&property.ListingDate,
+			&property.MainImg,
+			&property.Images,
+			&property.Slug,
+		)
+		if err != nil {
+			return nil, err
+		}
+		properties = append(properties, &property)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return properties, nil
+}
+
 func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 	conn, err := GetPool()
 	if err != nil {
