@@ -24,6 +24,7 @@
     "@tanstack/react-router": "^1.131.41",
     "@tanstack/react-router-devtools": "^1.131.42",
     "@tanstack/router-plugin": "^1.131.43",
+    "@vis.gl/react-google-maps": "^1.5.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
