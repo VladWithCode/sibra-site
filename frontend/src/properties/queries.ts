@@ -1,7 +1,7 @@
 import type { TProperty } from "./type";
 
 export async function getProperties(): Promise<TProperty[]> {
-    const response = await fetch("/api/properties");
+    const response = await fetch("/api/propiedades/destacadas");
     let props: TProperty[];
     try {
         const data = await response.json();
