@@ -13,6 +13,11 @@
     --color-sbr-green: #00bf5a;
     --color-sbr-green-dark: #4bbd80;
     --color-sbr-green-light: #51eb5b;
+
+    --breakpoint-xs: 24rem;
+
+    ----default-transition-duration: 300ms;
+    --transition-appear: translate, opacity, transform;
 }
 
 @layer base {
