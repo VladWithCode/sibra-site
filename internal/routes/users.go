@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -438,18 +439,12 @@ func DeleteUserPicture(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	err = os.Remove(fileName)
 
 	if err != nil {
-		fmt.Printf("Get err: %v\n", err)
 		w.WriteHeader(500)
 		templ.ExecuteTemplate(w, "del-pic-form", map[string]any{
 			"Error":        true,
 			"ErrorMessage": "Error al eliminar la imagen",
 		})
-
-		if err != nil {
-			fmt.Printf("Exec error templ err: %v\n", err)
-			respondWithError(w, 500, ErrorParams{})
-			return
-		}
+		log.Printf("Error deleting user picture: %v\n", err)
 		return
 	}
 	user.Img = ""
