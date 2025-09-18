@@ -8,7 +8,7 @@ export type TProperty = {
     nbHood: string;
     country: string;
     price: number;
-    propType: string;
+    propertyType: string;
     contract: string;
     beds: number;
     baths: number;
