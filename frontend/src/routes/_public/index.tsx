@@ -54,7 +54,7 @@ function RouteComponent() {
                     </Button>
                 </div>
             </section>
-            <section className="relative z-0 px-6 py-12 space-y-6">
+            <section className="relative z-0 max-w-screen px-6 py-12 space-y-6 overflow-hidden">
                 <div className="space-y-1">
                     <h2 className="text-2xl font-semibold">Últimas propiedades en oferta</h2>
                     <p className="text-current/60">Oportunidades únicas</p>
@@ -189,10 +189,8 @@ function PropertyCarousel({ properties }: { properties: TProperty[] }) {
 
 function PropertyCarouselItem({ children }: {} & PropsWithChildren) {
     return (
-        <CarouselItem className="not-first:pl-6 basis-3/4 aspect-[3/2]">
-            <div className="h-full flex items-center justify-center bg-gray-50 rounded-lg">
-                {children}
-            </div>
+        <CarouselItem className="not-first:pl-6 grow-0 shrink-0 basis-6/7 xs:basis-3/4 max-w-96 aspect-[2/1]">
+            {children}
         </CarouselItem>
     );
 }
