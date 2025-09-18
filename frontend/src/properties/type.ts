@@ -1,0 +1,31 @@
+export type TProperty = {
+    id: string;
+    address: string;
+    description: string;
+    city: string;
+    state: string;
+    zip: string;
+    nbHood: string;
+    country: string;
+    price: number;
+    propType: string;
+    contract: string;
+    beds: number;
+    baths: number;
+    sqMt: number;
+    lotSize: number;
+    listingDate: string;
+    yearBuilt: number;
+    status: string;
+    coords: string;
+    features: string;
+    lat: number;
+    lon: number;
+    featured: boolean;
+    featuredExpiresAt: string;
+    mainImg: string;
+    imgs: string[];
+    agent: string;
+    slug: string;
+    agentData: string;
+}

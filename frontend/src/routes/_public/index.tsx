@@ -6,12 +6,22 @@ import { useCallback, useEffect, useState, type PropsWithChildren } from 'react'
 import { Card, CardContent } from '@/components/ui/card';
 import { SecondaryLinkButton } from '@/components/sibra_buttons';
 import { HomeIcon, LoanIcon, ProjectsIcon, SellHomeIcon } from '@/components/icons/icons';
+import { PropertyCard } from '@/components/properties/PropertyCard';
+import { getPropertyOpts } from '@/queries/properties';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import type { TProperty } from '@/properties';
 
 export const Route = createFileRoute('/_public/')({
     component: RouteComponent,
+    loader: async ({ context }) => {
+        const properties = await context.queryClient.ensureQueryData(getPropertyOpts)
+
+        return { properties }
+    },
 })
 
 function RouteComponent() {
+    const { data: properties } = useSuspenseQuery(getPropertyOpts)
     const onSearch = (search: string) => {
         console.log(search);
     }
@@ -49,7 +59,7 @@ function RouteComponent() {
                     <h2 className="text-2xl font-semibold">Últimas propiedades en oferta</h2>
                     <p className="text-current/60">Oportunidades únicas</p>
                 </div>
-                <PropertyCarousel />
+                <PropertyCarousel properties={properties} />
             </section>
             <section className="relative z-0 bg-gray-200 px-6 py-12 space-y-6">
                 <h2 className="sr-only">Nuestros servicios</h2>
@@ -131,24 +141,19 @@ function RouteComponent() {
     );
 }
 
-function PropertyCarousel() {
-    const [properties, setProperties] = useState<string[]>([])
-    const [currentProperty, setCurrentProperty] = useState("")
+function PropertyCarousel({ properties }: { properties: TProperty[] }) {
+    const [currentProperty, setCurrentProperty] = useState(0)
     const [api, setApi] = useState<CarouselApi>()
     const selectSlideCb = useCallback((api: CarouselApi) => {
         if (!api) return
-        setCurrentProperty(String(api.selectedScrollSnap() + 1))
+        setCurrentProperty(api.selectedScrollSnap())
     }, [])
 
     useEffect(() => {
-        for (let i = 0; i < 10; i++) {
-            setProperties((prev) => [...prev, (i + 1).toString()])
-        }
-        setCurrentProperty("1")
+        setCurrentProperty(0)
 
         return () => {
-            setProperties([])
-            setCurrentProperty("")
+            setCurrentProperty(0)
         }
     }, [])
 
@@ -162,19 +167,19 @@ function PropertyCarousel() {
         <Carousel className="space-y-3" setApi={setApi}>
             <CarouselContent>
                 {properties.map((property) => (
-                    <PropertyCarouselItem key={property}>
-                        {property}
+                    <PropertyCarouselItem key={property.id}>
+                        <PropertyCard property={property} />
                     </PropertyCarouselItem>
                 ))}
             </CarouselContent>
             {/* <CarouselPrevious className="-left-5 bg-sbr-blue text-white" />
             <CarouselNext className="-right-5 bg-sbr-blue text-white" /> */}
             <div className="flex items-center justify-center gap-1.5">
-                {properties.map((property) => (
+                {properties.map((property, idx) => (
                     <div
-                        key={property}
+                        key={`dot-${property.id}`}
                         className="rounded-full size-2 bg-gray-400 data-[state=active]:bg-sbr-blue data-[state=inactive]:bg-gray-400 transition-colors"
-                        data-state={property === currentProperty ? "active" : "inactive"}
+                        data-state={idx === currentProperty ? "active" : "inactive"}
                     ></div>
                 ))}
             </div>

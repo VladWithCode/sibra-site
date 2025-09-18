@@ -9,11 +9,15 @@ import { useGSAP } from '@gsap/react';
 import { routeTree } from './routeTree.gen'
 
 import './index.css'
+import { queryClient } from './queries/queryClient';
 
 // Create a new router instance
 const router = createRouter({
     routeTree,
-    context: {},
+    context: {
+        user: null,
+        queryClient: queryClient,
+    },
     defaultPreload: 'intent',
     scrollRestoration: true,
     defaultStructuralSharing: true,
