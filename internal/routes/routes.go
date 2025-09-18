@@ -32,7 +32,7 @@ func NewRouter() http.Handler {
 	fs := http.FileServer(http.Dir("web/static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
-	// router.NotFoundHandleFunc(auth.CheckAuthMiddleware(render404Page))
+	router.NotFoundHandleFunc(auth.CheckAuthMiddleware(respondWith404))
 
 	return router
 }
@@ -114,6 +114,16 @@ func RenderSignin(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
 		return
 	}
 
+}
+
+func respondWith404(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
+	respondWithError(w, 404, ErrorParams{
+		ErrorMessage: "La página que estás buscando no existe",
+		Etc: map[string]any{
+			"url":           r.URL.Path,
+			"routeNotFound": true,
+		},
+	})
 }
 
 type ErrorParams struct {
