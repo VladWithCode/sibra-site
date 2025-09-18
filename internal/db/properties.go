@@ -102,7 +102,7 @@ type Property struct {
 	NbHood            string         `json:"nbHood" db:"nb_hood"`
 	Country           string         `json:"country" db:"country"`
 	Price             float64        `json:"price" db:"price"`
-	PropertyType      string         `json:"propType" db:"property_type"`
+	PropertyType      string         `json:"propertyType" db:"property_type"`
 	Contract          string         `json:"contract" db:"contract"`
 	Beds              int            `json:"beds" db:"beds"`
 	Baths             int            `json:"baths" db:"baths"`
