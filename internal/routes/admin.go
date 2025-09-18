@@ -43,7 +43,7 @@ func AdminSignIn(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 		return
 	}
 
-	if user.Role != db.RoleAdmin || user.Role != db.RoleEditor {
+	if a.HasAccess(auth.AccessLevelEditor) {
 		respondWithError(w, 403, ErrorParams{ErrorMessage: "No tienes acceso a esta página"})
 	}
 
