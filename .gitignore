@@ -15,6 +15,9 @@ web/static/users/*
 !web/static/users/sample.png
 !web/static/users/.keep
 
+# [TEMP] Ignore templ files
+internal/templates
+
 # Ignore frontend files
 node_modules
 .DS_Store
