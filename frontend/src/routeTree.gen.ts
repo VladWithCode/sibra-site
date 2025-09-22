@@ -9,7 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PublicRouteImport } from './routes/_public'
+import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicTerrenosRouteImport } from './routes/_public/terrenos'
 import { Route as PublicTerminosYCondicionesRouteImport } from './routes/_public/terminos-y-condiciones'
@@ -21,61 +21,61 @@ import { Route as PublicInfonavitRouteImport } from './routes/_public/infonavit'
 import { Route as PublicFavoritosRouteImport } from './routes/_public/favoritos'
 import { Route as PublicContactoRouteImport } from './routes/_public/contacto'
 
-const PublicRoute = PublicRouteImport.update({
+const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicTerrenosRoute = PublicTerrenosRouteImport.update({
   id: '/terrenos',
   path: '/terrenos',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicTerminosYCondicionesRoute =
   PublicTerminosYCondicionesRouteImport.update({
     id: '/terminos-y-condiciones',
     path: '/terminos-y-condiciones',
-    getParentRoute: () => PublicRoute,
+    getParentRoute: () => PublicRouteRoute,
   } as any)
 const PublicPropiedadesRoute = PublicPropiedadesRouteImport.update({
   id: '/propiedades',
   path: '/propiedades',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicPoliticaDePrivacidadRoute =
   PublicPoliticaDePrivacidadRouteImport.update({
     id: '/politica-de-privacidad',
     path: '/politica-de-privacidad',
-    getParentRoute: () => PublicRoute,
+    getParentRoute: () => PublicRouteRoute,
   } as any)
 const PublicNosotrosRoute = PublicNosotrosRouteImport.update({
   id: '/nosotros',
   path: '/nosotros',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicIniciarSesionRoute = PublicIniciarSesionRouteImport.update({
   id: '/iniciar-sesion',
   path: '/iniciar-sesion',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicInfonavitRoute = PublicInfonavitRouteImport.update({
   id: '/infonavit',
   path: '/infonavit',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicFavoritosRoute = PublicFavoritosRouteImport.update({
   id: '/favoritos',
   path: '/favoritos',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PublicContactoRoute = PublicContactoRouteImport.update({
   id: '/contacto',
   path: '/contacto',
-  getParentRoute: () => PublicRoute,
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -104,7 +104,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_public': typeof PublicRouteWithChildren
+  '/_public': typeof PublicRouteRouteWithChildren
   '/_public/contacto': typeof PublicContactoRoute
   '/_public/favoritos': typeof PublicFavoritosRoute
   '/_public/infonavit': typeof PublicInfonavitRoute
@@ -157,7 +157,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  PublicRoute: typeof PublicRouteWithChildren
+  PublicRouteRoute: typeof PublicRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -166,7 +166,7 @@ declare module '@tanstack/react-router' {
       id: '/_public'
       path: ''
       fullPath: ''
-      preLoaderRoute: typeof PublicRouteImport
+      preLoaderRoute: typeof PublicRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_public/': {
@@ -174,75 +174,75 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof PublicIndexRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/terrenos': {
       id: '/_public/terrenos'
       path: '/terrenos'
       fullPath: '/terrenos'
       preLoaderRoute: typeof PublicTerrenosRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/terminos-y-condiciones': {
       id: '/_public/terminos-y-condiciones'
       path: '/terminos-y-condiciones'
       fullPath: '/terminos-y-condiciones'
       preLoaderRoute: typeof PublicTerminosYCondicionesRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/propiedades': {
       id: '/_public/propiedades'
       path: '/propiedades'
       fullPath: '/propiedades'
       preLoaderRoute: typeof PublicPropiedadesRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/politica-de-privacidad': {
       id: '/_public/politica-de-privacidad'
       path: '/politica-de-privacidad'
       fullPath: '/politica-de-privacidad'
       preLoaderRoute: typeof PublicPoliticaDePrivacidadRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/nosotros': {
       id: '/_public/nosotros'
       path: '/nosotros'
       fullPath: '/nosotros'
       preLoaderRoute: typeof PublicNosotrosRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/iniciar-sesion': {
       id: '/_public/iniciar-sesion'
       path: '/iniciar-sesion'
       fullPath: '/iniciar-sesion'
       preLoaderRoute: typeof PublicIniciarSesionRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/infonavit': {
       id: '/_public/infonavit'
       path: '/infonavit'
       fullPath: '/infonavit'
       preLoaderRoute: typeof PublicInfonavitRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/favoritos': {
       id: '/_public/favoritos'
       path: '/favoritos'
       fullPath: '/favoritos'
       preLoaderRoute: typeof PublicFavoritosRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
     '/_public/contacto': {
       id: '/_public/contacto'
       path: '/contacto'
       fullPath: '/contacto'
       preLoaderRoute: typeof PublicContactoRouteImport
-      parentRoute: typeof PublicRoute
+      parentRoute: typeof PublicRouteRoute
     }
   }
 }
 
-interface PublicRouteChildren {
+interface PublicRouteRouteChildren {
   PublicContactoRoute: typeof PublicContactoRoute
   PublicFavoritosRoute: typeof PublicFavoritosRoute
   PublicInfonavitRoute: typeof PublicInfonavitRoute
@@ -255,7 +255,7 @@ interface PublicRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
 }
 
-const PublicRouteChildren: PublicRouteChildren = {
+const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicContactoRoute: PublicContactoRoute,
   PublicFavoritosRoute: PublicFavoritosRoute,
   PublicInfonavitRoute: PublicInfonavitRoute,
@@ -268,11 +268,12 @@ const PublicRouteChildren: PublicRouteChildren = {
   PublicIndexRoute: PublicIndexRoute,
 }
 
-const PublicRouteWithChildren =
-  PublicRoute._addFileChildren(PublicRouteChildren)
+const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
+  PublicRouteRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
-  PublicRoute: PublicRouteWithChildren,
+  PublicRouteRoute: PublicRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
