@@ -9,7 +9,7 @@ import { HomeIcon, LoanIcon, ProjectsIcon, SellHomeIcon } from '@/components/ico
 import { PropertyCard } from '@/components/properties/PropertyCard';
 import { getPropertyOpts } from '@/queries/properties';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import type { TProperty } from '@/properties';
+import type { TProperty } from '@/queries/type';
 
 export const Route = createFileRoute('/_public/')({
     component: RouteComponent,

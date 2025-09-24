@@ -1,4 +1,3 @@
-import type { TProperty } from "@/properties";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { SqMtIcon } from "../icons/icons";
 import { FormatMoney } from "@/lib/format";
@@ -6,6 +5,7 @@ import { Button } from "../ui/button";
 import { Heart, Image, Map, Share2 } from "lucide-react";
 import { PropertyLocationMap } from "@/maps/component";
 import { useState } from "react";
+import type { TProperty } from "@/queries/type";
 
 export type TPropertyCardProps = {
     propData: TProperty;
