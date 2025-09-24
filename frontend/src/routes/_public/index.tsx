@@ -7,21 +7,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { SecondaryLinkButton } from '@/components/sibra_buttons';
 import { HomeIcon, LoanIcon, ProjectsIcon, SellHomeIcon } from '@/components/icons/icons';
 import { PropertyCard } from '@/components/properties/PropertyCard';
-import { getPropertyOpts } from '@/queries/properties';
+import { getPropertiesOpts } from '@/queries/properties';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import type { TProperty } from '@/queries/type';
 
 export const Route = createFileRoute('/_public/')({
     component: RouteComponent,
     loader: async ({ context }) => {
-        const properties = await context.queryClient.ensureQueryData(getPropertyOpts)
-
-        return { properties }
+        await context.queryClient.ensureQueryData(getPropertiesOpts)
     },
 })
 
 function RouteComponent() {
-    const { data: properties } = useSuspenseQuery(getPropertyOpts)
+    const { data: properties } = useSuspenseQuery(getPropertiesOpts)
     const onSearch = (search: string) => {
         console.log(search);
     }
