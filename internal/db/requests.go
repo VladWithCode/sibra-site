@@ -55,8 +55,8 @@ func CreateRequest(req *Request) error {
 		ctx,
 		`
 		INSERT INTO
-			requests (id, type, phone, name, date, status, agent, scheduled_date, property) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)	
+			requests (id, type, phone, name, date, status, agent, scheduled_date, property)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		`,
 		req.Id,
 		req.Type,
@@ -86,7 +86,7 @@ func GetRequestsPagination(filter *RequestFilter, limit, page int) (paginationDa
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	var queryParams []interface{}
+	var queryParams []any
 	var queryConditions []string
 
 	if filter.Type != nil {
@@ -177,7 +177,7 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 		paginateOpts = fmt.Sprintf(" OFFSET %v", limit*(page-1))
 	}
 
-	var queryParams []interface{}
+	var queryParams []any
 	var queryConditions []string
 
 	if filter.Type != nil {
