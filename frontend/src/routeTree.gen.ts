@@ -25,6 +25,7 @@ import { Route as PublicPropiedadesListingRouteRouteImport } from './routes/_pub
 import { Route as PublicPropiedadesDetailRouteRouteImport } from './routes/_public/propiedades/_detail/route'
 import { Route as PublicPropiedadesListingIndexRouteImport } from './routes/_public/propiedades/_listing/index'
 import { Route as PublicPropiedadesListingContractRouteImport } from './routes/_public/propiedades/_listing/$contract'
+import { Route as PublicPropiedadesDetailContractSlugRouteImport } from './routes/_public/propiedades/_detail/$contract.$slug'
 
 const PublicPropiedadesRouteImport = createFileRoute('/_public/propiedades')()
 
@@ -106,6 +107,12 @@ const PublicPropiedadesListingContractRoute =
     path: '/$contract',
     getParentRoute: () => PublicPropiedadesListingRouteRoute,
   } as any)
+const PublicPropiedadesDetailContractSlugRoute =
+  PublicPropiedadesDetailContractSlugRouteImport.update({
+    id: '/$contract/$slug',
+    path: '/$contract/$slug',
+    getParentRoute: () => PublicPropiedadesDetailRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/contacto': typeof PublicContactoRoute
@@ -120,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/propiedades': typeof PublicPropiedadesListingRouteRouteWithChildren
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/propiedades/': typeof PublicPropiedadesListingIndexRoute
+  '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
 }
 export interface FileRoutesByTo {
   '/contacto': typeof PublicContactoRoute
@@ -133,6 +141,7 @@ export interface FileRoutesByTo {
   '/': typeof PublicIndexRoute
   '/propiedades': typeof PublicPropiedadesListingIndexRoute
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
+  '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -147,10 +156,11 @@ export interface FileRoutesById {
   '/_public/terrenos': typeof PublicTerrenosRoute
   '/_public/': typeof PublicIndexRoute
   '/_public/propiedades': typeof PublicPropiedadesRouteWithChildren
-  '/_public/propiedades/_detail': typeof PublicPropiedadesDetailRouteRoute
+  '/_public/propiedades/_detail': typeof PublicPropiedadesDetailRouteRouteWithChildren
   '/_public/propiedades/_listing': typeof PublicPropiedadesListingRouteRouteWithChildren
   '/_public/propiedades/_listing/$contract': typeof PublicPropiedadesListingContractRoute
   '/_public/propiedades/_listing/': typeof PublicPropiedadesListingIndexRoute
+  '/_public/propiedades/_detail/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -167,6 +177,7 @@ export interface FileRouteTypes {
     | '/propiedades'
     | '/propiedades/$contract'
     | '/propiedades/'
+    | '/propiedades/$contract/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/contacto'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/'
     | '/propiedades'
     | '/propiedades/$contract'
+    | '/propiedades/$contract/$slug'
   id:
     | '__root__'
     | '/_public'
@@ -197,6 +209,7 @@ export interface FileRouteTypes {
     | '/_public/propiedades/_listing'
     | '/_public/propiedades/_listing/$contract'
     | '/_public/propiedades/_listing/'
+    | '/_public/propiedades/_detail/$contract/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -310,8 +323,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPropiedadesListingContractRouteImport
       parentRoute: typeof PublicPropiedadesListingRouteRoute
     }
+    '/_public/propiedades/_detail/$contract/$slug': {
+      id: '/_public/propiedades/_detail/$contract/$slug'
+      path: '/$contract/$slug'
+      fullPath: '/propiedades/$contract/$slug'
+      preLoaderRoute: typeof PublicPropiedadesDetailContractSlugRouteImport
+      parentRoute: typeof PublicPropiedadesDetailRouteRoute
+    }
   }
 }
+
+interface PublicPropiedadesDetailRouteRouteChildren {
+  PublicPropiedadesDetailContractSlugRoute: typeof PublicPropiedadesDetailContractSlugRoute
+}
+
+const PublicPropiedadesDetailRouteRouteChildren: PublicPropiedadesDetailRouteRouteChildren =
+  {
+    PublicPropiedadesDetailContractSlugRoute:
+      PublicPropiedadesDetailContractSlugRoute,
+  }
+
+const PublicPropiedadesDetailRouteRouteWithChildren =
+  PublicPropiedadesDetailRouteRoute._addFileChildren(
+    PublicPropiedadesDetailRouteRouteChildren,
+  )
 
 interface PublicPropiedadesListingRouteRouteChildren {
   PublicPropiedadesListingContractRoute: typeof PublicPropiedadesListingContractRoute
@@ -331,12 +366,13 @@ const PublicPropiedadesListingRouteRouteWithChildren =
   )
 
 interface PublicPropiedadesRouteChildren {
-  PublicPropiedadesDetailRouteRoute: typeof PublicPropiedadesDetailRouteRoute
+  PublicPropiedadesDetailRouteRoute: typeof PublicPropiedadesDetailRouteRouteWithChildren
   PublicPropiedadesListingRouteRoute: typeof PublicPropiedadesListingRouteRouteWithChildren
 }
 
 const PublicPropiedadesRouteChildren: PublicPropiedadesRouteChildren = {
-  PublicPropiedadesDetailRouteRoute: PublicPropiedadesDetailRouteRoute,
+  PublicPropiedadesDetailRouteRoute:
+    PublicPropiedadesDetailRouteRouteWithChildren,
   PublicPropiedadesListingRouteRoute:
     PublicPropiedadesListingRouteRouteWithChildren,
 }
