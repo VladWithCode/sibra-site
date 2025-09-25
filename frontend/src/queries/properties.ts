@@ -11,6 +11,7 @@ export type TPropertyQueryConfig = {
 
 export const PropertyQueryKeys = {
     all: () => ["properties"] as const,
+    // Property listings
     listing: () => [...PropertyQueryKeys.all(), "listing"] as const,
     featured: () => [...PropertyQueryKeys.listing(), "featured"] as const,
     byContract: (contract: string, filters: TPropertyQueryFilters) => [
@@ -28,23 +29,26 @@ export const PropertyQueryKeys = {
         "nearbyByCoords",
         { coords, nearbyDistance },
     ] as const,
+    // Single property
     detail: () => [...PropertyQueryKeys.all(), "detail"] as const,
-    byId: (id: string) => [
+    byId: (id: string, contract: string) => [
         ...PropertyQueryKeys.detail(),
         "byId",
-        { id },
+        { id, contract },
     ] as const,
-    bySlug: (slug: string) => [
+    bySlug: (slug: string, contract: string) => [
         ...PropertyQueryKeys.detail(),
         "bySlug",
-        { slug },
+        { slug, contract },
     ] as const,
 } as const;
 
 // Type helpers for queryFns to recognize the queryKey type
-type QKPropertiesFeatured = ReturnType<typeof PropertyQueryKeys.featured>;
-type QKPropertyByContract = ReturnType<typeof PropertyQueryKeys.byContract>;
-type QKPropertyById = ReturnType<typeof PropertyQueryKeys.byId>;
+export type QKPropertiesFeatured = ReturnType<typeof PropertyQueryKeys.featured>;
+export type QKPropertyByContract = ReturnType<typeof PropertyQueryKeys.byContract>;
+export type QKPropertiesNearby = ReturnType<typeof PropertyQueryKeys.nearby>;
+export type QKPropertyById = ReturnType<typeof PropertyQueryKeys.byId>;
+export type QKPropertyBySlug = ReturnType<typeof PropertyQueryKeys.bySlug>;
 
 export const getPropertiesOpts = queryOptions({
     queryKey: PropertyQueryKeys.featured(),
@@ -54,6 +58,16 @@ export const getPropertiesOpts = queryOptions({
 export const getPropertyListingOpts = (filters: TPropertyFilters) => queryOptions({
     queryKey: PropertyQueryKeys.byContract(filters.contract, filters),
     queryFn: getPropertiesByContract,
+});
+
+export const getPropertyByIdOpts = (id: string) => queryOptions({
+    queryKey: PropertyQueryKeys.byId(id),
+    queryFn: getPropertyById,
+});
+
+export const getPropertyBySlugOpts = (slug: string, contract: string) => queryOptions({
+    queryKey: PropertyQueryKeys.bySlug(slug),
+    queryFn: getPropertyBySlug,
 });
 
 export const ErrFailedToFetchProperties = new Error("Error al obtener las propiedades"),
@@ -103,3 +117,11 @@ export async function getPropertyById({ queryKey }: QueryFunctionContext<QKPrope
     return data.property;
 }
 
+export async function getPropertyBySlug({ queryKey }: QueryFunctionContext<QKPropertyBySlug>): Promise<TProperty> {
+    const { slug, contract } = queryKey[3];
+    const response = await fetch(`/api/propiedades/${contract}/${slug}`);
+    if (!response.ok) throw new Error("Error al obtener la propiedad");
+
+    const data = await response.json();
+    return data;
+}
