@@ -278,7 +278,14 @@ func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 		nearbyDistance = db.NearbyDistanceNormal // Default distance is 1km
 	}
 
-	prop, err := db.FindPropertyById(id)
+	var findFn func(string) (*db.Property, error)
+	if _, err := uuid.Parse(id); err == nil {
+		findFn = db.FindPropertyById
+	} else {
+		findFn = db.FindPropertyBySlug
+	}
+
+	prop, err := findFn(id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
