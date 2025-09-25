@@ -1,8 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { SqMtIcon } from "../icons/icons";
+import { ShareIcon, SqMtIcon } from "../icons/icons";
 import { FormatMoney } from "@/lib/format";
 import { Button } from "../ui/button";
-import { Heart, Image, Map, Share2 } from "lucide-react";
+import { Heart, Image, Map } from "lucide-react";
 import { PropertyLocationMap } from "@/maps/component";
 import { useState } from "react";
 import type { TProperty } from "@/queries/type";
@@ -22,19 +22,19 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
                     <PropertyCardHeaderWithMap property={property} /> :
                     <PropertyCardHeader property={property} />
             }
-            <CardContent className="pt-0 px-4 sm:px-6 space-y-1">
+            <CardContent className="pt-0 px-4 sm:px-6 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                     <CardTitle className="text-lg sm:text-2xl font-serif">{FormatMoney(property.price)}</CardTitle>
                     <div className="flex items-center gap-1.5">
                         <Button variant="secondary" size="icon">
-                            <Share2 />
+                            <ShareIcon className="size-5" />
                         </Button>
                         <Button variant="secondary" size="icon">
                             <Heart />
                         </Button>
                     </div>
                 </div>
-                <CardDescription className="space-y-1">
+                <CardDescription className="space-y-1.5">
                     <div className="flex items-center gap-3 text-current/60 font-semibold tracking-wide">
                         <div className="flex items-center gap-1 text-sm sm:text-base">
                             <span>{property.propertyType}</span>
@@ -57,7 +57,7 @@ export function PropertyCardHeader({ property }: { property: TProperty }) {
     return (
         <CardHeader className="p-0">
             <div className="relative z-0">
-                <div className="relative z-10 w-full aspect-[2/1] bg-gray-200">
+                <div className="relative z-10 w-full aspect-[2/1] bg-gray-200 rounded-t-lg">
                     <img
                         src={property.mainImg || undefined}
                         alt={`Imagen mostrando la propiedad ubicada en ${property.address}, ${property.nbHood}. C.P. ${property.zip}`}
