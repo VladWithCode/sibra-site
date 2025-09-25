@@ -1,5 +1,5 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import type { TProperty, TPropertyFilters } from "./type";
+import type { TProperty, TPropertyFilters, TPropertyListingResult } from "./type";
 import { queryOptions } from "@tanstack/react-query";
 
 export type TPropertyQueryFilters = TPropertyFilters
@@ -70,7 +70,7 @@ export async function getFeaturedProperties(): Promise<TProperty[]> {
     }
 }
 
-export async function getPropertiesByContract({ queryKey }: QueryFunctionContext<QKPropertyByContract>): Promise<TProperty[]> {
+export async function getPropertiesByContract({ queryKey }: QueryFunctionContext<QKPropertyByContract>): Promise<TPropertyListingResult> {
     const params = queryKey[3];
     try {
         const response = await fetch("/api/propiedades/" + params.contract, {

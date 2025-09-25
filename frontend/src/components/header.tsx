@@ -2,13 +2,22 @@ import { Heart, Home, LucideX } from "lucide-react";
 import { Button } from "./ui/button";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "./ui/navigation-menu";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
-import { HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
+import { FilterIcon, HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { cn } from "@/lib/utils";
+import { useUIStore, type TUIStore } from "@/stores/uiStore";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
+import { Input } from "./ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 
 export function Header() {
+    const { headerFloating, headerComplement } = useUIStore();
     const header = useRef<HTMLDivElement>(null)
     const pageTop = useRef<HTMLDivElement>(null)
     const tl = useRef<gsap.core.Timeline>(null)
@@ -25,7 +34,7 @@ export function Header() {
         tl.current.to(header.current, {
             y: "0rem",
             opacity: "1",
-            backgroundColor: "var(--color-sbr-blue-light)",
+            backgroundColor: headerFloating ? "var(--color-sbr-blue-light)" : "var(--color-secondary)",
         });
 
         const obsv = new IntersectionObserver((entries) => {
@@ -50,20 +59,17 @@ export function Header() {
         <>
             <div className="absolute top-[60%] inset-x-0 z-0 h-0" ref={pageTop} data-page-top></div>
             <header
-                className="absolute top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 transition-colors data-[inView=false]:sticky data-[inView=false]:bg-sbr-blue-light"
+                className={cn(
+                    "absolute top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 transition-colors data-[inView=false]:sticky data-[inView=false]:bg-sbr-blue-light",
+                    !headerFloating && "relative bg-secondary data-[inView=false]:bg-secondary shadow-sm",
+                )}
                 ref={header}
             >
                 <div className="flex items-center justify-between gap-6 text-gray-50">
-                    <div className="flex-auto grow-0">
-                        <div className="xl:hidden">
-                            <SidebarTrigger className="stroke-current" />
-                        </div>
-                        <div className="hidden xl:block">
-                            <HeaderNavigationMenu />
-                        </div>
-                    </div>
-                    <div className="flex-auto hidden"></div>
-                    <Link to="/" className="flex-auto grow-0">
+                    <SidebarTrigger className="stroke-current data-[header-floating=false]:text-gray-800 my-auto" data-header-floating={headerFloating} />
+                    <HeaderNavigationMenu className="hidden xl:block" />
+                    <HeaderComplement complementType={headerComplement} />
+                    <Link to="/" className="flex-auto grow-0 data-[header-floating=false]:brightness-30" data-header-floating={headerFloating}>
                         <img src="/sibra_logo_white_256.webp" alt="Sibra logo" className="h-8 w-auto" />
                     </Link>
                 </div>
@@ -72,9 +78,233 @@ export function Header() {
     );
 }
 
-export function HeaderNavigationMenu() {
+export function HeaderComplement({ complementType }: { complementType: TUIStore["headerComplement"] }) {
+    switch (complementType) {
+        case 'search':
+            return <HeaderComplementSearch />;
+        case 'cta':
+            return <HeaderComplementCta />;
+        case 'none':
+        default:
+            return null;
+    }
+}
+
+const propertyListingFilterFormSchema = z.object({
+    search: z.string().optional(),
+    price: z.number().gte(0, { message: "El precio debe ser un número positivo" }).optional(),
+    minPrice: z.number().gte(0, { message: "El precio mínimo debe ser un número positivo" }).optional(),
+    maxPrice: z.number().gte(0, { message: "El precio máximo debe ser un número positivo" }).optional(),
+    sqMt: z.number().gte(0, { message: "El área de más menos debe ser un número positivo" }).optional(),
+    lotSize: z.number().gte(0, { message: "El tamaño del lote debe ser un número positivo" }).optional(),
+    yearBuilt: z.number().optional(),
+    contract: z.string().optional(),
+    propType: z.string().optional(),
+    zip: z.string().optional(),
+    nbHood: z.string().optional(),
+    status: z.string().optional(),
+    minBedrooms: z.number().optional(),
+    maxBedrooms: z.number().optional(),
+    minBathrooms: z.number().optional(),
+    maxBathrooms: z.number().optional(),
+    minSqMt: z.number().optional(),
+    maxSqMt: z.number().optional(),
+    orderBy: z.string().default("listing_date").optional(),
+    orderDirection: z.string().default("desc").optional(),
+})
+
+export type formSchemaType = z.infer<typeof propertyListingFilterFormSchema>;
+
+function HeaderComplementSearch() {
+    const form = useForm<formSchemaType>({
+        resolver: zodResolver(propertyListingFilterFormSchema),
+        defaultValues: {
+            search: "",
+            price: 0,
+            minPrice: 0,
+            maxPrice: 0,
+            sqMt: 0,
+            lotSize: 0,
+            yearBuilt: 0,
+            contract: "",
+            propType: "",
+            zip: "",
+            nbHood: "",
+            status: "publicada",
+            minBedrooms: 0,
+            maxBedrooms: 0,
+            minBathrooms: 0,
+            maxBathrooms: 0,
+            minSqMt: 0,
+            maxSqMt: 0,
+            orderBy: "listing_date",
+            orderDirection: "DESC",
+        },
+    });
+
+    const onSearchSubmit = (data: formSchemaType) => {
+        console.log(data);
+    }
+
     return (
-        <NavigationMenu viewport={false}>
+        <Form {...form}>
+            <form className="space-y-8 text-gray-800" onSubmit={form.handleSubmit(onSearchSubmit)}>
+                <Dialog>
+                    <div className="relative flex">
+                        <FormField
+                            control={form.control}
+                            name="search"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input type="search" className="bg-gray-50" placeholder="Buscar..." {...field} />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <DialogTrigger asChild>
+                            <Button variant="ghost">
+                                <FilterIcon className="text-gray-400 size-4" />
+                            </Button>
+                        </DialogTrigger>
+                    </div>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Filtrar por</DialogTitle>
+                            <DialogDescription>
+                                Filtra las propiedades para que se ajusten a tus necesidades.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <FormField
+                            control={form.control}
+                            name="search"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        Buscar
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input type="search" className="bg-gray-50" placeholder="Buscar..." {...field} />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <div className="flex gap-3">
+                            <FormField
+                                control={form.control}
+                                name="minPrice"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Precio Mínimo
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input type="number" className="bg-gray-50" placeholder="Precio mínimo" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="maxPrice"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>
+                                            Precio Máximo
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input type="number" className="bg-gray-50" placeholder="Precio máximo" {...field} />
+                                        </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex gap-3">
+                                <FormField
+                                    control={form.control}
+                                    name="minSqMt"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                M² mínimo
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input type="number" className="bg-gray-50" placeholder="M² mínimo" {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="maxSqMt"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                M² máximo
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input type="number" className="bg-gray-50" placeholder="M² máximo" {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <div className="flex gap-3">
+                                <FormField
+                                    control={form.control}
+                                    name="minBedrooms"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Habitaciones Mínimas
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input type="number" className="bg-gray-50" placeholder="Habitaciones mínimas" {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="maxBedrooms"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>
+                                                Habitaciones Máximas
+                                            </FormLabel>
+                                            <FormControl>
+                                                <Input type="number" className="bg-gray-50" placeholder="Habitaciones máximas" {...field} />
+                                            </FormControl>
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter className="flex-row justify-end gap-3">
+                            <Button type="button" className="basis-30" variant="ghost">
+                                Limpiar
+                            </Button>
+                            <Button type="submit" className="basis-30" variant="default">
+                                Aplicar
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </form>
+        </Form>
+    );
+}
+
+function HeaderComplementCta() {
+    return (
+        <div className="flex-auto hidden"></div>
+    );
+}
+
+export function HeaderNavigationMenu({ className }: { className?: string }) {
+    return (
+        <NavigationMenu className={className} viewport={false}>
             <NavigationMenuList>
                 <NavigationMenuItem>
                     <NavigationMenuTrigger>Inicio</NavigationMenuTrigger>

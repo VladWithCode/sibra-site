@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -17,7 +16,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/vladwithcode/sibra-site/internal"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
@@ -354,22 +352,17 @@ func FindProperties(w http.ResponseWriter, r *http.Request) {
 	}
 
 	props, err := db.GetProperties(&filter, db.DefaultPageSize, page)
-
 	if err != nil {
-		fmt.Printf("Query props err: %v\n", err)
-		respondWithError(w, 404, ErrorParams{
-			ErrorMessage: "No se encontraron propiedades",
-		})
-		return
-	}
-
-	templ, err := template.New("layout.html").Funcs(template.FuncMap{
-		"FormatMoney": internal.FormatMoney,
-	}).ParseFiles("web/templates/layout.html", "web/templates/properties.html")
-
-	if err != nil {
-		fmt.Printf("Parse template err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontraron propiedades",
+			})
+		} else {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+			})
+		}
+		log.Printf("Error finding properties: %v\n", err)
 		return
 	}
 
@@ -378,22 +371,16 @@ func FindProperties(w http.ResponseWriter, r *http.Request) {
 		db.DefaultPageSize,
 		page,
 	)
-
 	if err != nil {
-		fmt.Printf("Get pagination err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding pagination data: %v\n", err)
 		return
 	}
 
-	err = templ.Execute(w, map[string]any{
-		"Contract":   contract,
-		"Props":      props,
-		"Pagination": pagination,
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"properties": props,
+		"pagination": pagination,
 	})
-
-	if err != nil {
-		fmt.Printf("Execute template err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
 }

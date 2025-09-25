@@ -54,10 +54,18 @@ export type TPropertyFilters = {
     withinMeters?: number;
     contract: string;
 
-    // Pagination
-    page?: number;
-    perPage?: number;
-    total?: number;
-    hasNext?: boolean;
-    hasPrev?: boolean;
+    pagination?: TPagination;
+}
+
+export type TPagination = {
+    total: number;
+    page: number;
+    perPage: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
+export type TPropertyListingResult = {
+    properties: TProperty[];
+    pagination: TPagination;
 }

@@ -87,7 +87,7 @@ function RouteComponent() {
                                 ¡En <span className="font-bold text-sbr-blue-light/80">SIBRA</span> tenemos las mejores opciones para que encuentres la casa de tus sueños!
                             </p>
                             <div className="flex justify-center">
-                                <SecondaryLinkButton label="Explorar Propiedades" to="/" />
+                                <SecondaryLinkButton label="Explorar Propiedades" to="/propiedades/venta" />
                             </div>
                         </CardContent>
                     </Card>
@@ -165,9 +165,11 @@ function PropertyCarousel({ properties }: { properties: TProperty[] }) {
         <Carousel className="space-y-3" setApi={setApi}>
             <CarouselContent>
                 {properties.map((property) => (
-                    <PropertyCarouselItem key={property.id}>
-                        <PropertyCard property={property} />
-                    </PropertyCarouselItem>
+                    <Link to={`/propiedades/${property.contract}/detalle/${property.id}`} key={property.id}>
+                        <PropertyCarouselItem key={property.id}>
+                            <PropertyCard propData={{ ...property, lat: 24.0083833, lon: -104.6713768 }} withMap={true} />
+                        </PropertyCarouselItem>
+                    </Link>
                 ))}
             </CarouselContent>
             {/* <CarouselPrevious className="-left-5 bg-sbr-blue text-white" />
