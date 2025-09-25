@@ -6,6 +6,7 @@ import { Heart, Image, Map } from "lucide-react";
 import { PropertyLocationMap } from "@/maps/component";
 import { useState } from "react";
 import type { TProperty } from "@/queries/type";
+import { Link } from "@tanstack/react-router";
 
 export type TPropertyCardProps = {
     propData: TProperty;
@@ -24,7 +25,11 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
             }
             <CardContent className="pt-0 px-4 sm:px-6 space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                    <CardTitle className="text-lg sm:text-2xl font-serif">{FormatMoney(property.price)}</CardTitle>
+                    <CardTitle className="text-2xl text-current/80 font-sans font-bold">
+                        <Link to={`/propiedades/${property.contract}/${property.slug}`}>
+                            {FormatMoney(property.price)}
+                        </Link>
+                    </CardTitle>
                     <div className="flex items-center gap-1.5">
                         <Button variant="secondary" size="icon">
                             <ShareIcon className="size-5" />
@@ -34,19 +39,21 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
                         </Button>
                     </div>
                 </div>
-                <CardDescription className="space-y-1.5">
-                    <div className="flex items-center gap-3 text-current/60 font-semibold tracking-wide">
-                        <div className="flex items-center gap-1 text-sm sm:text-base">
-                            <span>{property.propertyType}</span>
+                <CardDescription>
+                    <Link to={`/propiedades/${property.contract}/${property.slug}`} className="space-y-0.5">
+                        <div className="flex items-center gap-3 text-current/60 font-semibold tracking-wide">
+                            <div className="flex items-center gap-1 text-sm sm:text-base">
+                                <span>{property.propertyType}</span>
+                            </div>
+                            <div className="flex items-end gap-1.5 text-xs sm:text-sm">
+                                <SqMtIcon className="size-4" />
+                                <span className="font-serif">{property.sqMt.toFixed(2)}mt<sup>2</sup></span>
+                            </div>
                         </div>
-                        <div className="flex items-end gap-1.5 text-xs sm:text-sm">
-                            <SqMtIcon className="size-4" />
-                            <span className="font-serif">{property.sqMt.toFixed(2)}mt<sup>2</sup></span>
-                        </div>
-                    </div>
-                    <p className="line-clamp-2 font-medium">
-                        {property.address}, {property.nbHood}. C.P. {property.zip}
-                    </p>
+                        <p className="line-clamp-2 font-medium">
+                            {property.address}, {property.nbHood}. C.P. {property.zip}
+                        </p>
+                    </Link>
                 </CardDescription>
             </CardContent>
         </Card >
