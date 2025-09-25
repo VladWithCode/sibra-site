@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"math"
 	"strings"
 	"time"
 )
@@ -144,7 +143,7 @@ func GetRequestsPagination(filter *RequestFilter, limit, page int) (paginationDa
 	}
 	defer rows.Close()
 
-	var reqCount float64
+	var reqCount int
 	for rows.Next() {
 		err = rows.Scan(&reqCount)
 
@@ -153,23 +152,7 @@ func GetRequestsPagination(filter *RequestFilter, limit, page int) (paginationDa
 		}
 	}
 
-	paginationData = &Pagination{}
-	paginationData.Current = page
-	paginationData.Count = int(math.Ceil(reqCount / float64(limit)))
-	paginationData.First = 1
-	paginationData.Last = paginationData.Count
-
-	if nextPage := page + 1; nextPage > paginationData.Count {
-		paginationData.Next = paginationData.Count
-	} else {
-		paginationData.Next = nextPage
-	}
-
-	if prevPage := page - 1; prevPage <= 0 {
-		paginationData.Prev = 1
-	} else {
-		paginationData.Prev = prevPage
-	}
+	paginationData = NewPagination(reqCount, limit, page)
 
 	return
 }

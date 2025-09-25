@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"math"
 	"os"
 
 	"github.com/jackc/pgx/v5"
@@ -9,12 +10,24 @@ import (
 )
 
 type Pagination struct {
-	Count   int
-	First   int
-	Prev    int
-	Current int
-	Next    int
-	Last    int
+	Total   int  `json:"total"`
+	Page    int  `json:"page"`
+	PerPage int  `json:"perPage"`
+	HasNext bool `json:"hasNext"`
+	HasPrev bool `json:"hasPrev"`
+}
+
+func NewPagination(total, perPage, page int) *Pagination {
+	pag := Pagination{
+		Total:   total,
+		PerPage: perPage,
+		Page:    page,
+	}
+	pageCount := int(math.Ceil(float64(pag.Total) / float64(pag.PerPage)))
+	pag.HasNext = pageCount > page
+	pag.HasPrev = page > 1
+
+	return &pag
 }
 
 type InvalidFields map[string]bool

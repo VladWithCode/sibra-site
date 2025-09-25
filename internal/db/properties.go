@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -494,7 +493,7 @@ func GetPaginationData(filter *PropertyFilter, limit, page int) (paginationData 
 	}
 	defer rows.Close()
 
-	var propCount float64
+	var propCount int
 	for rows.Next() {
 		err = rows.Scan(&propCount)
 		if err != nil {
@@ -502,23 +501,7 @@ func GetPaginationData(filter *PropertyFilter, limit, page int) (paginationData 
 		}
 	}
 
-	paginationData = &Pagination{}
-	paginationData.Current = page
-	paginationData.Count = int(math.Ceil(propCount / float64(limit)))
-	paginationData.First = 1
-	paginationData.Last = paginationData.Count
-
-	if nextPage := page + 1; nextPage > paginationData.Count {
-		paginationData.Next = paginationData.Count
-	} else {
-		paginationData.Next = nextPage
-	}
-
-	if prevPage := page - 1; prevPage <= 0 {
-		paginationData.Prev = 1
-	} else {
-		paginationData.Prev = prevPage
-	}
+	paginationData = NewPagination(propCount, limit, page)
 
 	return
 }
