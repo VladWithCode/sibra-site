@@ -60,13 +60,13 @@ export const getPropertyListingOpts = (filters: TPropertyFilters) => queryOption
     queryFn: getPropertiesByContract,
 });
 
-export const getPropertyByIdOpts = (id: string) => queryOptions({
-    queryKey: PropertyQueryKeys.byId(id),
+export const getPropertyByIdOpts = (id: string, contract: string) => queryOptions({
+    queryKey: PropertyQueryKeys.byId(id, contract),
     queryFn: getPropertyById,
 });
 
 export const getPropertyBySlugOpts = (slug: string, contract: string) => queryOptions({
-    queryKey: PropertyQueryKeys.bySlug(slug),
+    queryKey: PropertyQueryKeys.bySlug(slug, contract),
     queryFn: getPropertyBySlug,
 });
 
@@ -110,8 +110,8 @@ export async function getPropertiesByContract({ queryKey }: QueryFunctionContext
 }
 
 export async function getPropertyById({ queryKey }: QueryFunctionContext<QKPropertyById>): Promise<TProperty> {
-    const { id } = queryKey[3];
-    const response = await fetch(`/api/propiedades/${id}`);
+    const { id, contract } = queryKey[3];
+    const response = await fetch(`/api/propiedades/${contract}/${id}`);
     if (!response.ok) throw new Error("Error al obtener la propiedad");
     const data = await response.json();
     return data.property;
