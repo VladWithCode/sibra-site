@@ -684,14 +684,17 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 		`SELECT
 			p2.id, p2.address, p2.city, p2.state, p2.zip, p2.price,
 			p2.beds, p2.baths, p2.square_mt, p2.main_img, p2.contract, p2.nb_hood,
-			earth_distance(p1.earth_coords, p2.earth_coords) as distance
-		 FROM properties p1
-		 CROSS JOIN properties p2
-		 WHERE p1.id = $1
-		   AND p2.id != $1
-		   AND p2.contract = p1.contract
-		   AND earth_distance(p1.earth_coords, p2.earth_coords) <= $2
-		 ORDER BY distance`,
+			(p1.earth_coords <@> p2.earth_coords) as distance
+		FROM properties p1
+		CROSS JOIN properties p2
+		WHERE p1.id = $1
+		    AND p2.id != $1
+		    AND p2.contract = p1.contract
+            AND p1.earth_coords IS NOT NULL
+		    AND p2.earth_coords IS NOT NULL
+            AND (p1.earth_coords <@> p2.earth_coords) <= $2
+		ORDER BY distance
+        LIMIT 10`,
 		id,
 		nearbyDistance,
 	)
@@ -746,13 +749,93 @@ func FindPropertyById(propId string) (property *Property, err error) {
 			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
 			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
-			u.name || ' ' || u.lastname AS agent_name,
+			u.fullname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
 		FROM properties p
 		LEFT JOIN users u ON p.agent = u.id
 		WHERE p.id = $1
 	`, propId)
+
+	var featsJSON sql.NullString
+	var phone sql.NullString
+	var img sql.NullString
+	property = &Property{}
+	property.AgentData = &AgentData{}
+
+	err = row.Scan(
+		&property.Id,
+		&property.Address,
+		&property.Description,
+		&property.City,
+		&property.State,
+		&property.Zip,
+		&property.Country,
+		&property.Price,
+		&property.PropertyType,
+		&property.Beds,
+		&property.Baths,
+		&property.SqMt,
+		&property.LotSize,
+		&property.YearBuilt,
+		&property.ListingDate,
+		&property.Status,
+		&property.Coords,
+		&featsJSON,
+		&property.Lat,
+		&property.Lon,
+		&property.Contract,
+		&property.Featured,
+		&property.FeaturedExpiresAt,
+		&property.NbHood,
+		&property.MainImg,
+		&property.Images,
+		&property.Agent,
+		&property.Slug,
+		&property.AgentData.Name,
+		&phone,
+		&img,
+	)
+
+	property.AgentData.Phone = phone.String
+	property.AgentData.Img = img.String
+
+	if err != nil {
+		return nil, err
+	}
+
+	if featsJSON.Valid {
+		_ = json.Unmarshal([]byte(featsJSON.String), &property.Features)
+	}
+
+	// Sync lat/lon from coords
+	property.SyncLatLon()
+
+	return
+}
+
+func FindPropertyBySlug(slug string) (property *Property, err error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	row := conn.QueryRow(ctx, `
+		SELECT
+			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
+			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
+			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
+			u.fullname AS agent_name,
+			u.phone AS agent_number,
+			u.img AS agent_img
+		FROM properties p
+		LEFT JOIN users u ON p.agent = u.id
+		WHERE p.slug = $1
+	`, slug)
 
 	var featsJSON sql.NullString
 	var phone sql.NullString
