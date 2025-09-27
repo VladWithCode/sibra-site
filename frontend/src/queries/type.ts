@@ -69,3 +69,8 @@ export type TPropertyListingResult = {
     properties: TProperty[];
     pagination: TPagination;
 }
+
+export type TPropertyDetailResult = {
+    property: TProperty;
+    nearbyProperties: TProperty[] | null;
+}

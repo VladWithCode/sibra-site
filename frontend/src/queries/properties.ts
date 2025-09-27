@@ -1,5 +1,5 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import type { TProperty, TPropertyFilters, TPropertyListingResult } from "./type";
+import type { TProperty, TPropertyDetailResult, TPropertyFilters, TPropertyListingResult } from "./type";
 import { queryOptions } from "@tanstack/react-query";
 import { objectToQueryString } from "./util";
 
@@ -109,7 +109,7 @@ export async function getPropertiesByContract({ queryKey }: QueryFunctionContext
     }
 }
 
-export async function getPropertyById({ queryKey }: QueryFunctionContext<QKPropertyById>): Promise<TProperty> {
+export async function getPropertyById({ queryKey }: QueryFunctionContext<QKPropertyById>): Promise<TPropertyDetailResult> {
     const { id, contract } = queryKey[3];
     const response = await fetch(`/api/propiedades/${contract}/${id}`);
     if (!response.ok) throw new Error("Error al obtener la propiedad");
@@ -117,7 +117,7 @@ export async function getPropertyById({ queryKey }: QueryFunctionContext<QKPrope
     return data.property;
 }
 
-export async function getPropertyBySlug({ queryKey }: QueryFunctionContext<QKPropertyBySlug>): Promise<TProperty> {
+export async function getPropertyBySlug({ queryKey }: QueryFunctionContext<QKPropertyBySlug>): Promise<TPropertyDetailResult> {
     const { slug, contract } = queryKey[3];
     const response = await fetch(`/api/propiedades/${contract}/${slug}`);
     if (!response.ok) throw new Error("Error al obtener la propiedad");
