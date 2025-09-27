@@ -57,10 +57,10 @@ export function Header() {
 
     return (
         <>
-            <div className="absolute top-[60%] inset-x-0 z-0 h-0" ref={pageTop} data-page-top></div>
+            <div className="col-start-1 col-span-1 absolute top-[60%] inset-x-0 z-0 h-0" ref={pageTop} data-page-top></div>
             <header
                 className={cn(
-                    "absolute top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 transition-colors data-[inView=false]:sticky data-[inView=false]:bg-sbr-blue-light",
+                    "col-start-1 col-span-1 absolute top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 transition-colors data-[inView=false]:sticky data-[inView=false]:bg-sbr-blue-light",
                     !headerFloating && "relative bg-secondary data-[inView=false]:bg-secondary shadow-sm",
                 )}
                 ref={header}
