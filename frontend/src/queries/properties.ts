@@ -74,15 +74,10 @@ export const ErrFailedToFetchProperties = new Error("Error al obtener las propie
     ErrFailedToFetchPropertyDetail = new Error("Error al obtener detalles de la propiedad");
 
 export async function getFeaturedProperties(): Promise<TProperty[]> {
-    try {
-        const response = await fetch("/api/propiedades/destacadas");
-        const data = await response.json();
+    const response = await fetch("/api/propiedades/destacadas");
+    const data = await response.json();
 
-        return data.properties;
-    } catch (e) {
-        console.error(e);
-        throw new Error("Error al obtener las propiedades");
-    }
+    return data.properties;
 }
 
 export async function getPropertiesByContract({ queryKey }: QueryFunctionContext<QKPropertyByContract>): Promise<TPropertyListingResult> {
