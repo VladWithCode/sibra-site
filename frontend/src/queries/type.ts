@@ -1,3 +1,8 @@
+export type TRequestError = {
+    error: string;
+    etc?: Record<string, any>;
+}
+
 export type TPagination = {
     total: number;
     page: number;
