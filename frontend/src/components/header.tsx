@@ -310,7 +310,13 @@ function HeaderComplementSearch() {
 
 function HeaderComplementCta() {
     return (
-        <div className="flex-auto hidden"></div>
+        <div className="flex-auto">
+            <Button variant="ghost" asChild>
+                <Link to="/vender" className="bg-sbr-blue text-gray-50 py-1! h-min">
+                    Vende tu casa
+                </Link>
+            </Button>
+        </div>
     );
 }
 
