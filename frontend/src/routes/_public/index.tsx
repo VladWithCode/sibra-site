@@ -7,6 +7,8 @@ import { HomeIcon, LoanIcon, ProjectsIcon, SellHomeIcon } from '@/components/ico
 import { getPropertiesOpts } from '@/queries/properties';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { PropertyCarousel } from '@/components/properties/PropertySlider';
+import { useUIStore } from '@/stores/uiStore';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_public/')({
     component: RouteComponent,
@@ -16,10 +18,16 @@ export const Route = createFileRoute('/_public/')({
 })
 
 function RouteComponent() {
+    const { setHeaderFloating, setHeaderComplement } = useUIStore();
     const { data: properties } = useSuspenseQuery(getPropertiesOpts)
     const onSearch = (search: string) => {
         console.log(search);
     }
+
+    useEffect(() => {
+        setHeaderFloating(true);
+        setHeaderComplement('none');
+    }, [])
 
     return (
         <main>
