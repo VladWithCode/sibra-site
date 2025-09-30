@@ -215,39 +215,49 @@ func CreateProperty(prop *Property) error {
 	// Ensure coords are set from lat/lon
 	prop.SetCoords()
 
+	args := pgx.NamedArgs{
+		"id":            prop.Id,
+		"address":       prop.Address,
+		"description":   prop.Description,
+		"city":          prop.City,
+		"state":         prop.State,
+		"zip":           prop.Zip,
+		"country":       prop.Country,
+		"price":         prop.Price,
+		"property_type": prop.PropertyType,
+		"contract":      prop.Contract,
+		"beds":          prop.Beds,
+		"baths":         prop.Baths,
+		"square_mt":     prop.SqMt,
+		"lot_size":      prop.LotSize,
+		"year_built":    prop.YearBuilt,
+		"listing_date": sql.NullTime{
+			Time:  prop.ListingDate,
+			Valid: prop.ListingDate.IsZero() == false,
+		},
+		"status":       prop.Status,
+		"earth_coords": prop.Coords,
+		"features":     prop.Features,
+		"lat":          prop.Lat,
+		"lon":          prop.Lon,
+		"nb_hood":      prop.NbHood,
+		"agent":        prop.Agent,
+		"slug":         prop.Slug,
+		"main_img":     prop.MainImg,
+		"imgs":         prop.Images,
+	}
 	_, err = conn.Exec(
 		ctx,
 		`INSERT INTO properties (
 			id, address, description, city, state, zip, country, price, property_type,
 			contract, beds, baths, square_mt, lot_size, year_built, listing_date,
 			status, earth_coords, features, lat, lon, nb_hood, agent, slug, main_img, imgs
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)`,
-		prop.Id,
-		prop.Address,
-		prop.Description,
-		prop.City,
-		prop.State,
-		prop.Zip,
-		prop.Country,
-		prop.Price,
-		prop.PropertyType,
-		prop.Contract,
-		prop.Beds,
-		prop.Baths,
-		prop.SqMt,
-		prop.LotSize,
-		prop.YearBuilt,
-		prop.ListingDate,
-		prop.Status,
-		prop.Coords,
-		prop.Features,
-		prop.Lat,
-		prop.Lon,
-		prop.NbHood,
-		prop.Agent,
-		prop.Slug,
-		prop.MainImg,
-		prop.Images,
+		) VALUES (
+            @id, @address, @description, @city, @state, @zip, @country, @price, @property_type,
+            @contract, @beds, @baths, @square_mt, @lot_size, @year_built, @listing_date,
+            @status, @earth_coords, @features, @lat, @lon, @nb_hood, @agent, @slug, @main_img, @imgs
+        )`,
+		args,
 	)
 
 	if err != nil {
