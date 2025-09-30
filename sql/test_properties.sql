@@ -3,15 +3,15 @@
 -- Usage: \i sql/test_properties.sql
 
 -- First, insert a test agent user
-INSERT INTO users (id, fullName, password, username, role, email, phone, email_verified, phone_verified, img) 
+INSERT INTO users (id, fullName, password, username, role, email, phone, email_verified, phone_verified, img)
 VALUES (
     '550e8400-e29b-41d4-a716-446655440000',
-    'Agente de Prueba',
+    'Administración Sibra',
     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',  -- bcrypt hash for 'password123'
-    'agente_test',
-    'agent',
-    'agente@sibradurango.com',
-    '+52 618 123 4567',
+    'sibraadmin',
+    'admin',
+    'administracion@sibra.mx',
+    '618 194 1145',
     true,
     true,
     ''
@@ -26,8 +26,8 @@ INSERT INTO properties (
 ) VALUES
 
 -- 1. Luxury house in Polanco, CDMX
-('550e8400-e29b-41d4-a716-446655440001', 
-'Av. Presidente Masaryk 123', 
+('550e8400-e29b-41d4-a716-446655440001',
+'Av. Presidente Masaryk 123',
 'Hermosa casa de lujo en una de las zonas más exclusivas de la Ciudad de México. Cuenta con acabados de primera calidad, amplios espacios y excelente ubicación cerca de centros comerciales y restaurantes de clase mundial.',
 'Ciudad de México', 'CDMX', '11560', 'Polanco', 'México',
 12500000.00, 'Casa', 'venta', 4, 3, 350.0, 200.0,

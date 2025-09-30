@@ -9,7 +9,10 @@ CREATE TABLE IF NOT EXISTS users (
 	phone VARCHAR(255),
 	email_verified BOOL DEFAULT false,
 	phone_verified BOOL DEFAULT false,
-	img VARCHAR(255) DEFAULT ''
+	img VARCHAR(255) DEFAULT '',
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- +goose Down
