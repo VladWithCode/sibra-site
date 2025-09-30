@@ -28,3 +28,4 @@ count.txt
 .env
 .nitro
 .tanstack
+.vite
