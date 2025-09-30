@@ -51,7 +51,7 @@ export function PropertyCarousel({ properties }: { properties: TProperty[] }) {
 
 export function PropertyCarouselItem({ children }: {} & PropsWithChildren) {
     return (
-        <CarouselItem className="not-first:pl-6 grow-0 shrink-0 basis-6/7 xs:basis-3/4 max-w-96 aspect-[2/1]">
+        <CarouselItem className="not-first:pl-6 shrink-0 basis-full aspect-[2/1]">
             {children}
         </CarouselItem>
     );
