@@ -37,13 +37,15 @@ type Auth struct {
 
 func (a *Auth) HasAccess(reqLv AccessLevel) bool {
 	var roleLv AccessLevel = 0
-	switch a.Role {
+	switch db.UserRole(a.Role) {
 	case db.RoleUser:
 		roleLv = AccessLevelUser
 	case db.RoleEditor:
 		roleLv = AccessLevelEditor
 	case db.RoleAdmin:
 		roleLv = AccessLevelAdmin
+	default:
+		roleLv = AccessLevelUser
 	}
 
 	return roleLv >= reqLv
@@ -55,7 +57,7 @@ type AuthClaims struct {
 	Id       string
 	Username string
 	Fullname string
-	Role     string
+	Role     db.UserRole
 
 	jwt.RegisteredClaims
 }
