@@ -5,7 +5,7 @@ import { getPropertyListingOpts } from '@/queries/properties';
 import { useUIStore } from '@/stores/uiStore';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router'
-import { ArrowDown, ArrowUp, MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_public/propiedades/_listing/$contract')({

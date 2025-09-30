@@ -1,15 +1,11 @@
 import { SearchBox } from '@/components/SearchBox';
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel';
-import { useCallback, useEffect, useState, type PropsWithChildren } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { SecondaryLinkButton } from '@/components/sibra_buttons';
 import { HomeIcon, LoanIcon, ProjectsIcon, SellHomeIcon } from '@/components/icons/icons';
-import { PropertyCard } from '@/components/properties/PropertyCard';
 import { getPropertiesOpts } from '@/queries/properties';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import type { TProperty } from '@/queries/type';
 import { PropertyCarousel } from '@/components/properties/PropertySlider';
 
 export const Route = createFileRoute('/_public/')({
