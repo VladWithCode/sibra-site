@@ -4,7 +4,7 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { FilterIcon, HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { cn } from "@/lib/utils";
@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 
 export function Header() {
     const { headerFloating, headerComplement } = useUIStore();
+    const [atTop, setAtTop] = useState(false);
     const header = useRef<HTMLDivElement>(null)
     const pageTop = useRef<HTMLDivElement>(null)
     const tl = useRef<gsap.core.Timeline>(null)
@@ -30,11 +31,11 @@ export function Header() {
                 ease: "power1.inOut",
             },
         });
-        tl.current.set(header.current, { position: "fixed", y: "-3rem" });
+        tl.current.set(header.current, { position: "fixed", y: "-6rem" });
         tl.current.to(header.current, {
             y: "0rem",
             opacity: "1",
-            backgroundColor: headerFloating ? "var(--color-sbr-blue-light)" : "var(--color-secondary)",
+            backgroundColor: "var(--bg-color)",
         });
 
         const obsv = new IntersectionObserver((entries) => {
@@ -43,8 +44,13 @@ export function Header() {
 
                 if (!entry.isIntersecting) {
                     tl.current.play();
+                    setAtTop(false);
                 } else {
                     tl.current.reverse();
+                    setAtTop(true);
+                    gsap.delayedCall(0.3, () => {
+                        tl.current?.revert()
+                    });
                 }
             });
         });
@@ -52,6 +58,7 @@ export function Header() {
 
         return () => {
             obsv.disconnect();
+            tl.current?.invalidate();
         }
     }, { dependencies: [pageTop.current] })
 
@@ -60,10 +67,15 @@ export function Header() {
             <div className="col-start-1 col-span-1 absolute top-[60%] inset-x-0 z-0 h-0" ref={pageTop} data-page-top></div>
             <header
                 className={cn(
-                    "col-start-1 col-span-1 absolute top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 transition-colors data-[inView=false]:sticky data-[inView=false]:bg-sbr-blue-light",
-                    !headerFloating && "relative bg-secondary data-[inView=false]:bg-secondary shadow-sm",
+                    "col-start-1 col-span-1 top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 transition-colors data-[inView=false]:sticky ",
+                    !headerFloating ?
+                        "relative bg-secondary data-[in-view=false]:bg-secondary shadow-sm" :
+                        "absolute data-[inView=false]:bg-sbr-blue-light",
                 )}
                 ref={header}
+                style={{
+                    "--bg-color": headerFloating ? "var(--color-sbr-blue-light)" : "var(--color-secondary)",
+                } as React.CSSProperties}
             >
                 <div className="flex items-center justify-between gap-6 text-gray-50">
                     <SidebarTrigger className="stroke-current data-[header-floating=false]:text-gray-800 my-auto" data-header-floating={headerFloating} />
