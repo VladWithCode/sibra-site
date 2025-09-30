@@ -506,7 +506,7 @@ func GetPaginationData(filter *PropertyFilter, limit, page int) (paginationData 
 	return
 }
 
-func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Property, err error) {
+func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int) (properties []*Property, err error) {
 	conn, err := GetPool()
 	if err != nil {
 		return
@@ -734,7 +734,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 	return props, nil
 }
 
-func FindPropertyById(propId string) (property *Property, err error) {
+func FindPropertyById(ctx context.Context, propId string) (property *Property, err error) {
 	conn, err := GetPool()
 	if err != nil {
 		return nil, err
@@ -814,14 +814,14 @@ func FindPropertyById(propId string) (property *Property, err error) {
 	return
 }
 
-func FindPropertyBySlug(slug string) (property *Property, err error) {
-	conn, err := GetPool()
+func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, err error) {
+	conn, err := GetPoolWithCtx(ctx)
 	if err != nil {
 		return nil, err
 	}
 	defer conn.Release()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	row := conn.QueryRow(ctx, `

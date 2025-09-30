@@ -54,6 +54,16 @@ func GetPool() (*pgxpool.Conn, error) {
 	return conn, nil
 }
 
+func GetPoolWithCtx(ctx context.Context) (*pgxpool.Conn, error) {
+	conn, err := DB.Acquire(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return conn, nil
+}
+
 func GetTxAndPool(ctx context.Context) (pgx.Tx, *pgxpool.Conn, error) {
 	conn, err := DB.Acquire(context.Background())
 

@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -99,6 +100,7 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id := r.PathValue("id")
+	ctx := r.Context()
 
 	err := r.ParseMultipartForm(90 << 20)
 	if err != nil {
@@ -109,7 +111,7 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 		return
 	}
 
-	property, err := db.FindPropertyById(id)
+	property, err := db.FindPropertyById(ctx, id)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
@@ -258,8 +260,9 @@ func FindFeaturedProperties(w http.ResponseWriter, r *http.Request) {
 
 func FindSingleProperty(w http.ResponseWriter, r *http.Request) {
 	propId := r.PathValue("id")
+	ctx := r.Context()
 
-	prop, err := db.FindPropertyById(propId)
+	prop, err := db.FindPropertyById(ctx, propId)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
 		log.Printf("Error while finding property: %v\n", err)
@@ -272,20 +275,21 @@ func FindSingleProperty(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	id := r.PathValue("id")
 	nearbyDistance, _ := strconv.Atoi(r.URL.Query().Get("d"))
 	if nearbyDistance == 0 {
 		nearbyDistance = db.NearbyDistanceNormal // Default distance is 1km
 	}
 
-	var findFn func(string) (*db.Property, error)
+	var findFn func(context.Context, string) (*db.Property, error)
 	if _, err := uuid.Parse(id); err == nil {
 		findFn = db.FindPropertyById
 	} else {
 		findFn = db.FindPropertyBySlug
 	}
 
-	prop, err := findFn(id)
+	prop, err := findFn(ctx, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
@@ -308,6 +312,8 @@ func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindProperties(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	contract := r.PathValue("contract")
 	minPrice := r.URL.Query().Get("minPrice")
 	maxPrice := r.URL.Query().Get("maxPrice")
@@ -358,7 +364,7 @@ func FindProperties(w http.ResponseWriter, r *http.Request) {
 		filter.Baths = &intBaths
 	}
 
-	props, err := db.GetProperties(&filter, db.DefaultPageSize, page)
+	props, err := db.GetProperties(ctx, &filter, db.DefaultPageSize, page)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			respondWithError(w, http.StatusNotFound, ErrorParams{
