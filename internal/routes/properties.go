@@ -293,6 +293,7 @@ func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
+			return
 		}
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{})
 		log.Printf("Error finding property: %v\n", err)
