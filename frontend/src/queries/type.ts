@@ -1,3 +1,11 @@
+export type TPagination = {
+    total: number;
+    page: number;
+    perPage: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+}
+
 export type TProperty = {
     id: string;
     address: string;
@@ -30,39 +38,11 @@ export type TProperty = {
     agentData: string;
 }
 
-export type TPropertyFilters = {
-    minPrice?: number;
-    maxPrice?: number;
-    minSqMt?: number;
-    maxSqMt?: number;
-    minLotSize?: number;
-    maxLotSize?: number;
-    minYearBuilt?: number;
-    maxYearBuilt?: number;
-    city?: string;
-    state?: string;
-    propType?: string;
-    zip?: string;
-    nbHood?: string;
-    status?: string;
-    featured?: boolean;
-    orderBy?: string;
-    orderDirection?: string;
-    textSearch?: string;
-    nearLat?: number;
-    nearLon?: number;
-    withinMeters?: number;
+export type TPropertyFilters = Partial<TProperty> & {
     contract: string;
 
-    pagination?: TPagination;
-}
-
-export type TPagination = {
-    total: number;
-    page: number;
-    perPage: number;
-    hasNext: boolean;
-    hasPrev: boolean;
+    page?: TPagination['page'];
+    perPage?: TPagination['perPage'];
 }
 
 export type TPropertyListingResult = {
@@ -73,4 +53,48 @@ export type TPropertyListingResult = {
 export type TPropertyDetailResult = {
     property: TProperty;
     nearbyProperties: TProperty[] | null;
+}
+
+export type TQuoteType = "presencial" | "whatsapp";
+
+export type TQuoteStatus = "pendiente" | "atendida" | "confirmada" | "volver a atender";
+
+export type TQuote = {
+    id: string;
+    type: TQuoteType;
+    phone: string;
+    name: string;
+    scheduledDate: string;
+    status: TQuoteStatus;
+    agent: string;
+    property: string;
+
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type TQuoteFilters = Partial<TQuote> & {
+    page?: TPagination['page'];
+    perPage?: TPagination['perPage'];
+}
+
+export type TQuoteListingResult = {
+    quotes: TQuote[];
+    pagination: TPagination;
+}
+
+export type TQuoteDetailResult = {
+    quote: TQuote;
+}
+
+export type TQuoteCreateResult = TQuoteCreateError | TQuoteCreateSuccess;
+
+type TQuoteCreateError = {
+    message: string;
+    etc?: Record<string, any>;
+}
+
+type TQuoteCreateSuccess = {
+    success: true;
+    quote: TQuote;
 }
