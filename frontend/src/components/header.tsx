@@ -4,7 +4,7 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { FilterIcon, HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
-import { useRef } from "react";
+import { useCallback, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { cn } from "@/lib/utils";
@@ -319,6 +319,11 @@ export function HeaderNavigationMenu({ className }: { className?: string }) {
 
 export function HeaderSidebar() {
     const { toggleSidebar } = useSidebar()
+    const onLinkClick = useCallback(() => {
+        toggleSidebar();
+        window.scrollY = 0;
+    }, [toggleSidebar])
+
     return (
         <Sidebar collapsible="offcanvas">
             <SidebarHeader className="bg-gray-200">
@@ -345,6 +350,7 @@ export function HeaderSidebar() {
                                     <Link
                                         className="text-current/80 hover:text-sbr-blue-light py-5 data-[status=active]:bg-sbr-blue data-[status=active]:text-gray-50"
                                         to={item.to}
+                                        onClick={onLinkClick}
                                     >
                                         <item.icon className="size-6" />
                                         <span>{item.label}</span>
