@@ -490,6 +490,7 @@ export function HeaderSidebar() {
                                     <Link
                                         className="text-current/60 hover:text-sbr-blue-light data-[status=active]:bg-gray-700 data-[status=active]:text-gray-50"
                                         to={item.to}
+                                        onClick={onLinkClick}
                                     >
                                         <span className="inline-block -my-2">{item.label}</span>
                                     </Link>
@@ -535,7 +536,7 @@ const mainNavigationItems = linkOptions([
     {
         label: "Créditos Infonavit",
         to: "/infonavit",
-        icon: ({}: { className: string }) => <Infonavit className="size-4" />,
+        icon: ({ }: { className: string }) => <Infonavit className="size-4" />,
     },
 ]);
 
