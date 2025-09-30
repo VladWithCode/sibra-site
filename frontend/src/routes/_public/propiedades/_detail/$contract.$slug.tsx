@@ -5,10 +5,10 @@ import { FormatMoney } from '@/lib/format';
 import { PropertyLocationMap } from '@/maps';
 import { getPropertyBySlugOpts } from '@/queries/properties';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router'
-import { Bed, Heart, Info, Toilet } from 'lucide-react';
-import { useCallback, useEffect, type PropsWithChildren } from 'react';
+import { Bed, CheckCircle2, Heart, Info, Toilet } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 import { useUIStore } from '@/stores/uiStore';
@@ -19,6 +19,10 @@ import { PropertyImageCarousel } from '@/components/properties/PropertyImageCaro
 import { format, set } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { PropertyCarousel } from '@/components/properties/PropertySlider';
+import { createQuote } from '@/queries/quotes';
+import type { TQuote, TQuoteCreateResult, TRequestError } from '@/queries/type';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 
 export const Route = createFileRoute(
     '/_public/propiedades/_detail/$contract/$slug',
@@ -99,7 +103,7 @@ function RouteComponent() {
                     </a>
                 </p>
                 <div className="bg-gray-50 border-2 border-sbr-green rounded-lg px-3 py-6">
-                    <ContactFormDialog>
+                    <ContactFormDialog forPropertyID={property.id}>
                         <Button className="flex-col items-start text-base text-start whitespace-normal p-0 h-auto" variant="ghost">
                             <h3 className="text-lg font-bold">Detalles de la casa</h3>
                             <p className="text-current/60">{property.description}</p>
@@ -109,15 +113,23 @@ function RouteComponent() {
                 <div className="relative z-0 bg-gray-50 border-2 border-sbr-green rounded-lg overflow-hidden">
                     <h3 className="absolute top-3 left-3 z-10 bg-gray-50 rounded text-lg font-bold px-1.5 shadow-md">Mapa</h3>
                     <div className="w-full aspect-[3/2] p-0.5 rounded-lg">
-                        <PropertyLocationMap
-                            property={property}
-                            fullscreenControl={true}
-                        />
+                        {
+                            !!property.lat && !!property.lon ?
+                                <PropertyLocationMap
+                                    property={property}
+                                    fullscreenControl={true}
+                                /> :
+                                <div className="flex items-center justify-center h-full bg-gray-100">
+                                    <p className="text-lg font-semibold text-center text-muted-foreground">
+                                        Pronto agregaremos la ubicación de la propiedad
+                                    </p>
+                                </div>
+                        }
                     </div>
                 </div>
-                <div className="bg-gray-50 border-2 border-sbr-green rounded-lg px-3 py-6 space-y-3">
+                <div className="relative bg-gray-50 border-2 border-sbr-green rounded-lg px-3 py-6 space-y-3 z-0">
                     <h3 className="text-lg font-bold">¿Quieres conocerla?</h3>
-                    <ContactForm viewDetail='simple' />
+                    <ContactForm viewDetail='simple' forPropertyID={property.id} />
                 </div>
                 <div className="flex justify-between border-y-2 border-sbr-green font-semibold">
                     <h3 className="flex-1 text-lg py-2 px-4">Llama ahora</h3>
@@ -165,8 +177,16 @@ const ContactFormSchema = z.object({
 
 type contactFormSchemaType = z.infer<typeof ContactFormSchema>;
 
-function ContactForm({ viewDetail }: { viewDetail: 'simple' | 'complete' }) {
+function ContactForm({ viewDetail, forPropertyID, onSuccess }: {
+    viewDetail: 'simple' | 'complete',
+    forPropertyID?: string,
+    onSuccess?: (result: TQuoteCreateResult) => void,
+}) {
+    const quoteMutation = useMutation({
+        mutationFn: createQuote,
+    })
     const isViewComplete = viewDetail === 'complete';
+    const formRef = useRef<HTMLFormElement>(undefined);
     const form = useForm<contactFormSchemaType>({
         resolver: zodResolver(ContactFormSchema),
         defaultValues: {
@@ -176,6 +196,26 @@ function ContactForm({ viewDetail }: { viewDetail: 'simple' | 'complete' }) {
             name: isViewComplete ? "" : undefined,
         },
     });
+    const [generalError, setGeneralError] = useState("");
+    const { contextSafe } = useGSAP({ scope: formRef.current })
+    const animateSuccess = contextSafe(() => {
+        gsap.to("#quote-form-success", {
+            opacity: 1,
+            scale: 1,
+            duration: 0.3,
+            ease: "power1.inOut",
+            onComplete: () => {
+                gsap.delayedCall(2, () => {
+                    gsap.to("#quote-form-success", {
+                        opacity: 0,
+                        scale: 0,
+                        duration: 0.3,
+                        ease: "power1.inOut",
+                    });
+                });
+            }
+        });
+    })
     const onDateChange = useCallback((item: TDatePickerItem) => {
         const nextDate = set(form.getValues("quoteDate"), {
             year: item.value.getFullYear(),
@@ -197,11 +237,27 @@ function ContactForm({ viewDetail }: { viewDetail: 'simple' | 'complete' }) {
     const onQuoteTypeChange = useCallback((type: TQuoteType) => {
         form.setValue("quoteType", type);
     }, [form]);
-    const onQuoteSubmit = (values: contactFormSchemaType) => {
-        console.log(values);
-        setTimeout(() => {
-            toast.success("Se ha enviado la cita", { closeButton: true });
-        }, 300);
+    const onQuoteSubmit = async (values: contactFormSchemaType) => {
+        const quoteData: TQuote = {
+            name: values.name || "",
+            phone: values.phone,
+            type: values.quoteType,
+            scheduledDate: values.quoteDate.toISOString(),
+            property: forPropertyID || "",
+        } as TQuote;
+
+        try {
+            const res = await quoteMutation.mutateAsync(quoteData);
+            animateSuccess();
+            toast.success("Se ha creado la cita", { closeButton: true });
+            if (typeof onSuccess === 'function') {
+                onSuccess(res);
+            }
+        } catch (e) {
+            toast.error(e.message || "Ocurrió un error al crear la cita", { closeButton: true });
+            setGeneralError(e.message || "Ocurrió un error al crear la cita");
+            console.error(e);
+        }
     }
     const onInvalidSubmit = (errors: any) => {
         console.log(errors);
@@ -213,7 +269,15 @@ function ContactForm({ viewDetail }: { viewDetail: 'simple' | 'complete' }) {
             <form
                 className="w-full space-y-6 overflow-hidden"
                 onSubmit={form.handleSubmit(onQuoteSubmit, onInvalidSubmit)}
+                ref={formRef as unknown as React.RefObject<HTMLFormElement>}
             >
+                <div
+                    id="quote-form-success"
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-white z-10 rounded-lg p-6 opacity-0 scale-0"
+                >
+                    <CheckCircle2 className="text-sbr-green size-32" />
+                    <p className="text-xl font-bold text-center text-sbr-green">Se ha generado tu solicitud con éxito</p>
+                </div>
                 <FormField
                     control={form.control}
                     name="quoteDate"
@@ -297,10 +361,9 @@ function ContactForm({ viewDetail }: { viewDetail: 'simple' | 'complete' }) {
                         )}
                     />
                 )}
-                <div className="py-3">
-                    <FormMessage>
-                    </FormMessage>
-                </div>
+                <FormMessage className="text-base font-semibold px-1">
+                    {generalError}
+                </FormMessage>
                 <div className="flex items-center justify-end">
                     <Button className="text-base" size="lg" type="submit">Enviar</Button>
                 </div>
@@ -309,10 +372,39 @@ function ContactForm({ viewDetail }: { viewDetail: 'simple' | 'complete' }) {
     )
 }
 
-function ContactFormDialog({ children }: {} & PropsWithChildren) {
+function ContactFormDialog({ children, forPropertyID, onSuccess }: {
+    forPropertyID?: string,
+    onSuccess?: (result: TQuoteCreateResult) => void,
+} & PropsWithChildren) {
+    const triggerRef = useRef<HTMLButtonElement>(null)
+    const [requestSuccess, setRequestSuccess] = useState(false)
+    const onSuccessCb = useCallback((result: TQuoteCreateResult) => {
+        if (typeof onSuccess === 'function') {
+            onSuccess(result);
+        }
+        setRequestSuccess(true);
+    }, [onSuccess])
+
+    useEffect(() => {
+        let timerId: NodeJS.Timeout;
+        if (requestSuccess) {
+            timerId = setTimeout(() => {
+                if (!triggerRef.current) return;
+
+                triggerRef.current.click();
+            }, 2000);
+        }
+
+        return () => {
+            if (timerId) {
+                clearTimeout(timerId);
+            }
+        }
+    }, [requestSuccess])
+
     return (
         <Dialog>
-            <DialogTrigger asChild>
+            <DialogTrigger asChild ref={triggerRef}>
                 {children}
             </DialogTrigger>
             <DialogContent className="w-[90%] max-w-lg">
@@ -320,7 +412,7 @@ function ContactFormDialog({ children }: {} & PropsWithChildren) {
                     <DialogTitle>Agenda tu cita</DialogTitle>
                     <DialogDescription>Proporciona tus datos para que podamos agendar tu cita</DialogDescription>
                 </DialogHeader>
-                <ContactForm viewDetail='complete' />
+                <ContactForm viewDetail='complete' forPropertyID={forPropertyID} onSuccess={onSuccessCb} />
             </DialogContent>
         </Dialog>
     );
