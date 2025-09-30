@@ -11,18 +11,28 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type UserRole string
+
+const (
+	RoleAdmin  UserRole = "admin"
+	RoleEditor UserRole = "editor"
+	RoleUser   UserRole = "user"
+)
+
 type User struct {
 	Id            string         `db:"id" json:"id"`
 	Fullname      string         `db:"name" json:"name"`
 	Password      string         `db:"password" json:"password"`
 	Username      string         `db:"username" json:"username"`
-	Role          string         `db:"role" json:"role"`
+	Role          UserRole       `db:"role" json:"role"`
 	Email         string         `db:"email" json:"email"`
 	Phone         sql.NullString `json:"phone" db:"phone"`
 	EmailVerified bool           `json:"emailVerified" db:"email_verified"`
 	PhoneVerified bool           `json:"phoneVerified" db:"phone_verified"`
-	GoldenBoy     bool           `db:"golden_boy"`
 	Img           string         `json:"img" db:"img"`
+
+	CreatedAt time.Time `json:"createdAt" db:"created_at"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
 }
 
 func (u *User) ValidatePass(pw string) error {
@@ -47,12 +57,6 @@ func (u *User) HashPass(pw string) error {
 	return nil
 }
 
-const (
-	RoleAdmin  string = "admin"
-	RoleEditor string = "editor"
-	RoleUser   string = "user"
-)
-
 func CreateUser(user *User) (string, error) {
 	conn, err := GetPool()
 	if err != nil {
@@ -70,7 +74,7 @@ func CreateUser(user *User) (string, error) {
 
 	tag, err := conn.Exec(
 		ctx,
-		"INSERT INTO users (id, name, password, username, role, email, phone, img) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
+		"INSERT INTO users (id, fullname, password, username, role, email, phone, img) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
 		user.Id,
 		user.Fullname,
 		hashedPassword,
@@ -106,7 +110,11 @@ func GetUserById(id string) (*User, error) {
 
 	err = conn.QueryRow(
 		ctx,
-		"SELECT * FROM users WHERE id = $1",
+		`SELECT
+            id, fullname, password, username, role, email, phone, email_verified,
+            phone_verified, img, created_at, updated_at
+        FROM users
+        WHERE id = $1`,
 		id,
 	).Scan(
 		&user.Id,
@@ -118,7 +126,6 @@ func GetUserById(id string) (*User, error) {
 		&user.Phone,
 		&user.EmailVerified,
 		&user.PhoneVerified,
-		&user.GoldenBoy,
 		&user.Img,
 	)
 
@@ -143,7 +150,11 @@ func GetUserByUsername(username string) (*User, error) {
 
 	err = conn.QueryRow(
 		ctx,
-		"SELECT * FROM users WHERE username = $1",
+		`SELECT
+            id, fullname, password, username, role, email, phone, email_verified,
+            phone_verified, img, created_at, updated_at
+        FROM users
+        WHERE username = $1`,
 		username,
 	).Scan(
 		&user.Id,
@@ -155,8 +166,9 @@ func GetUserByUsername(username string) (*User, error) {
 		&user.Phone,
 		&user.EmailVerified,
 		&user.PhoneVerified,
-		&user.GoldenBoy,
 		&user.Img,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 
 	if err != nil {
