@@ -34,7 +34,7 @@ func main() {
 	}
 	defaultUser := db.User{
 		Id:        id.String(),
-		Fullname:  "Administrador",
+		Fullname:  "Administración Sibra",
 		Username:  user,
 		Password:  pass,
 		Role:      db.RoleAdmin,
