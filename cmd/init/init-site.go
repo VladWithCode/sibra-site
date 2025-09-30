@@ -33,13 +33,12 @@ func main() {
 		log.Fatalf("failed to generate uuid: %v", err)
 	}
 	defaultUser := db.User{
-		Id:        id.String(),
-		Fullname:  "Administración Sibra",
-		Username:  user,
-		Password:  pass,
-		Role:      db.RoleAdmin,
-		Email:     "admin@sibra.mx",
-		GoldenBoy: true,
+		Id:       id.String(),
+		Fullname: "Administración Sibra",
+		Username: user,
+		Password: pass,
+		Role:     db.RoleAdmin,
+		Email:    "admin@sibra.mx",
 	}
 
 	_, err = db.CreateUser(&defaultUser)
