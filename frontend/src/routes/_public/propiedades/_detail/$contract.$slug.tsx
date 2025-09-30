@@ -98,7 +98,7 @@ function RouteComponent() {
                         <Info className="size-4 fill-destructive stroke-gray-50" />
                     </a>
                 </p>
-                <div className="bg-gray-50 border-2 border-sbr-green-light rounded-lg px-3 py-6">
+                <div className="bg-gray-50 border-2 border-sbr-green rounded-lg px-3 py-6">
                     <ContactFormDialog>
                         <Button className="flex-col items-start text-base text-start whitespace-normal p-0 h-auto" variant="ghost">
                             <h3 className="text-lg font-bold">Detalles de la casa</h3>
@@ -106,7 +106,7 @@ function RouteComponent() {
                         </Button>
                     </ContactFormDialog>
                 </div>
-                <div className="relative z-0 bg-gray-50 border-2 border-sbr-green-light rounded-lg overflow-hidden">
+                <div className="relative z-0 bg-gray-50 border-2 border-sbr-green rounded-lg overflow-hidden">
                     <h3 className="absolute top-3 left-3 z-10 bg-gray-50 rounded text-lg font-bold px-1.5 shadow-md">Mapa</h3>
                     <div className="w-full aspect-[3/2] p-0.5 rounded-lg">
                         <PropertyLocationMap
@@ -115,11 +115,11 @@ function RouteComponent() {
                         />
                     </div>
                 </div>
-                <div className="bg-gray-50 border-2 border-sbr-green-light rounded-lg px-3 py-6 space-y-3">
+                <div className="bg-gray-50 border-2 border-sbr-green rounded-lg px-3 py-6 space-y-3">
                     <h3 className="text-lg font-bold">¿Quieres conocerla?</h3>
                     <ContactForm viewDetail='simple' />
                 </div>
-                <div className="flex justify-between border-y-2 border-sbr-green-light font-semibold">
+                <div className="flex justify-between border-y-2 border-sbr-green font-semibold">
                     <h3 className="flex-1 text-lg py-2 px-4">Llama ahora</h3>
                     <span className="shrink-0 grow-0 basis-0.5 bg-sbr-green-light my-2"></span>
                     <a href="tel:526188744569" className="flex-1 py-2 px-4">(618) 874 45 69</a>
