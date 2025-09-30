@@ -25,7 +25,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
             }
             <CardContent className="pt-0 px-4 sm:px-6 space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                    <CardTitle className="text-2xl text-current/80 font-sans font-bold">
+                    <CardTitle className="text-2xl text-current/80 font-[sans] font-bold">
                         <Link to={`/propiedades/${property.contract}/${property.slug}`}>
                             {FormatMoney(property.price)}
                         </Link>
@@ -66,7 +66,9 @@ export function PropertyCardHeader({ property }: { property: TProperty }) {
             <div className="relative z-0">
                 <div className="relative z-10 w-full aspect-[2/1] bg-gray-200 rounded-t-lg">
                     <img
-                        src={property.mainImg || undefined}
+                        src={property.mainImg ?
+                            `/static/properties/${property.id}/${property.mainImg}` :
+                            undefined}
                         alt={`Imagen mostrando la propiedad ubicada en ${property.address}, ${property.nbHood}. C.P. ${property.zip}`}
                         className="w-full h-full object-cover rounded-t-lg"
                     />
