@@ -7,7 +7,7 @@ export function PropertyImageCarousel({ property }: { property: TProperty }) {
         <Carousel>
             <CarouselContent className="aspect-[3/2]">
                 {property.imgs.map(img => (
-                    <PropertyImageCarouselItem>
+                    <PropertyImageCarouselItem key={img}>
                         <img
                             src={"/static/properties/" + property.id + "/" + img}
                             alt={`Foto de la propiedad ${property.address}, ${property.nbHood}. C.P. ${property.zip}. ${property.city}, ${property.state}`}
