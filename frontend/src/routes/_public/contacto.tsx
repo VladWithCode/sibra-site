@@ -34,8 +34,8 @@ function RouteComponent() {
                 <div className="relative z-10 text-gray-100 text-center bg-sbr-blue-light/20 backdrop-blur rounded-lg space-y-4 p-6">
                     <h2 className="text-4xl font-semibold">Contáctanos</h2>
                     <div className="space-y-0.5">
-                        <p className="text-xl font-medium">Estamos a tus ordenes.</p>
-                        <h3 className="text-xl font-medium">
+                        <p className="xs:text-xl font-medium">Estamos a tus ordenes.</p>
+                        <h3 className="xs:text-xl font-medium">
                             Servicio al cliente en los horarios:
                         </h3>
                         <div className="grid grid-cols-[auto_1fr] gap-3 pt-4 px-8">
@@ -44,7 +44,7 @@ function RouteComponent() {
                                     <div className="text-xs font-semibold">Lun-Vie</div>
                                     <Clock className="size-6" />
                                 </div>
-                                <div className="col-start-2 text-xl ml-auto mt-auto">
+                                <div className="col-start-2 xs:text-xl ml-auto mt-auto">
                                     10:00 am - 07:00 pm
                                 </div>
                             </div>
@@ -53,12 +53,12 @@ function RouteComponent() {
                                     <div className="text-xs font-semibold">Sáb</div>
                                     <Clock className="size-6" />
                                 </div>
-                                <div className="col-start-2 text-xl ml-auto mt-auto">
+                                <div className="col-start-2 xs:text-xl ml-auto mt-auto">
                                     10:00 am - 02:00 pm
                                 </div>
                             </div>
                         </div>
-                        <h3 className="text-xl font-medium mt-6">
+                        <h3 className="xs:text-xl font-medium mt-6">
                             Llamanos o manda Whatsapp a los números:
                         </h3>
                         <div className="grid grid-cols-[auto_1fr] gap-3 pt-4 px-8">
@@ -67,7 +67,7 @@ function RouteComponent() {
                                     <div className="text-xs font-semibold">Mazatlán</div>
                                     <Phone className="size-6" />
                                 </div>
-                                <div className="col-start-2 text-xl ml-4 mr-auto mt-auto">
+                                <div className="col-start-2 xs:text-xl ml-4 mr-auto mt-auto">
                                     (669) 112-9742
                                 </div>
                             </div>
@@ -76,12 +76,12 @@ function RouteComponent() {
                                     <div className="text-xs font-semibold">Durango</div>
                                     <Phone className="size-6" />
                                 </div>
-                                <div className="col-start-2 text-xl ml-4 mr-auto mt-auto">
+                                <div className="col-start-2 xs:text-xl ml-4 mr-auto mt-auto">
                                     (618) 194-1145
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-6 flex flex-col space-y-3">
+                        <div className="mt-12 flex flex-col space-y-3">
                             <Button
                                 size="lg"
                                 className="bg-sbr-blue hover:bg-gray-50 active:bg-gray-50 hover:text-sbr-blue active:text-sbr-blue"
