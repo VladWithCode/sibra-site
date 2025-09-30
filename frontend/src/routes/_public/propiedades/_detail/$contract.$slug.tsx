@@ -20,7 +20,7 @@ import { format, set } from 'date-fns';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { PropertyCarousel } from '@/components/properties/PropertySlider';
 import { createQuote } from '@/queries/quotes';
-import type { TQuote, TQuoteCreateResult, TRequestError } from '@/queries/type';
+import type { TQuote, TQuoteCreateResult } from '@/queries/type';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 
@@ -131,7 +131,7 @@ function RouteComponent() {
                     <h3 className="text-lg font-bold">¿Quieres conocerla?</h3>
                     <ContactForm viewDetail='simple' forPropertyID={property.id} />
                 </div>
-                <div className="flex justify-between border-y-2 border-sbr-green font-semibold">
+                <div className="flex justify-between border-y-2 border-sbr-green font-semibold text-center">
                     <h3 className="flex-1 text-lg py-2 px-4">Llama ahora</h3>
                     <span className="shrink-0 grow-0 basis-0.5 bg-sbr-green-light my-2"></span>
                     <a href="tel:526188744569" className="flex-1 py-2 px-4">(618) 874 45 69</a>
