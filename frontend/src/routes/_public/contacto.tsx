@@ -7,12 +7,20 @@ import { Clock, Phone } from 'lucide-react';
 import { ConnectIcon } from '@/components/icons/connect';
 import { InstagramIcon } from '@/components/icons/instagram';
 import { FacebookIcon } from '@/components/icons/facebook';
+import { useUIStore } from '@/stores/uiStore';
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_public/contacto')({
     component: RouteComponent,
 })
 
 function RouteComponent() {
+    const { setHeaderComplement, setHeaderFloating } = useUIStore();
+    useEffect(() => {
+        setHeaderFloating(false);
+        setHeaderComplement('cta');
+    }, []);
+
     return (
         <main>
             <section className="relative z-0 py-16 px-6">
