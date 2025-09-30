@@ -17,7 +17,7 @@ export const Route = createFileRoute('/_public/contacto')({
 function RouteComponent() {
     const { setHeaderComplement, setHeaderFloating } = useUIStore();
     useEffect(() => {
-        setHeaderFloating(false);
+        setHeaderFloating(true);
         setHeaderComplement('cta');
     }, []);
 

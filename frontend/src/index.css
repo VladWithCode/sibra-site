@@ -13,6 +13,11 @@
     --color-sbr-green: #00bf5a;
     --color-sbr-green-dark: #4bbd80;
     --color-sbr-green-light: #51eb5b;
+    /* Header Colors */
+    --color-top-floating: --alpha(var(--color-sbr-blue-light) / 0%);
+    --color-top-normal: --alpha(var(--color-secondary) / 100%);
+    --color-scrolled-floating: --alpha(var(--color-sbr-blue-light) / 100%);
+    --color-scrolled-normal: --alpha(var(--color-secondary) / 100%);
 
     --breakpoint-xs: 24rem;
 

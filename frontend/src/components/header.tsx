@@ -4,7 +4,7 @@ import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMe
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
 import { FilterIcon, HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { cn } from "@/lib/utils";
@@ -18,63 +18,74 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 
 export function Header() {
     const { headerFloating, headerComplement } = useUIStore();
-    const [atTop, setAtTop] = useState(false);
     const header = useRef<HTMLDivElement>(null)
     const pageTop = useRef<HTMLDivElement>(null)
-    const tl = useRef<gsap.core.Timeline>(null)
-    useGSAP(() => {
+    const { contextSafe } = useGSAP({ scope: header, dependencies: [pageTop.current] })
+    const animateHeader = contextSafe((isAtTop: boolean) => {
         if (!pageTop.current || !header.current) return
-        tl.current = gsap.timeline({
-            paused: true,
-            defaults: {
-                duration: 0.3,
-                ease: "power1.inOut",
-            },
-        });
-        tl.current.set(header.current, { position: "fixed", y: "-6rem" });
-        tl.current.to(header.current, {
-            y: "0rem",
-            opacity: "1",
-            backgroundColor: "var(--bg-color)",
-        });
+
+        if (isAtTop) {
+            gsap.to(header.current, {
+                y: "-6rem",
+                opacity: "0",
+                duration: 0.5,
+                ease: "power2.out",
+                onComplete: () => {
+                    gsap.set(header.current, { position: "" });
+                }
+            });
+            // @ts-ignore
+            gsap.to(header.current, {
+                y: "0rem",
+                opacity: "1",
+                backgroundColor: "",
+                duration: 0.5,
+                ease: "power2.out",
+            }, "-=0.4");
+        } else {
+            gsap.set(header.current, {
+                y: "-12rem",
+                opacity: "0",
+                position: "var(--position)",
+            });
+            gsap.to(header.current, {
+                y: "0rem",
+                opacity: "1",
+                backgroundColor: "var(--bg-color)",
+                duration: 0.5,
+                ease: "power2.inOut",
+            });
+        }
+    });
+    useEffect(() => {
+        if (!pageTop.current || !header.current) return
 
         const obsv = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
-                if (!tl.current) return;
-
-                if (!entry.isIntersecting) {
-                    tl.current.play();
-                    setAtTop(false);
-                } else {
-                    tl.current.reverse();
-                    setAtTop(true);
-                    gsap.delayedCall(0.3, () => {
-                        tl.current?.revert()
-                    });
-                }
+                animateHeader(entry.isIntersecting);
             });
         });
         obsv.observe(pageTop.current);
 
         return () => {
             obsv.disconnect();
-            tl.current?.invalidate();
         }
-    }, { dependencies: [pageTop.current] })
+    }, []);
 
     return (
         <>
             <div className="col-start-1 col-span-1 absolute top-[60%] inset-x-0 z-0 h-0" ref={pageTop} data-page-top></div>
             <header
                 className={cn(
-                    "col-start-1 col-span-1 top-0 inset-x-0 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 transition-colors data-[inView=false]:sticky ",
+                    "col-start-1 col-span-1 top-0 inset-x-0 -translate-y-24 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 data-[inView=false]:sticky",
                     !headerFloating ?
-                        "relative bg-secondary data-[in-view=false]:bg-secondary shadow-sm" :
-                        "absolute data-[inView=false]:bg-sbr-blue-light",
+                        "relative bg-top-normal data-[in-view=false]:bg-top-normal shadow-sm" :
+                        "absolute data-[inView=false]:bg-top-floating",
                 )}
                 ref={header}
                 style={{
-                    "--bg-color": headerFloating ? "var(--color-sbr-blue-light)" : "var(--color-secondary)",
+                    "--bg-color": headerFloating ? "var(--color-scrolled-floating)" : "var(--color-scrolled-normal)",
+                    "--position": headerFloating ? "fixed" : "sticky",
                 } as React.CSSProperties}
             >
                 <div className="flex items-center justify-between gap-6 text-gray-50">
