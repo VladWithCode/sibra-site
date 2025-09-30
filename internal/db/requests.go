@@ -6,67 +6,96 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
+)
+
+type RequestType string
+
+const (
+	RequestTypeInfo  RequestType = "informacion"
+	RequestTypeQuote RequestType = "cita"
+)
+
+type RequestStatus string
+
+const (
+	RequestStatusPending   RequestStatus = "pendiente"
+	RequestStatusConfirmed RequestStatus = "confirmada"
+	RequestStatusDone      RequestStatus = "atendida"
+	RequestStatusRepeat    RequestStatus = "volver a atender"
 )
 
 type Request struct {
-	Id            string         `json:"id" db:"id"`
-	Type          string         `json:"type" db:"type"`
-	Phone         string         `json:"phone" db:"phone"`
-	Name          string         `json:"name" db:"name"`
-	Date          time.Time      `json:"date" db:"date"`
-	ScheduledDate sql.NullTime   `json:"scheduledDate" db:"scheduled_date"`
-	Status        string         `json:"status" db:"status"`
-	Agent         string         `json:"agent" db:"status"`
-	Property      sql.NullString `json:"property" db:"property"`
+	Id            string        `json:"id" db:"id"`
+	Type          RequestType   `json:"type" db:"type"`
+	Phone         string        `json:"phone" db:"phone"`
+	Name          string        `json:"name" db:"name"`
+	ScheduledDate time.Time     `json:"scheduledDate" db:"scheduled_date"`
+	Status        RequestStatus `json:"status" db:"status"`
+	Agent         string        `json:"agent" db:"status"`
+	Property      string        `json:"property,omitempty" db:"property"`
+
+	CreatedAt time.Time `json:"date" db:"date"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+}
+
+func NewRequest(reqType RequestType) *Request {
+	return &Request{
+		Id:        uuid.Must(uuid.NewV7()).String(),
+		Type:      reqType,
+		Status:    RequestStatusPending,
+		CreatedAt: time.Now(),
+	}
 }
 
 type RequestFilter struct {
-	Type          *string
-	Date          *time.Time
+	Type          *RequestType
 	ScheduledDate *time.Time
-	Status        *string
+	Status        *RequestStatus
 	Agent         *string
 	Property      *string
+	CreatedAt     *time.Time
 }
 
-const (
-	RequestTypeInfo  string = "informacion"
-	RequestTypeQuote string = "cita"
-)
-
-const (
-	RequestStatusPending   string = "pendiente"
-	RequestStatusDone      string = "atendida"
-	RequestStatusScheduled string = "agendada"
-	RequestStatusRe        string = "volver a atender"
-)
-
-func CreateRequest(req *Request) error {
-	conn, err := GetPool()
+func CreateRequest(ctx context.Context, req *Request) error {
+	conn, err := GetPoolWithCtx(ctx)
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
+	req.Id = uuid.Must(uuid.NewV7()).String()
+
+	args := pgx.NamedArgs{
+		"id":     req.Id,
+		"type":   req.Type,
+		"phone":  req.Phone,
+		"name":   req.Name,
+		"status": req.Status,
+		"scheduled_date": sql.NullTime{
+			Time:  req.ScheduledDate,
+			Valid: !req.ScheduledDate.IsZero(),
+		},
+		"agent": sql.NullString{
+			String: req.Agent,
+			Valid:  req.Agent != "",
+		},
+		"property": sql.NullString{
+			String: req.Property,
+			Valid:  req.Property != "",
+		},
+	}
 	_, err = conn.Exec(
 		ctx,
-		`
-		INSERT INTO
-			requests (id, type, phone, name, date, status, agent, scheduled_date, property)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		`,
-		req.Id,
-		req.Type,
-		req.Phone,
-		req.Name,
-		req.Date,
-		req.Status,
-		req.Agent,
-		req.ScheduledDate,
-		req.Property,
+		`INSERT INTO
+            requests (id, type, phone, name, status, agent, scheduled_date, property)
+        VALUES (@id, @type, @phone, @name, @status, @agent, @scheduled_date, @property)`,
+		args,
 	)
 
 	if err != nil {
@@ -104,9 +133,9 @@ func GetRequestsPagination(filter *RequestFilter, limit, page int) (paginationDa
 		queryParams = append(queryParams, *filter.Property)
 	}
 
-	if filter.Date != nil {
+	if filter.CreatedAt != nil {
 		queryConditions = append(queryConditions, `r.date = $4`)
-		queryParams = append(queryParams, *filter.Date)
+		queryParams = append(queryParams, *filter.CreatedAt)
 	}
 
 	if filter.Agent != nil {
@@ -195,9 +224,9 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 		queryParams = append(queryParams, *filter.Property)
 	}
 
-	if filter.Date != nil {
+	if filter.CreatedAt != nil {
 		queryConditions = append(queryConditions, `r.date = $4`)
-		queryParams = append(queryParams, *filter.Date)
+		queryParams = append(queryParams, *filter.CreatedAt)
 	}
 
 	if filter.Agent != nil {
@@ -243,7 +272,7 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 			r.Type,
 			r.Phone,
 			r.Name,
-			r.Date,
+			r.CreatedAt,
 			r.Status,
 			r.ScheduledDate,
 			r.Agent,
@@ -287,7 +316,7 @@ func FindRequestById(id string) (*Request, error) {
 		&req.Id,
 		&req.Phone,
 		&req.Name,
-		&req.Date,
+		&req.CreatedAt,
 		&req.ScheduledDate,
 		&req.Status,
 		&req.Type,
