@@ -30,7 +30,7 @@ export function PropertyCarousel({ properties }: { properties: TProperty[] }) {
             <CarouselContent>
                 {properties.map((property) => (
                     <PropertyCarouselItem key={property.id}>
-                        <PropertyCard propData={{ ...property, lat: 24.0083833, lon: -104.6713768 }} withMap={true} />
+                        <PropertyCard propData={{ ...property }} withMap={!!property.lat && !!property.lon} />
                     </PropertyCarouselItem>
                 ))}
             </CarouselContent>

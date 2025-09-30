@@ -95,7 +95,9 @@ export function PropertyCardHeaderWithMap({ property }: { property: TProperty })
                 </div>
                 <div className="relative z-10 w-full aspect-[2/1] bg-gray-200 transition-(--transition-appear) duration-500 translate-x-0 opacity-100 data-[is-active=false]:-translate-x-12 data-[is-active=false]:opacity-0 data-[is-active=false]:z-0" data-is-active={activeTab === "img"}>
                     <img
-                        src={property.mainImg || undefined}
+                        src={property.mainImg ?
+                            `/static/properties/${property.id}/${property.mainImg}` :
+                            undefined}
                         alt={`Imagen mostrando la propiedad ubicada en ${property.address}, ${property.nbHood}. C.P. ${property.zip}`}
                         className="w-full h-full object-cover rounded-t-lg"
                     />
