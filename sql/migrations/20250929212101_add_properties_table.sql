@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS properties (
     slug VARCHAR(512),
     features JSONB,
 
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     FOREIGN KEY (agent) REFERENCES users(id)
 );
@@ -101,10 +101,10 @@ DROP INDEX IF EXISTS idx_properties_search;
 -- Remove the earth_coords column
 ALTER TABLE properties DROP COLUMN IF EXISTS earth_coords;
 
-DROP TABLE IF EXISTS requests;
+DROP TABLE IF EXISTS properties;
 
 -- Drop extensions (be very careful with this in production!)
 -- Only uncomment if you're sure no other tables use these extensions
--- DROP EXTENSION IF EXISTS earthdistance;
--- DROP EXTENSION IF EXISTS cube;
+DROP EXTENSION IF EXISTS earthdistance;
+DROP EXTENSION IF EXISTS cube;
 -- +goose StatementEnd
