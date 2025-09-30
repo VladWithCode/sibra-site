@@ -627,7 +627,8 @@ func FindFeaturedProperties() ([]*Property, error) {
 		ctx,
 		`SELECT
             id, address, city, state, zip, nb_hood, price, property_type, contract,
-            beds, baths, square_mt, lot_size, listing_date, main_img, imgs, slug
+            beds, baths, square_mt, lot_size, listing_date, main_img, imgs, slug,
+            lat, lon
         FROM properties
         WHERE featured = true
         ORDER BY listing_date DESC
@@ -657,6 +658,8 @@ func FindFeaturedProperties() ([]*Property, error) {
 			&property.MainImg,
 			&property.Images,
 			&property.Slug,
+			&property.Lat,
+			&property.Lon,
 		)
 		if err != nil {
 			return nil, err
