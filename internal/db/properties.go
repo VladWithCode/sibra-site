@@ -220,8 +220,8 @@ func CreateProperty(prop *Property) error {
 		`INSERT INTO properties (
 			id, address, description, city, state, zip, country, price, property_type,
 			contract, beds, baths, square_mt, lot_size, year_built, listing_date,
-			status, earth_coords, features, lat, lon, nb_hood, agent, slug
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)`,
+			status, earth_coords, features, lat, lon, nb_hood, agent, slug, main_img, imgs
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)`,
 		prop.Id,
 		prop.Address,
 		prop.Description,
@@ -246,6 +246,8 @@ func CreateProperty(prop *Property) error {
 		prop.NbHood,
 		prop.Agent,
 		prop.Slug,
+		prop.MainImg,
+		prop.Images,
 	)
 
 	if err != nil {
@@ -760,6 +762,8 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 	var featsJSON sql.NullString
 	var phone sql.NullString
 	var img sql.NullString
+	var featuredExpiresAt sql.NullTime
+	var listingDate sql.NullTime
 	property = &Property{}
 	property.AgentData = &AgentData{}
 
@@ -778,7 +782,7 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		&property.SqMt,
 		&property.LotSize,
 		&property.YearBuilt,
-		&property.ListingDate,
+		&listingDate,
 		&property.Status,
 		&property.Coords,
 		&featsJSON,
@@ -786,7 +790,7 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		&property.Lon,
 		&property.Contract,
 		&property.Featured,
-		&property.FeaturedExpiresAt,
+		&featuredExpiresAt,
 		&property.NbHood,
 		&property.MainImg,
 		&property.Images,
@@ -806,6 +810,14 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 
 	if featsJSON.Valid {
 		_ = json.Unmarshal([]byte(featsJSON.String), &property.Features)
+	}
+
+	if listingDate.Valid {
+		property.ListingDate = listingDate.Time
+	}
+
+	if featuredExpiresAt.Valid {
+		property.FeaturedExpiresAt = featuredExpiresAt.Time
 	}
 
 	// Sync lat/lon from coords
@@ -840,6 +852,8 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 	var featsJSON sql.NullString
 	var phone sql.NullString
 	var img sql.NullString
+	var featuredExpiresAt sql.NullTime
+	var listingDate sql.NullTime
 	property = &Property{}
 	property.AgentData = &AgentData{}
 
@@ -858,7 +872,7 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 		&property.SqMt,
 		&property.LotSize,
 		&property.YearBuilt,
-		&property.ListingDate,
+		&listingDate,
 		&property.Status,
 		&property.Coords,
 		&featsJSON,
@@ -866,7 +880,7 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 		&property.Lon,
 		&property.Contract,
 		&property.Featured,
-		&property.FeaturedExpiresAt,
+		&featuredExpiresAt,
 		&property.NbHood,
 		&property.MainImg,
 		&property.Images,
@@ -886,6 +900,14 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 
 	if featsJSON.Valid {
 		_ = json.Unmarshal([]byte(featsJSON.String), &property.Features)
+	}
+
+	if listingDate.Valid {
+		property.ListingDate = listingDate.Time
+	}
+
+	if featuredExpiresAt.Valid {
+		property.FeaturedExpiresAt = featuredExpiresAt.Time
 	}
 
 	// Sync lat/lon from coords
