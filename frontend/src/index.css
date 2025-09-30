@@ -1,11 +1,11 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --font-sans: 'Raleway', sans-serif;
-    --font-serif: 'Lora', serif;
+    --font-sans: "Raleway", sans-serif;
+    --font-serif: "Lora", serif;
 
     --color-sbr-blue: #2c47a0;
     --color-sbr-blue-dark: #083357;
@@ -50,7 +50,7 @@
     a[disabled] {
         pointer-events: none;
         cursor: default;
-        opacity: .90;
+        opacity: 0.9;
     }
 }
 
@@ -162,10 +162,10 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
 }

@@ -1,9 +1,9 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { MapPin, Phone, Mail } from "lucide-react"
-import { InstagramIcon } from "./icons/instagram"
-import { FacebookIcon } from "./icons/facebook"
-import { Link } from "@tanstack/react-router"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { MapPin, Phone, Mail } from "lucide-react";
+import { InstagramIcon } from "./icons/instagram";
+import { FacebookIcon } from "./icons/facebook";
+import { Link } from "@tanstack/react-router";
 
 export function Footer() {
     return (
@@ -12,10 +12,13 @@ export function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {/* Company Info & Contact */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-card-foreground">SIBRA Bienes Raíces</h3>
+                        <h3 className="text-lg font-semibold text-card-foreground">
+                            SIBRA Bienes Raíces
+                        </h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                            Tu socio de confianza para encontrar, comprar y vender propiedades. Manejamos todas tus necesidades
-                            inmobiliarias con experiencia y cuidado.
+                            Tu socio de confianza para encontrar, comprar y vender propiedades.
+                            Manejamos todas tus necesidades inmobiliarias con experiencia y
+                            cuidado.
                         </p>
                         <div className="space-y-3">
                             <div className="flex items-center gap-3 text-sm">
@@ -32,42 +35,64 @@ export function Footer() {
                             </div>
                             <div className="flex items-start gap-3 text-sm">
                                 <MapPin className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                <span className="text-foreground">C. Cancer #132. Fracc. Sahop, 34190 Durango, Dgo.</span>
+                                <span className="text-foreground">
+                                    C. Cancer #132. Fracc. Sahop, 34190 Durango, Dgo.
+                                </span>
                             </div>
                         </div>
                     </div>
 
                     {/* Services */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-card-foreground">Nuestros Servicios</h3>
+                        <h3 className="text-lg font-semibold text-card-foreground">
+                            Nuestros Servicios
+                        </h3>
                         <ul className="space-y-2 text-sm">
                             <li>
-                                <Link to="/propiedades" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/propiedades"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Compra de Propiedades
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/vender" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/vender"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Venta de Propiedades
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/consultoria" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/consultoria"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Consultoría Inmobiliaria
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/tramites" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/tramites"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Trámites Legales
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/valuaciones" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/valuaciones"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Valuación de Propiedades
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/analisis" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/analisis"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Análisis de Mercado
                                 </Link>
                             </li>
@@ -76,35 +101,55 @@ export function Footer() {
 
                     {/* Quick Links */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-card-foreground">Enlaces Rápidos</h3>
+                        <h3 className="text-lg font-semibold text-card-foreground">
+                            Enlaces Rápidos
+                        </h3>
                         <ul className="space-y-2 text-sm">
                             <li>
-                                <Link to="/nosotros" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/nosotros"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Acerca de Nosotros
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/propiedades" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/propiedades"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Propiedades
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/testimonios" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/testimonios"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Testimonios
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/preguntas-frecuentes" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/preguntas-frecuentes"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Preguntas Frecuentes
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/contacto" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/contacto"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Contacto
                                 </Link>
                             </li>
                             <li>
-                                <Link to="/politica-de-privacidad" className="text-foreground hover:text-primary transition-colors">
+                                <Link
+                                    to="/politica-de-privacidad"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
                                     Política de Privacidad
                                 </Link>
                             </li>
@@ -113,12 +158,19 @@ export function Footer() {
 
                     {/* Newsletter Signup */}
                     <div className="space-y-4">
-                        <h3 className="text-lg font-semibold text-card-foreground">Mantente Actualizado</h3>
+                        <h3 className="text-lg font-semibold text-card-foreground">
+                            Mantente Actualizado
+                        </h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">
-                            Recibe las últimas propiedades disponibles y análisis de mercado directamente en tu bandeja de entrada.
+                            Recibe las últimas propiedades disponibles y análisis de mercado
+                            directamente en tu bandeja de entrada.
                         </p>
                         <div className="space-y-3">
-                            <Input type="email" placeholder="Ingrese su correo electrónico" className="bg-background border-border" />
+                            <Input
+                                type="email"
+                                placeholder="Ingrese su correo electrónico"
+                                className="bg-background border-border"
+                            />
                             <Button className="w-full border-2 border-sbr-green bg-sbr-green hover:bg-accent/90 active:bg-sbr-green text-gray-100 hover:text-sbr-green active:text-gray-100 font-bold tracking-wide active:scale-95 cursor-pointer">
                                 Suscribirse
                             </Button>
@@ -126,7 +178,9 @@ export function Footer() {
 
                         {/* Social Media */}
                         <div className="pt-4">
-                            <p className="text-sm font-medium text-card-foreground mb-3">Síguenos</p>
+                            <p className="text-sm font-medium text-card-foreground mb-3">
+                                Síguenos
+                            </p>
                             <div className="flex gap-3">
                                 <a
                                     href="https://www.facebook.com/sibra.app"
@@ -151,13 +205,22 @@ export function Footer() {
                 <div className="mt-12 pt-8 border-t border-border">
                     <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                         <div className="flex gap-6 text-xs">
-                            <Link to="/terminos-y-condiciones" className="text-center text-muted-foreground hover:text-primary transition-colors">
+                            <Link
+                                to="/terminos-y-condiciones"
+                                className="text-center text-muted-foreground hover:text-primary transition-colors"
+                            >
                                 Términos de Servicio
                             </Link>
-                            <Link to="/politica-de-privacidad" className="text-center text-muted-foreground hover:text-primary transition-colors">
+                            <Link
+                                to="/politica-de-privacidad"
+                                className="text-center text-muted-foreground hover:text-primary transition-colors"
+                            >
                                 Política de Privacidad
                             </Link>
-                            <Link to="/politica-de-cookies" className="text-center text-muted-foreground hover:text-primary transition-colors">
+                            <Link
+                                to="/politica-de-cookies"
+                                className="text-center text-muted-foreground hover:text-primary transition-colors"
+                            >
                                 Política de Cookies
                             </Link>
                         </div>
@@ -168,5 +231,5 @@ export function Footer() {
                 </div>
             </div>
         </footer>
-    )
+    );
 }

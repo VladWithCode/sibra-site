@@ -1,10 +1,10 @@
-import { Outlet, createRootRouteWithContext } from '@tanstack/react-router'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClient } from '@/queries/queryClient'
-import { SidebarProvider } from '@/components/ui/sidebar'
-import type { IRouteContext } from './-routeContext'
-import { MapsAPIProvider } from '@/maps/component'
-import { Toaster } from '@/components/ui/sonner'
+import { Outlet, createRootRouteWithContext } from "@tanstack/react-router";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/queries/queryClient";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import type { IRouteContext } from "./-routeContext";
+import { MapsAPIProvider } from "@/maps/component";
+import { Toaster } from "@/components/ui/sonner";
 
 export const Route = createRootRouteWithContext<IRouteContext>()({
     component: () => (
@@ -28,4 +28,4 @@ export const Route = createRootRouteWithContext<IRouteContext>()({
             </SidebarProvider>
         </QueryClientProvider>
     ),
-})
+});

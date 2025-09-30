@@ -31,12 +31,7 @@ export function SearchBox({ className, placeholder, onSubmit, onChange }: Search
     };
 
     return (
-        <div className={
-            cn(
-                className,
-                "relative bg-gray-50 w-full z-0 rounded-lg"
-            )
-        }>
+        <div className={cn(className, "relative bg-gray-50 w-full z-0 rounded-lg")}>
             <Input
                 value={search}
                 onChange={_onChange}
@@ -48,7 +43,9 @@ export function SearchBox({ className, placeholder, onSubmit, onChange }: Search
                     className="uppercase bg-sbr-blue text-white font-semibold"
                     size="lg"
                     onClick={_onSubmit}
-                >Buscar</Button>
+                >
+                    Buscar
+                </Button>
             </div>
             <div
                 className="absolute -z-10 top-full inset-y-0 opacity-0 -translate-y-12 transition-[opacity,_transform] duration-300 data-[state=visible]:translate-y-2 data-[state=visible]:opacity-100"

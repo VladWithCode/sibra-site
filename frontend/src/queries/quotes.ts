@@ -1,35 +1,37 @@
 import { queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
-import type { TQuote, TQuoteCreateResult, TQuoteFilters, TQuoteListingResult, TQuoteType } from "./type";
+import type {
+    TQuote,
+    TQuoteCreateResult,
+    TQuoteFilters,
+    TQuoteListingResult,
+    TQuoteType,
+} from "./type";
 import { objectToQueryString } from "./util";
 
 export const QuoteQueryKeys = {
     all: () => ["quotes"] as const,
     // Quote listings
     listing: () => [...QuoteQueryKeys.all(), "listing"] as const,
-    filtered: (filters: TQuoteFilters) => [
-        ...QuoteQueryKeys.listing(),
-        "filtered",
-        { filters },
-    ] as const,
+    filtered: (filters: TQuoteFilters) =>
+        [...QuoteQueryKeys.listing(), "filtered", { filters }] as const,
     // Single quote
     detail: () => [...QuoteQueryKeys.all(), "detail"] as const,
-    byId: (id: string) => [
-        ...QuoteQueryKeys.detail(),
-        "byId",
-        { id },
-    ] as const,
+    byId: (id: string) => [...QuoteQueryKeys.detail(), "byId", { id }] as const,
 } as const;
 
 export type QKQuotesListing = ReturnType<typeof QuoteQueryKeys.listing>;
 export type QKQuotesFiltered = ReturnType<typeof QuoteQueryKeys.filtered>;
 export type QKQuotesById = ReturnType<typeof QuoteQueryKeys.byId>;
 
-export const getQuotesOpts = (filters: TQuoteFilters) => queryOptions({
-    queryKey: QuoteQueryKeys.filtered(filters),
-    queryFn: getQuoteListing,
-});
+export const getQuotesOpts = (filters: TQuoteFilters) =>
+    queryOptions({
+        queryKey: QuoteQueryKeys.filtered(filters),
+        queryFn: getQuoteListing,
+    });
 
-export async function getQuoteListing({ queryKey }: QueryFunctionContext<QKQuotesFiltered>): Promise<TQuoteListingResult> {
+export async function getQuoteListing({
+    queryKey,
+}: QueryFunctionContext<QKQuotesFiltered>): Promise<TQuoteListingResult> {
     const { filters } = queryKey[3];
     const queryParams = objectToQueryString(filters);
     let url = "/api/citas";
@@ -62,5 +64,5 @@ export async function createQuote(newQuote: TQuote): Promise<TQuoteCreateResult>
         throw new Error(data.error || "Error al crear cita");
     }
 
-    return data
+    return data;
 }

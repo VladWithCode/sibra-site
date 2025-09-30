@@ -1,36 +1,39 @@
-import { useCallback, useEffect, useState, type PropsWithChildren } from "react"
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "../ui/carousel"
-import type { TProperty } from "@/queries/type"
-import { PropertyCard } from "./PropertyCard"
+import { useCallback, useEffect, useState, type PropsWithChildren } from "react";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "../ui/carousel";
+import type { TProperty } from "@/queries/type";
+import { PropertyCard } from "./PropertyCard";
 
 export function PropertyCarousel({ properties }: { properties: TProperty[] }) {
-    const [currentProperty, setCurrentProperty] = useState(0)
-    const [api, setApi] = useState<CarouselApi>()
+    const [currentProperty, setCurrentProperty] = useState(0);
+    const [api, setApi] = useState<CarouselApi>();
     const selectSlideCb = useCallback((api: CarouselApi) => {
-        if (!api) return
-        setCurrentProperty(api.selectedScrollSnap())
-    }, [])
+        if (!api) return;
+        setCurrentProperty(api.selectedScrollSnap());
+    }, []);
 
     useEffect(() => {
-        setCurrentProperty(0)
+        setCurrentProperty(0);
 
         return () => {
-            setCurrentProperty(0)
-        }
-    }, [])
+            setCurrentProperty(0);
+        };
+    }, []);
 
     useEffect(() => {
-        if (!api) return
+        if (!api) return;
 
-        api.on("select", selectSlideCb)
-    }, [api])
+        api.on("select", selectSlideCb);
+    }, [api]);
 
     return (
         <Carousel className="space-y-3" setApi={setApi}>
             <CarouselContent>
                 {properties.map((property) => (
                     <PropertyCarouselItem key={property.id}>
-                        <PropertyCard propData={{ ...property }} withMap={!!property.lat && !!property.lon} />
+                        <PropertyCard
+                            propData={{ ...property }}
+                            withMap={!!property.lat && !!property.lon}
+                        />
                     </PropertyCarouselItem>
                 ))}
             </CarouselContent>

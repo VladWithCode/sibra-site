@@ -1,7 +1,7 @@
 export type TRequestError = {
     error: string;
     etc?: Record<string, any>;
-}
+};
 
 export type TPagination = {
     total: number;
@@ -9,7 +9,7 @@ export type TPagination = {
     perPage: number;
     hasNext: boolean;
     hasPrev: boolean;
-}
+};
 
 export type TProperty = {
     id: string;
@@ -41,24 +41,24 @@ export type TProperty = {
     agent: string;
     slug: string;
     agentData: string;
-}
+};
 
 export type TPropertyFilters = Partial<TProperty> & {
     contract: string;
 
-    page?: TPagination['page'];
-    perPage?: TPagination['perPage'];
-}
+    page?: TPagination["page"];
+    perPage?: TPagination["perPage"];
+};
 
 export type TPropertyListingResult = {
     properties: TProperty[];
     pagination: TPagination;
-}
+};
 
 export type TPropertyDetailResult = {
     property: TProperty;
     nearbyProperties: TProperty[] | null;
-}
+};
 
 export type TQuoteType = "presencial" | "whatsapp";
 
@@ -76,30 +76,30 @@ export type TQuote = {
 
     createdAt: string;
     updatedAt: string;
-}
+};
 
 export type TQuoteFilters = Partial<TQuote> & {
-    page?: TPagination['page'];
-    perPage?: TPagination['perPage'];
-}
+    page?: TPagination["page"];
+    perPage?: TPagination["perPage"];
+};
 
 export type TQuoteListingResult = {
     quotes: TQuote[];
     pagination: TPagination;
-}
+};
 
 export type TQuoteDetailResult = {
     quote: TQuote;
-}
+};
 
 export type TQuoteCreateResult = TQuoteCreateError | TQuoteCreateSuccess;
 
 type TQuoteCreateError = {
     message: string;
     etc?: Record<string, any>;
-}
+};
 
 type TQuoteCreateSuccess = {
     success: true;
     quote: TQuote;
-}
+};

@@ -8,4 +8,4 @@ export type TUser = {
     email: string;
     phone: string;
     img: string;
-}
+};

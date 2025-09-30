@@ -1,7 +1,24 @@
 import { Heart, Home, LucideX } from "lucide-react";
 import { Button } from "./ui/button";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuList, NavigationMenuTrigger } from "./ui/navigation-menu";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "./ui/sidebar";
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+} from "./ui/navigation-menu";
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarGroup,
+    SidebarGroupLabel,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarTrigger,
+    useSidebar,
+} from "./ui/sidebar";
 import { FilterIcon, HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef } from "react";
@@ -14,15 +31,23 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { Input } from "./ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "./ui/dialog";
 
 export function Header() {
     const { headerFloating, headerComplement } = useUIStore();
-    const header = useRef<HTMLDivElement>(null)
-    const pageTop = useRef<HTMLDivElement>(null)
-    const { contextSafe } = useGSAP({ scope: header, dependencies: [pageTop.current] })
+    const header = useRef<HTMLDivElement>(null);
+    const pageTop = useRef<HTMLDivElement>(null);
+    const { contextSafe } = useGSAP({ scope: header, dependencies: [pageTop.current] });
     const animateHeader = contextSafe((isAtTop: boolean) => {
-        if (!pageTop.current || !header.current) return
+        if (!pageTop.current || !header.current) return;
 
         if (isAtTop) {
             gsap.to(header.current, {
@@ -32,16 +57,20 @@ export function Header() {
                 ease: "power2.out",
                 onComplete: () => {
                     gsap.set(header.current, { position: "" });
-                }
+                },
             });
             // @ts-ignore
-            gsap.to(header.current, {
-                y: "0rem",
-                opacity: "1",
-                backgroundColor: "",
-                duration: 0.5,
-                ease: "power2.out",
-            }, "-=0.4");
+            gsap.to(
+                header.current,
+                {
+                    y: "0rem",
+                    opacity: "1",
+                    backgroundColor: "",
+                    duration: 0.5,
+                    ease: "power2.out",
+                },
+                "-=0.4",
+            );
         } else {
             gsap.set(header.current, {
                 y: "-12rem",
@@ -58,7 +87,7 @@ export function Header() {
         }
     });
     useEffect(() => {
-        if (!pageTop.current || !header.current) return
+        if (!pageTop.current || !header.current) return;
 
         const obsv = new IntersectionObserver((entries) => {
             entries.forEach((entry) => {
@@ -69,45 +98,68 @@ export function Header() {
 
         return () => {
             obsv.disconnect();
-        }
+        };
     }, []);
 
     return (
         <>
-            <div className="col-start-1 col-span-1 absolute top-[60%] inset-x-0 z-0 h-0" ref={pageTop} data-page-top></div>
+            <div
+                className="col-start-1 col-span-1 absolute top-[60%] inset-x-0 z-0 h-0"
+                ref={pageTop}
+                data-page-top
+            ></div>
             <header
                 className={cn(
                     "col-start-1 col-span-1 top-0 inset-x-0 -translate-y-24 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 data-[inView=false]:sticky",
-                    !headerFloating ?
-                        "relative bg-top-normal data-[in-view=false]:bg-top-normal shadow-sm" :
-                        "absolute data-[inView=false]:bg-top-floating",
+                    !headerFloating
+                        ? "relative bg-top-normal data-[in-view=false]:bg-top-normal shadow-sm"
+                        : "absolute data-[inView=false]:bg-top-floating",
                 )}
                 ref={header}
-                style={{
-                    "--bg-color": headerFloating ? "var(--color-scrolled-floating)" : "var(--color-scrolled-normal)",
-                    "--position": headerFloating ? "fixed" : "sticky",
-                } as React.CSSProperties}
+                style={
+                    {
+                        "--bg-color": headerFloating
+                            ? "var(--color-scrolled-floating)"
+                            : "var(--color-scrolled-normal)",
+                        "--position": headerFloating ? "fixed" : "sticky",
+                    } as React.CSSProperties
+                }
             >
                 <div className="flex items-center justify-between gap-6 text-gray-50">
-                    <SidebarTrigger className="stroke-current data-[header-floating=false]:text-gray-800 my-auto" data-header-floating={headerFloating} />
+                    <SidebarTrigger
+                        className="stroke-current data-[header-floating=false]:text-gray-800 my-auto"
+                        data-header-floating={headerFloating}
+                    />
                     <HeaderNavigationMenu className="hidden xl:block" />
                     <HeaderComplement complementType={headerComplement} />
-                    <Link to="/" className="flex-auto grow-0 data-[header-floating=false]:brightness-30" data-header-floating={headerFloating}>
-                        <img src="/sibra_logo_white_256.webp" alt="Sibra logo" className="h-8 w-auto" />
+                    <Link
+                        to="/"
+                        className="flex-auto grow-0 data-[header-floating=false]:brightness-30"
+                        data-header-floating={headerFloating}
+                    >
+                        <img
+                            src="/sibra_logo_white_256.webp"
+                            alt="Sibra logo"
+                            className="h-8 w-auto"
+                        />
                     </Link>
                 </div>
-            </header >
+            </header>
         </>
     );
 }
 
-export function HeaderComplement({ complementType }: { complementType: TUIStore["headerComplement"] }) {
+export function HeaderComplement({
+    complementType,
+}: {
+    complementType: TUIStore["headerComplement"];
+}) {
     switch (complementType) {
-        case 'search':
+        case "search":
             return <HeaderComplementSearch />;
-        case 'cta':
+        case "cta":
             return <HeaderComplementCta />;
-        case 'none':
+        case "none":
         default:
             return null;
     }
@@ -116,10 +168,22 @@ export function HeaderComplement({ complementType }: { complementType: TUIStore[
 const propertyListingFilterFormSchema = z.object({
     search: z.string().optional(),
     price: z.number().gte(0, { message: "El precio debe ser un número positivo" }).optional(),
-    minPrice: z.number().gte(0, { message: "El precio mínimo debe ser un número positivo" }).optional(),
-    maxPrice: z.number().gte(0, { message: "El precio máximo debe ser un número positivo" }).optional(),
-    sqMt: z.number().gte(0, { message: "El área de más menos debe ser un número positivo" }).optional(),
-    lotSize: z.number().gte(0, { message: "El tamaño del lote debe ser un número positivo" }).optional(),
+    minPrice: z
+        .number()
+        .gte(0, { message: "El precio mínimo debe ser un número positivo" })
+        .optional(),
+    maxPrice: z
+        .number()
+        .gte(0, { message: "El precio máximo debe ser un número positivo" })
+        .optional(),
+    sqMt: z
+        .number()
+        .gte(0, { message: "El área de más menos debe ser un número positivo" })
+        .optional(),
+    lotSize: z
+        .number()
+        .gte(0, { message: "El tamaño del lote debe ser un número positivo" })
+        .optional(),
     yearBuilt: z.number().optional(),
     contract: z.string().optional(),
     propType: z.string().optional(),
@@ -134,7 +198,7 @@ const propertyListingFilterFormSchema = z.object({
     maxSqMt: z.number().optional(),
     orderBy: z.string().default("listing_date").optional(),
     orderDirection: z.string().default("desc").optional(),
-})
+});
 
 export type formSchemaType = z.infer<typeof propertyListingFilterFormSchema>;
 
@@ -167,11 +231,14 @@ function HeaderComplementSearch() {
 
     const onSearchSubmit = (data: formSchemaType) => {
         console.log(data);
-    }
+    };
 
     return (
         <Form {...form}>
-            <form className="space-y-8 text-gray-800" onSubmit={form.handleSubmit(onSearchSubmit)}>
+            <form
+                className="space-y-8 text-gray-800"
+                onSubmit={form.handleSubmit(onSearchSubmit)}
+            >
                 <Dialog>
                     <div className="relative flex">
                         <FormField
@@ -180,7 +247,12 @@ function HeaderComplementSearch() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <Input type="search" className="bg-gray-50" placeholder="Buscar..." {...field} />
+                                        <Input
+                                            type="search"
+                                            className="bg-gray-50"
+                                            placeholder="Buscar..."
+                                            {...field}
+                                        />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -203,11 +275,14 @@ function HeaderComplementSearch() {
                             name="search"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>
-                                        Buscar
-                                    </FormLabel>
+                                    <FormLabel>Buscar</FormLabel>
                                     <FormControl>
-                                        <Input type="search" className="bg-gray-50" placeholder="Buscar..." {...field} />
+                                        <Input
+                                            type="search"
+                                            className="bg-gray-50"
+                                            placeholder="Buscar..."
+                                            {...field}
+                                        />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -218,11 +293,14 @@ function HeaderComplementSearch() {
                                 name="minPrice"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
-                                            Precio Mínimo
-                                        </FormLabel>
+                                        <FormLabel>Precio Mínimo</FormLabel>
                                         <FormControl>
-                                            <Input type="number" className="bg-gray-50" placeholder="Precio mínimo" {...field} />
+                                            <Input
+                                                type="number"
+                                                className="bg-gray-50"
+                                                placeholder="Precio mínimo"
+                                                {...field}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 )}
@@ -232,11 +310,14 @@ function HeaderComplementSearch() {
                                 name="maxPrice"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
-                                            Precio Máximo
-                                        </FormLabel>
+                                        <FormLabel>Precio Máximo</FormLabel>
                                         <FormControl>
-                                            <Input type="number" className="bg-gray-50" placeholder="Precio máximo" {...field} />
+                                            <Input
+                                                type="number"
+                                                className="bg-gray-50"
+                                                placeholder="Precio máximo"
+                                                {...field}
+                                            />
                                         </FormControl>
                                     </FormItem>
                                 )}
@@ -249,11 +330,14 @@ function HeaderComplementSearch() {
                                     name="minSqMt"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>
-                                                M² mínimo
-                                            </FormLabel>
+                                            <FormLabel>M² mínimo</FormLabel>
                                             <FormControl>
-                                                <Input type="number" className="bg-gray-50" placeholder="M² mínimo" {...field} />
+                                                <Input
+                                                    type="number"
+                                                    className="bg-gray-50"
+                                                    placeholder="M² mínimo"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -263,11 +347,14 @@ function HeaderComplementSearch() {
                                     name="maxSqMt"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>
-                                                M² máximo
-                                            </FormLabel>
+                                            <FormLabel>M² máximo</FormLabel>
                                             <FormControl>
-                                                <Input type="number" className="bg-gray-50" placeholder="M² máximo" {...field} />
+                                                <Input
+                                                    type="number"
+                                                    className="bg-gray-50"
+                                                    placeholder="M² máximo"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -279,11 +366,14 @@ function HeaderComplementSearch() {
                                     name="minBedrooms"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>
-                                                Habitaciones Mínimas
-                                            </FormLabel>
+                                            <FormLabel>Habitaciones Mínimas</FormLabel>
                                             <FormControl>
-                                                <Input type="number" className="bg-gray-50" placeholder="Habitaciones mínimas" {...field} />
+                                                <Input
+                                                    type="number"
+                                                    className="bg-gray-50"
+                                                    placeholder="Habitaciones mínimas"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -293,11 +383,14 @@ function HeaderComplementSearch() {
                                     name="maxBedrooms"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>
-                                                Habitaciones Máximas
-                                            </FormLabel>
+                                            <FormLabel>Habitaciones Máximas</FormLabel>
                                             <FormControl>
-                                                <Input type="number" className="bg-gray-50" placeholder="Habitaciones máximas" {...field} />
+                                                <Input
+                                                    type="number"
+                                                    className="bg-gray-50"
+                                                    placeholder="Habitaciones máximas"
+                                                    {...field}
+                                                />
                                             </FormControl>
                                         </FormItem>
                                     )}
@@ -347,24 +440,24 @@ export function HeaderNavigationMenu({ className }: { className?: string }) {
 }
 
 export function HeaderSidebar() {
-    const { toggleSidebar } = useSidebar()
+    const { toggleSidebar } = useSidebar();
     const onLinkClick = useCallback(() => {
         toggleSidebar();
         window.scrollY = 0;
-    }, [toggleSidebar])
+    }, [toggleSidebar]);
 
     return (
         <Sidebar collapsible="offcanvas">
             <SidebarHeader className="bg-gray-200">
                 <div className="flex items-center justify-between gap-6 text-gray-700">
                     <div className="flex-auto grow-0">
-                        <img src="/sibra_logo_white_256.webp" alt="Sibra logo" className="h-8 brightness-30" />
+                        <img
+                            src="/sibra_logo_white_256.webp"
+                            alt="Sibra logo"
+                            className="h-8 brightness-30"
+                        />
                     </div>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleSidebar()}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => toggleSidebar()}>
                         <LucideX className="size-6" strokeWidth={3} />
                     </Button>
                 </div>
@@ -373,7 +466,7 @@ export function HeaderSidebar() {
                 <SidebarGroup className="bg-gray-50">
                     <SidebarGroupLabel>Navegación</SidebarGroupLabel>
                     <SidebarMenu className="gap-1">
-                        {mainNavigationItems.map(item => (
+                        {mainNavigationItems.map((item) => (
                             <SidebarMenuItem key={item.label}>
                                 <SidebarMenuButton asChild>
                                     <Link
@@ -391,7 +484,7 @@ export function HeaderSidebar() {
                 </SidebarGroup>
                 <SidebarGroup className="mt-auto">
                     <SidebarMenu>
-                        {secondaryNavigationItems.map(item => (
+                        {secondaryNavigationItems.map((item) => (
                             <SidebarMenuItem key={item.label}>
                                 <SidebarMenuButton asChild>
                                     <Link
@@ -442,7 +535,7 @@ const mainNavigationItems = linkOptions([
     {
         label: "Créditos Infonavit",
         to: "/infonavit",
-        icon: ({ }: { className: string }) => (<Infonavit className="size-4" />),
+        icon: ({}: { className: string }) => <Infonavit className="size-4" />,
     },
 ]);
 

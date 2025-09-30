@@ -13,10 +13,12 @@ export type TDatePickerItem = {
     monthName: string;
     date: number;
     available: boolean;
-}
+};
 export const DATEPICKER_MAX_DAY_COUNT = 30;
 
-export function ContactFormDatePicker({ onChange }: {
+export function ContactFormDatePicker({
+    onChange,
+}: {
     onChange?: (pickedItem: TDatePickerItem) => void;
 }) {
     const [dateItems, setDateItems] = useState<TDatePickerItem[]>([]);
@@ -36,25 +38,40 @@ export function ContactFormDatePicker({ onChange }: {
         }
         setDateItems(dates);
         setActiveItem(dates[0].value.toISOString());
-    }, [])
-    const handleItemClick = useCallback((item: TDatePickerItem) => {
-        setActiveItem(item.value.toISOString());
-        if (typeof onChange === "function") onChange(item);
-    }, [setActiveItem, onChange]);
+    }, []);
+    const handleItemClick = useCallback(
+        (item: TDatePickerItem) => {
+            setActiveItem(item.value.toISOString());
+            if (typeof onChange === "function") onChange(item);
+        },
+        [setActiveItem, onChange],
+    );
 
     return (
         <ScrollArea className="w-full mx-auto">
             <div className="flex w-max gap-4 text-gray-800">
-                {dateItems.map(item => (
-                    <DatePickerItem key={item.value.toISOString()} item={item} activeItem={activeItem} handleItemClick={handleItemClick} />
+                {dateItems.map((item) => (
+                    <DatePickerItem
+                        key={item.value.toISOString()}
+                        item={item}
+                        activeItem={activeItem}
+                        handleItemClick={handleItemClick}
+                    />
                 ))}
             </div>
-            <ScrollBar orientation="horizontal" style={{ "--border": "var(--color-sbr-blue-dark)" } as CSSProperties} />
+            <ScrollBar
+                orientation="horizontal"
+                style={{ "--border": "var(--color-sbr-blue-dark)" } as CSSProperties}
+            />
         </ScrollArea>
     );
 }
 
-export function DatePickerItem({ item, activeItem, handleItemClick }: {
+export function DatePickerItem({
+    item,
+    activeItem,
+    handleItemClick,
+}: {
     item: TDatePickerItem;
     activeItem?: string;
     handleItemClick: (item: TDatePickerItem) => void;
@@ -68,7 +85,8 @@ export function DatePickerItem({ item, activeItem, handleItemClick }: {
             className={cn(
                 "size-24 flex flex-col items-center justify-center gap-0 text-current/95 text-center font-semibold border border-muted-foreground rounded-lg",
                 isActive && "border-2 border-sbr-blue-dark bg-sbr-blue-light/15 text-current",
-            )}>
+            )}
+        >
             <p className="text-xs uppercase text-current/80">{item.dayName}</p>
             <p className="text-3xl font-bold">{item.date}</p>
             <p className="text-sm uppercase text-current/80">{item.monthName}</p>
@@ -80,25 +98,30 @@ export type TQuoteType = "presencial" | "whatsapp";
 export type TQuoteTypeItem = {
     type: TQuoteType;
     label: string;
-}
+};
 
 const quoteTypeItems: TQuoteTypeItem[] = [
     { type: "presencial", label: "Tour en Persona" },
     { type: "whatsapp", label: "Whatsapp" },
 ];
 
-export function QuoteTypeSelector({ onChange }: {
+export function QuoteTypeSelector({
+    onChange,
+}: {
     onChange?: (pickedType: TQuoteType) => void;
 }) {
     const [quoteType, setQuoteType] = useState<TQuoteType>("presencial");
-    const handleQuoteTypeChange = useCallback((type: TQuoteType) => {
-        setQuoteType(type);
-        if (typeof onChange === "function") onChange(type);
-    }, [setQuoteType, onChange]);
+    const handleQuoteTypeChange = useCallback(
+        (type: TQuoteType) => {
+            setQuoteType(type);
+            if (typeof onChange === "function") onChange(type);
+        },
+        [setQuoteType, onChange],
+    );
 
     return (
         <div className="flex justify-stretch [&>button]:not-first:rounded-l-none [&>button]:not-last:rounded-r-none">
-            {quoteTypeItems.map(item => (
+            {quoteTypeItems.map((item) => (
                 <QuoteTypeItem
                     key={item.type}
                     type={item}
@@ -110,7 +133,11 @@ export function QuoteTypeSelector({ onChange }: {
     );
 }
 
-function QuoteTypeItem({ type, active, handleClick }: {
+function QuoteTypeItem({
+    type,
+    active,
+    handleClick,
+}: {
     type: TQuoteTypeItem;
     active: boolean;
     handleClick: () => void;

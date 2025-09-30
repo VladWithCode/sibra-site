@@ -1,35 +1,45 @@
-import { PropertyCard } from '@/components/properties/PropertyCard';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getPropertyListingOpts } from '@/queries/properties';
-import { useUIStore } from '@/stores/uiStore';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute } from '@tanstack/react-router'
-import { MapPin } from 'lucide-react';
-import { useEffect } from 'react';
+import { PropertyCard } from "@/components/properties/PropertyCard";
+import { Button } from "@/components/ui/button";
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { getPropertyListingOpts } from "@/queries/properties";
+import { useUIStore } from "@/stores/uiStore";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { MapPin } from "lucide-react";
+import { useEffect } from "react";
 
-export const Route = createFileRoute('/_public/propiedades/_listing/$contract')({
+export const Route = createFileRoute("/_public/propiedades/_listing/$contract")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        const { contract } = params
+        const { contract } = params;
         await context.queryClient.ensureQueryData(
             getPropertyListingOpts({
                 contract,
-            })
+            }),
         );
     },
-})
+});
 
 function RouteComponent() {
     const { setHeaderFloating, setHeaderComplement } = useUIStore();
     const { contract } = Route.useParams();
-    const { data } = useSuspenseQuery(getPropertyListingOpts({
-        contract,
-    }));
+    const { data } = useSuspenseQuery(
+        getPropertyListingOpts({
+            contract,
+        }),
+    );
 
     useEffect(() => {
         setHeaderFloating(false);
-        setHeaderComplement('search');
+        setHeaderComplement("search");
     }, []);
 
     return (
@@ -42,7 +52,7 @@ function RouteComponent() {
                     <span className="text-2xl">{data.pagination.total} </span>
                     resultados
                 </p>
-                <Select defaultValue='listing_date-desc'>
+                <Select defaultValue="listing_date-desc">
                     <SelectTrigger className="font-semibold ml-auto border-transparent active:border-primary-foreground whitespace-break-spaces line-clamp-1">
                         <SelectValue placeholder="Ordenar por" />
                     </SelectTrigger>
@@ -62,9 +72,9 @@ function RouteComponent() {
                         Mapa
                     </Button>
                 </div>
-            </div >
+            </div>
             <div className="p-3 space-y-3 bg-gray-200">
-                {data.properties.map(prop => (
+                {data.properties.map((prop) => (
                     <PropertyCard key={prop.id} propData={prop} withMap={false} />
                 ))}
             </div>

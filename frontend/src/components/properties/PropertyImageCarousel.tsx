@@ -6,7 +6,7 @@ export function PropertyImageCarousel({ property }: { property: TProperty }) {
     return (
         <Carousel>
             <CarouselContent className="aspect-[3/2]">
-                {property.imgs.map(img => (
+                {property.imgs.map((img) => (
                     <PropertyImageCarouselItem key={img}>
                         <img
                             src={"/static/properties/" + property.id + "/" + img}
@@ -21,9 +21,5 @@ export function PropertyImageCarousel({ property }: { property: TProperty }) {
 }
 
 export function PropertyImageCarouselItem({ children }: {} & PropsWithChildren) {
-    return (
-        <CarouselItem className="grow shrink-0 basis-full h-full">
-            {children}
-        </CarouselItem>
-    );
+    return <CarouselItem className="grow shrink-0 basis-full h-full">{children}</CarouselItem>;
 }

@@ -1,15 +1,15 @@
-import { StrictMode } from 'react'
-import ReactDOM from 'react-dom/client'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useGSAP } from '@gsap/react';
+import { StrictMode } from "react";
+import ReactDOM from "react-dom/client";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 
 // Import the generated route tree
-import { routeTree } from './routeTree.gen'
+import { routeTree } from "./routeTree.gen";
 
-import './index.css'
-import { queryClient } from './queries/queryClient';
+import "./index.css";
+import { queryClient } from "./queries/queryClient";
 
 // Create a new router instance
 const router = createRouter({
@@ -18,17 +18,17 @@ const router = createRouter({
         user: null,
         queryClient: queryClient,
     },
-    defaultPreload: 'intent',
+    defaultPreload: "intent",
     scrollRestoration: true,
-    scrollToTopSelectors: ['#main-content'],
+    scrollToTopSelectors: ["#main-content"],
     defaultStructuralSharing: true,
     defaultPreloadStaleTime: 0,
-})
+});
 
 // Register the router instance for type safety
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
     interface Register {
-        router: typeof router
+        router: typeof router;
     }
 }
 
@@ -36,12 +36,12 @@ declare module '@tanstack/react-router' {
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 // Render the app
-const rootElement = document.getElementById('app')
+const rootElement = document.getElementById("app");
 if (rootElement && !rootElement.innerHTML) {
-    const root = ReactDOM.createRoot(rootElement)
+    const root = ReactDOM.createRoot(rootElement);
     root.render(
         <StrictMode>
             <RouterProvider router={router} />
         </StrictMode>,
-    )
+    );
 }
