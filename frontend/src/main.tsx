@@ -20,6 +20,7 @@ const router = createRouter({
     },
     defaultPreload: 'intent',
     scrollRestoration: true,
+    scrollToTopSelectors: ['#main-content'],
     defaultStructuralSharing: true,
     defaultPreloadStaleTime: 0,
 })
