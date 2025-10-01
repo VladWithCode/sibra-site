@@ -5,7 +5,7 @@ import { useSavedPropertiesStore } from "@/hooks/useSavedProperties";
 import { cn } from "@/lib/utils";
 import { useCallback, useState } from "react";
 
-export function LikeButton({ propData }: { propData: TProperty }) {
+export function LikeButton({ className, propData }: { className?: string, propData: TProperty }) {
     const addProperty = useSavedPropertiesStore(store => store.addProperty)
     const removeProperty = useSavedPropertiesStore(store => store.removeProperty)
     const checkLiked = useSavedPropertiesStore(store => store.isLiked)
@@ -23,9 +23,15 @@ export function LikeButton({ propData }: { propData: TProperty }) {
 
 
     return (
-        <Button variant="secondary" size="icon" onClick={handleLike}>
+        <Button
+            className={cn("", className)}
+            variant="secondary"
+            size="icon"
+            onClick={handleLike}
+        >
             <Heart className={cn(
-                liked ? "text-sbr-green! fill-current" : ""
+                "transition-[color,_fill,_height,_width] duration-500",
+                liked ? "text-sbr-green! fill-current size-5 " : ""
             )} />
         </Button>
     )

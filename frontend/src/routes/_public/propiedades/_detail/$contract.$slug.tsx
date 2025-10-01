@@ -42,6 +42,7 @@ import { createQuote } from "@/queries/quotes";
 import type { TQuote, TQuoteCreateResult } from "@/queries/type";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
+import { LikeButton } from "@/components/properties/likeButton";
 
 export const Route = createFileRoute("/_public/propiedades/_detail/$contract/$slug")({
     component: RouteComponent,
@@ -85,13 +86,7 @@ function RouteComponent() {
                     >
                         <ShareIcon className="size-5" />
                     </Button>
-                    <Button
-                        className="rounded-full p-5 text-muted-foreground bg-gray-50 shadow-sm"
-                        variant="secondary"
-                        size="icon"
-                    >
-                        <Heart className="size-5" />
-                    </Button>
+                    <LikeButton className="rounded-full p-5 text-muted-foreground bg-gray-50 shadow-sm" propData={property} />
                 </div>
             </div>
             <div className="bg-gray-200 text-gray-800 px-6 py-3 space-y-3 overflow-hidden">
