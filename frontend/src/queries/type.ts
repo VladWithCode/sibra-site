@@ -104,3 +104,14 @@ type TQuoteCreateSuccess = {
     success: true;
     quote: TQuote;
 };
+
+export type TProject = {
+    id: number;
+    name: string;
+    description: string;
+    img: string;
+    imgAlt: string;
+    slug: string;
+    lat?: number;
+    lon?: number;
+}

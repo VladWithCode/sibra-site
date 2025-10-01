@@ -21,6 +21,9 @@ import { Route as PublicIniciarSesionRouteImport } from './routes/_public/inicia
 import { Route as PublicInfonavitRouteImport } from './routes/_public/infonavit'
 import { Route as PublicFavoritosRouteImport } from './routes/_public/favoritos'
 import { Route as PublicContactoRouteImport } from './routes/_public/contacto'
+import { Route as PublicProyectosRouteRouteImport } from './routes/_public/proyectos/route'
+import { Route as PublicProyectosIndexRouteImport } from './routes/_public/proyectos/index'
+import { Route as PublicProyectosProjectRouteImport } from './routes/_public/proyectos/$project'
 import { Route as PublicPropiedadesListingRouteRouteImport } from './routes/_public/propiedades/_listing/route'
 import { Route as PublicPropiedadesDetailRouteRouteImport } from './routes/_public/propiedades/_detail/route'
 import { Route as PublicPropiedadesListingIndexRouteImport } from './routes/_public/propiedades/_listing/index'
@@ -85,6 +88,21 @@ const PublicContactoRoute = PublicContactoRouteImport.update({
   path: '/contacto',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicProyectosRouteRoute = PublicProyectosRouteRouteImport.update({
+  id: '/proyectos',
+  path: '/proyectos',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
+const PublicProyectosIndexRoute = PublicProyectosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PublicProyectosRouteRoute,
+} as any)
+const PublicProyectosProjectRoute = PublicProyectosProjectRouteImport.update({
+  id: '/$project',
+  path: '/$project',
+  getParentRoute: () => PublicProyectosRouteRoute,
+} as any)
 const PublicPropiedadesListingRouteRoute =
   PublicPropiedadesListingRouteRouteImport.update({
     id: '/_listing',
@@ -115,6 +133,7 @@ const PublicPropiedadesDetailContractSlugRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/proyectos': typeof PublicProyectosRouteRouteWithChildren
   '/contacto': typeof PublicContactoRoute
   '/favoritos': typeof PublicFavoritosRoute
   '/infonavit': typeof PublicInfonavitRoute
@@ -125,6 +144,8 @@ export interface FileRoutesByFullPath {
   '/terrenos': typeof PublicTerrenosRoute
   '/': typeof PublicIndexRoute
   '/propiedades': typeof PublicPropiedadesListingRouteRouteWithChildren
+  '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/proyectos/': typeof PublicProyectosIndexRoute
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/propiedades/': typeof PublicPropiedadesListingIndexRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
@@ -140,12 +161,15 @@ export interface FileRoutesByTo {
   '/terrenos': typeof PublicTerrenosRoute
   '/': typeof PublicIndexRoute
   '/propiedades': typeof PublicPropiedadesListingIndexRoute
+  '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/proyectos': typeof PublicProyectosIndexRoute
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteRouteWithChildren
+  '/_public/proyectos': typeof PublicProyectosRouteRouteWithChildren
   '/_public/contacto': typeof PublicContactoRoute
   '/_public/favoritos': typeof PublicFavoritosRoute
   '/_public/infonavit': typeof PublicInfonavitRoute
@@ -158,6 +182,8 @@ export interface FileRoutesById {
   '/_public/propiedades': typeof PublicPropiedadesRouteWithChildren
   '/_public/propiedades/_detail': typeof PublicPropiedadesDetailRouteRouteWithChildren
   '/_public/propiedades/_listing': typeof PublicPropiedadesListingRouteRouteWithChildren
+  '/_public/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/_public/proyectos/': typeof PublicProyectosIndexRoute
   '/_public/propiedades/_listing/$contract': typeof PublicPropiedadesListingContractRoute
   '/_public/propiedades/_listing/': typeof PublicPropiedadesListingIndexRoute
   '/_public/propiedades/_detail/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
@@ -165,6 +191,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/proyectos'
     | '/contacto'
     | '/favoritos'
     | '/infonavit'
@@ -175,6 +202,8 @@ export interface FileRouteTypes {
     | '/terrenos'
     | '/'
     | '/propiedades'
+    | '/proyectos/$project'
+    | '/proyectos/'
     | '/propiedades/$contract'
     | '/propiedades/'
     | '/propiedades/$contract/$slug'
@@ -190,11 +219,14 @@ export interface FileRouteTypes {
     | '/terrenos'
     | '/'
     | '/propiedades'
+    | '/proyectos/$project'
+    | '/proyectos'
     | '/propiedades/$contract'
     | '/propiedades/$contract/$slug'
   id:
     | '__root__'
     | '/_public'
+    | '/_public/proyectos'
     | '/_public/contacto'
     | '/_public/favoritos'
     | '/_public/infonavit'
@@ -207,6 +239,8 @@ export interface FileRouteTypes {
     | '/_public/propiedades'
     | '/_public/propiedades/_detail'
     | '/_public/propiedades/_listing'
+    | '/_public/proyectos/$project'
+    | '/_public/proyectos/'
     | '/_public/propiedades/_listing/$contract'
     | '/_public/propiedades/_listing/'
     | '/_public/propiedades/_detail/$contract/$slug'
@@ -295,6 +329,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicContactoRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/proyectos': {
+      id: '/_public/proyectos'
+      path: '/proyectos'
+      fullPath: '/proyectos'
+      preLoaderRoute: typeof PublicProyectosRouteRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/proyectos/': {
+      id: '/_public/proyectos/'
+      path: '/'
+      fullPath: '/proyectos/'
+      preLoaderRoute: typeof PublicProyectosIndexRouteImport
+      parentRoute: typeof PublicProyectosRouteRoute
+    }
+    '/_public/proyectos/$project': {
+      id: '/_public/proyectos/$project'
+      path: '/$project'
+      fullPath: '/proyectos/$project'
+      preLoaderRoute: typeof PublicProyectosProjectRouteImport
+      parentRoute: typeof PublicProyectosRouteRoute
+    }
     '/_public/propiedades/_listing': {
       id: '/_public/propiedades/_listing'
       path: ''
@@ -332,6 +387,19 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface PublicProyectosRouteRouteChildren {
+  PublicProyectosProjectRoute: typeof PublicProyectosProjectRoute
+  PublicProyectosIndexRoute: typeof PublicProyectosIndexRoute
+}
+
+const PublicProyectosRouteRouteChildren: PublicProyectosRouteRouteChildren = {
+  PublicProyectosProjectRoute: PublicProyectosProjectRoute,
+  PublicProyectosIndexRoute: PublicProyectosIndexRoute,
+}
+
+const PublicProyectosRouteRouteWithChildren =
+  PublicProyectosRouteRoute._addFileChildren(PublicProyectosRouteRouteChildren)
 
 interface PublicPropiedadesDetailRouteRouteChildren {
   PublicPropiedadesDetailContractSlugRoute: typeof PublicPropiedadesDetailContractSlugRoute
@@ -381,6 +449,7 @@ const PublicPropiedadesRouteWithChildren =
   PublicPropiedadesRoute._addFileChildren(PublicPropiedadesRouteChildren)
 
 interface PublicRouteRouteChildren {
+  PublicProyectosRouteRoute: typeof PublicProyectosRouteRouteWithChildren
   PublicContactoRoute: typeof PublicContactoRoute
   PublicFavoritosRoute: typeof PublicFavoritosRoute
   PublicInfonavitRoute: typeof PublicInfonavitRoute
@@ -394,6 +463,7 @@ interface PublicRouteRouteChildren {
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
+  PublicProyectosRouteRoute: PublicProyectosRouteRouteWithChildren,
   PublicContactoRoute: PublicContactoRoute,
   PublicFavoritosRoute: PublicFavoritosRoute,
   PublicInfonavitRoute: PublicInfonavitRoute,
