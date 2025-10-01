@@ -19,6 +19,8 @@ export const PropertyQueryKeys = {
     // Property listings
     listing: () => [...PropertyQueryKeys.all(), "listing"] as const,
     featured: () => [...PropertyQueryKeys.listing(), "featured"] as const,
+    filtered: (filters: Partial<TPropertyQueryFilters>) =>
+        [...PropertyQueryKeys.listing(), "filtered", { filters }] as const,
     byContract: (contract: string, filters: TPropertyQueryFilters) =>
         [...PropertyQueryKeys.listing(), "byContract", { contract, filters }] as const,
     nearby: (id: string, nearbyDistance: number) =>
@@ -34,7 +36,9 @@ export const PropertyQueryKeys = {
 } as const;
 
 // Type helpers for queryFns to recognize the queryKey type
+export type QKPropertiesListing = ReturnType<typeof PropertyQueryKeys.listing>;
 export type QKPropertiesFeatured = ReturnType<typeof PropertyQueryKeys.featured>;
+export type QKPropertiesFiltered = ReturnType<typeof PropertyQueryKeys.filtered>;
 export type QKPropertyByContract = ReturnType<typeof PropertyQueryKeys.byContract>;
 export type QKPropertiesNearby = ReturnType<typeof PropertyQueryKeys.nearby>;
 export type QKPropertyById = ReturnType<typeof PropertyQueryKeys.byId>;
@@ -49,6 +53,12 @@ export const getPropertyListingOpts = (filters: TPropertyFilters) =>
     queryOptions({
         queryKey: PropertyQueryKeys.byContract(filters.contract, filters),
         queryFn: getPropertiesByContract,
+    });
+
+export const getPropertyFilteredListingOpts = (filters: Partial<TPropertyFilters>) =>
+    queryOptions({
+        queryKey: PropertyQueryKeys.filtered(filters),
+        queryFn: getPropertiesFiltered,
     });
 
 export const getPropertyByIdOpts = (id: string, contract: string) =>
@@ -117,5 +127,18 @@ export async function getPropertyBySlug({
     if (!response.ok) throw new Error("Error al obtener la propiedad");
 
     const data = await response.json();
+    return data;
+}
+
+export async function getPropertiesFiltered({
+    queryKey,
+}: QueryFunctionContext<QKPropertiesFiltered>): Promise<TPropertyListingResult> {
+    let url = "/api/propiedades";
+    const queryParams = objectToQueryString(queryKey[3].filters);
+
+    let response = await fetch(url + "?" + queryParams.toString());
+    if (!response.ok) throw new Error("Error al obtener las propiedades");
+    const data = await response.json();
+
     return data;
 }

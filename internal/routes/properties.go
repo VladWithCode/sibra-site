@@ -22,6 +22,7 @@ import (
 )
 
 func RegisterPropertyRoutes(router *customServeMux) {
+	router.HandleFunc("GET /api/propiedades", FindFilteredProperties)
 	router.HandleFunc("GET /api/propiedades/destacadas", FindFeaturedProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
@@ -242,6 +243,43 @@ func DeletePropertyById(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success": true,
+	})
+}
+
+func FindFilteredProperties(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	params := r.URL.Query()
+	filter := db.NewPropertyFilterFromQuery(&params)
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page <= 0 {
+		page = 1
+	}
+	perPageStr := r.URL.Query().Get("perPage")
+	perPage, err := strconv.Atoi(perPageStr)
+	if err != nil || perPage <= 0 {
+		perPage = db.DefaultPageSize
+	}
+
+	props, err := db.GetProperties(ctx, filter, perPage, page)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontraron propiedades para la búsqueda ingresada.",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding filtered properties: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"properties": props,
 	})
 }
 

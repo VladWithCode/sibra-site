@@ -7,6 +7,7 @@ import { PropertyLocationMap } from "@/maps/component";
 import { useState } from "react";
 import type { TProperty } from "@/queries/type";
 import { Link } from "@tanstack/react-router";
+import { LikeButton } from "./likeButton";
 
 export type TPropertyCardProps = {
     propData: TProperty;
@@ -34,9 +35,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
                         <Button variant="secondary" size="icon">
                             <ShareIcon className="size-5" />
                         </Button>
-                        <Button variant="secondary" size="icon">
-                            <Heart />
-                        </Button>
+                        <LikeButton propData={property} />
                     </div>
                 </div>
                 <CardDescription>

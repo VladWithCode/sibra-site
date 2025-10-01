@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -173,6 +174,7 @@ type PropertyWithNearby struct {
 }
 
 type PropertyFilter struct {
+	Ids            *[]string       `json:"ids"`
 	Beds           *int            `json:"beds"`
 	Baths          *int            `json:"baths"`
 	MinPrice       *float64        `json:"minPrice"`
@@ -198,6 +200,66 @@ type PropertyFilter struct {
 	NearLat      *float64 `json:"nearLat"`
 	NearLon      *float64 `json:"nearLon"`
 	WithinMeters *int     `json:"withinMeters"`
+}
+
+func NewPropertyFilter() *PropertyFilter {
+	return &PropertyFilter{}
+}
+
+func NewPropertyFilterFromQuery(query *url.Values) *PropertyFilter {
+	filter := NewPropertyFilter()
+	if query == nil {
+		return filter
+	}
+	if ids := (*query)["ids"]; len(ids) > 0 {
+		filter.Ids = &ids
+	}
+	if contract := query.Get("contract"); contract != "" {
+		filter.Contract = &contract
+	}
+	if city := query.Get("city"); city != "" {
+		filter.City = &city
+	}
+	if state := query.Get("state"); state != "" {
+		filter.State = &state
+	}
+	if beds := query.Get("beds"); beds != "" {
+		b, _ := strconv.Atoi(beds)
+		filter.Beds = &b
+	}
+	if baths := query.Get("baths"); baths != "" {
+		b, _ := strconv.Atoi(baths)
+		filter.Baths = &b
+	}
+	if maxPrice := query.Get("maxPrice"); maxPrice != "" {
+		maxPriceFloat, _ := strconv.ParseFloat(maxPrice, 64)
+		filter.MaxPrice = &maxPriceFloat
+	}
+	if minSqMt := query.Get("minSqMt"); minSqMt != "" {
+		minSqMtFloat, _ := strconv.ParseFloat(minSqMt, 64)
+		filter.MinSqMt = &minSqMtFloat
+	}
+	if maxSqMt := query.Get("maxSqMt"); maxSqMt != "" {
+		maxSqMtFloat, _ := strconv.ParseFloat(maxSqMt, 64)
+		filter.MaxSqMt = &maxSqMtFloat
+	}
+	if minLotSize := query.Get("minLotSize"); minLotSize != "" {
+		minLotSizeFloat, _ := strconv.ParseFloat(minLotSize, 64)
+		filter.MinLotSize = &minLotSizeFloat
+	}
+	if maxLotSize := query.Get("maxLotSize"); maxLotSize != "" {
+		maxLotSizeFloat, _ := strconv.ParseFloat(maxLotSize, 64)
+		filter.MaxLotSize = &maxLotSizeFloat
+	}
+	if minYearBuilt := query.Get("minYearBuilt"); minYearBuilt != "" {
+		minYearBuiltInt, _ := strconv.Atoi(minYearBuilt)
+		filter.MinYearBuilt = &minYearBuiltInt
+	}
+	if maxYearBuilt := query.Get("maxYearBuilt"); maxYearBuilt != "" {
+		maxYearBuiltInt, _ := strconv.Atoi(maxYearBuilt)
+		filter.MaxYearBuilt = &maxYearBuiltInt
+	}
+	return filter
 }
 
 type InvalidPropertyFields map[string]bool
@@ -348,6 +410,12 @@ func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
 	var queryConditions []string
 	var queryParams []any
 	nextParamIdx := 1
+
+	if filter.Ids != nil && len(*filter.Ids) > 0 {
+		queryConditions = append(queryConditions, fmt.Sprintf(`id = ANY($%d)`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Ids)
+		nextParamIdx++
+	}
 
 	if filter.Contract != nil {
 		queryConditions = append(queryConditions, fmt.Sprintf(`contract = $%d`, nextParamIdx))
