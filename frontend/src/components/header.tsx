@@ -530,7 +530,7 @@ const mainNavigationItems = linkOptions([
     },
     {
         label: "Terrenos y proyectos",
-        to: "#",
+        to: "/proyectos",
         icon: ProjectsIcon,
     },
     {
