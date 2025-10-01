@@ -94,9 +94,9 @@ function RouteComponent() {
                                 className="bg-sbr-green hover:bg-gray-50 active:bg-gray-50 hover:text-sbr-green active:text-sbr-green"
                                 asChild
                             >
-                                <Link to="https://w.me/6181941145?text=¡Hola! Me gustaría hablar con un agente SIBRA.">
+                                <a href="https://wa.me/6181941145?text=¡Hola! Me gustaría hablar con un agente SIBRA.">
                                     Enviar un Whatsapp
-                                </Link>
+                                </a>
                             </Button>
                         </div>
                     </div>
