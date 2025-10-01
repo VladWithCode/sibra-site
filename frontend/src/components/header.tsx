@@ -59,9 +59,9 @@ export function Header() {
                     gsap.set(header.current, { position: "" });
                 },
             });
-            // @ts-ignore
             gsap.to(
                 header.current,
+                // @ts-ignore
                 {
                     y: "0rem",
                     opacity: "1",
@@ -530,12 +530,12 @@ const mainNavigationItems = linkOptions([
     },
     {
         label: "Terrenos y proyectos",
-        to: "/terrenos",
+        to: "#",
         icon: ProjectsIcon,
     },
     {
         label: "Créditos Infonavit",
-        to: "/infonavit",
+        to: "#",
         icon: ({ }: { className: string }) => <Infonavit className="size-4" />,
     },
 ]);

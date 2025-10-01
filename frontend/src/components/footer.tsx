@@ -66,7 +66,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="/consultoria"
+                                    to="#"
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Consultoría Inmobiliaria
@@ -74,7 +74,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="/tramites"
+                                    to="#"
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Trámites Legales
@@ -82,7 +82,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="/valuaciones"
+                                    to="#"
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Valuación de Propiedades
@@ -90,7 +90,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="/analisis"
+                                    to="#"
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Análisis de Mercado
@@ -121,17 +121,17 @@ export function Footer() {
                                     Propiedades
                                 </Link>
                             </li>
+                            {/* <li> */}
+                            {/*     <Link */}
+                            {/*         to="/testimonios" */}
+                            {/*         className="text-foreground hover:text-primary transition-colors" */}
+                            {/*     > */}
+                            {/*         Testimonios */}
+                            {/*     </Link> */}
+                            {/* </li> */}
                             <li>
                                 <Link
-                                    to="/testimonios"
-                                    className="text-foreground hover:text-primary transition-colors"
-                                >
-                                    Testimonios
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    to="/preguntas-frecuentes"
+                                    to="#"
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Preguntas Frecuentes
@@ -151,6 +151,14 @@ export function Footer() {
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Política de Privacidad
+                                </Link>
+                            </li>
+                            <li>
+                                <Link
+                                    to="/terminos-y-condiciones"
+                                    className="text-foreground hover:text-primary transition-colors"
+                                >
+                                    Términos de Servicio
                                 </Link>
                             </li>
                         </ul>
