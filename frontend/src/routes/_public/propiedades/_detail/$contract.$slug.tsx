@@ -58,10 +58,10 @@ function RouteComponent() {
     const { data } = useSuspenseQuery(getPropertyBySlugOpts(slug, contract));
     const property = data.property;
 
-    const { setHeaderFloating, setHeaderComplement } = useUIStore();
+    const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
     useEffect(() => {
         setHeaderFloating(false);
-        setHeaderComplement("search");
+        setHeaderComplementProps({ complementType: "search" });
     }, []);
 
     return (

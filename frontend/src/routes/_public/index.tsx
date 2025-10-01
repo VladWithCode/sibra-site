@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_public/")({
 });
 
 function RouteComponent() {
-    const { setHeaderFloating, setHeaderComplement } = useUIStore();
+    const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
     const { data: properties } = useSuspenseQuery(getPropertiesOpts);
     const onSearch = (search: string) => {
         console.log(search);
@@ -26,7 +26,7 @@ function RouteComponent() {
 
     useEffect(() => {
         setHeaderFloating(true);
-        setHeaderComplement("none");
+        setHeaderComplementProps({ complementType: "none" });
     }, []);
 
     return (

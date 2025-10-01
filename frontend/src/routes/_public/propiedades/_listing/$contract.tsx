@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_public/propiedades/_listing/$contract")(
 });
 
 function RouteComponent() {
-    const { setHeaderFloating, setHeaderComplement } = useUIStore();
+    const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
     const { contract } = Route.useParams();
     const { data } = useSuspenseQuery(
         getPropertyListingOpts({
@@ -39,7 +39,7 @@ function RouteComponent() {
 
     useEffect(() => {
         setHeaderFloating(false);
-        setHeaderComplement("search");
+        setHeaderComplementProps({ complementType: "search" });
     }, []);
 
     return (

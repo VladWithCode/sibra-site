@@ -9,10 +9,10 @@ export const Route = createFileRoute("/_public/favoritos")({
 });
 
 function RouteComponent() {
-    const { setHeaderFloating, setHeaderComplement } = useUIStore();
+    const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
     useEffect(() => {
         setHeaderFloating(false);
-        setHeaderComplement("search");
+        setHeaderComplementProps({ complementType: "none" });
     }, []);
     const { properties, status } = useSavedProperties()
 

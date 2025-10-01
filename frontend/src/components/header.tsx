@@ -25,7 +25,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { cn } from "@/lib/utils";
-import { useUIStore, type TUIStore } from "@/stores/uiStore";
+import { useUIStore, type THeaderComplementProps } from "@/stores/uiStore";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,7 +42,7 @@ import {
 } from "./ui/dialog";
 
 export function Header() {
-    const { headerFloating, headerComplement } = useUIStore();
+    const { headerFloating, headerComplementProps } = useUIStore();
     const header = useRef<HTMLDivElement>(null);
     const pageTop = useRef<HTMLDivElement>(null);
     const { contextSafe } = useGSAP({ scope: header, dependencies: [pageTop.current] });
@@ -131,7 +131,7 @@ export function Header() {
                         data-header-floating={headerFloating}
                     />
                     <HeaderNavigationMenu className="hidden xl:block" />
-                    <HeaderComplement complementType={headerComplement} />
+                    <HeaderComplement {...headerComplementProps} />
                     <Link
                         to="/"
                         className="flex-auto grow-0 data-[header-floating=false]:brightness-30"
@@ -149,16 +149,14 @@ export function Header() {
     );
 }
 
-export function HeaderComplement({
-    complementType,
-}: {
-    complementType: TUIStore["headerComplement"];
-}) {
-    switch (complementType) {
+export function HeaderComplement(props: THeaderComplementProps) {
+    switch (props.complementType) {
         case "search":
             return <HeaderComplementSearch />;
         case "cta":
             return <HeaderComplementCta />;
+        case "project":
+            return <HeaderComplementProject {...props} />;
         case "none":
         default:
             return null;
@@ -422,6 +420,14 @@ function HeaderComplementCta() {
             </Button>
         </div>
     );
+}
+
+function HeaderComplementProject({ projectName }: { projectName: string }) {
+    return (
+        <div className="flex-auto">
+            <h2 className="text-lg font-semibold">{projectName}</h2>
+        </div>
+    )
 }
 
 export function HeaderNavigationMenu({ className }: { className?: string }) {

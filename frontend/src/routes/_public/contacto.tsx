@@ -15,10 +15,10 @@ export const Route = createFileRoute("/_public/contacto")({
 });
 
 function RouteComponent() {
-    const { setHeaderComplement, setHeaderFloating } = useUIStore();
+    const { setHeaderComplementProps, setHeaderFloating } = useUIStore();
     useEffect(() => {
         setHeaderFloating(true);
-        setHeaderComplement("cta");
+        setHeaderComplementProps({ complementType: "cta" });
     }, []);
 
     return (

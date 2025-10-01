@@ -1,3 +1,4 @@
+import { useUIStore } from "@/stores/uiStore";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect } from "react";
 
@@ -10,10 +11,10 @@ export const Route = createFileRoute("/_public/propiedades/_listing/")({
 });
 
 function RouteComponent() {
-    const { setHeaderFloating, setHeaderComplement } = useUIStore();
+    const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
     useEffect(() => {
         setHeaderFloating(false);
-        setHeaderComplement("search");
+        setHeaderComplementProps({ complementType: "search" });
     }, []);
 
     return (

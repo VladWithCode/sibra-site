@@ -7,10 +7,10 @@ export const Route = createFileRoute("/_public/terminos-y-condiciones")({
 });
 
 function RouteComponent() {
-    const { setHeaderFloating, setHeaderComplement } = useUIStore();
+    const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
     useEffect(() => {
         setHeaderFloating(false);
-        setHeaderComplement("cta");
+        setHeaderComplementProps({ complementType: "cta" });
     }, []);
 
     return (

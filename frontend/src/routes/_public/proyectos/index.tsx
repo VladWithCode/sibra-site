@@ -8,10 +8,10 @@ export const Route = createFileRoute('/_public/proyectos/')({
 })
 
 function RouteComponent() {
-    const { setHeaderFloating, setHeaderComplement } = useUIStore();
+    const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
     useEffect(() => {
         setHeaderFloating(true);
-        setHeaderComplement("none");
+        setHeaderComplementProps({ complementType: "none" });
     }, []);
 
     return (
