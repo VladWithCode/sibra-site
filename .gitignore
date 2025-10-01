@@ -3,6 +3,7 @@ cmd/*
 !cmd/*.go
 cmd/**/*
 !cmd/**/*.go
+bin
 
 # Ignore env files
 .env*
