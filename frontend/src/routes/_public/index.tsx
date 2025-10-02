@@ -87,7 +87,7 @@ function RouteComponent() {
                                 tiene en la ciudad.
                             </p>
                             <div className="flex justify-center">
-                                <SecondaryLinkButton label="Más Información" to="/" />
+                                <SecondaryLinkButton label="Más Información" to="/proyectos" />
                             </div>
                         </CardContent>
                     </Card>
