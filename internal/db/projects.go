@@ -67,6 +67,63 @@ func (p *Project) GetSlug() string {
 	return p.Slug
 }
 
+// FindProjects queries all projects from the database.
+//
+// It only returns the data of the projects.
+func FindProjects(ctx context.Context) ([]*Project, error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	var projects []*Project
+
+	rows, err := conn.Query(
+		ctx,
+		`SELECT
+            id, slug, name, description, main_img, gallery, availability_img,
+            amenities, docs, created_at, updated_at
+        FROM projects`,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var project Project
+		err = rows.Scan(
+			&project.ID,
+			&project.Slug,
+			&project.Name,
+			&project.Description,
+			&project.MainImg,
+			&project.Gallery,
+			&project.AvailabilityImg,
+			&project.Amenities,
+			&project.Docs,
+			&project.CreatedAt,
+			&project.UpdatedAt,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		projects = append(projects, &project)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return projects, nil
+}
+
 // FindProject is a wrapper around FindProjectByID and FindProjectBySlug that will
 // determine whether the id passed is a uuid or not, and call the appropriate query function
 func FindProject(ctx context.Context, id string) (*Project, error) {
@@ -102,7 +159,7 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 	row := conn.QueryRow(ctx, `
 		SELECT
 			p.id, p.slug, p.name, p.description, p.main_img, p.gallery, p.availability_img,
-			p.amenities, p.associates, p.docs, p.created_at, p.updated_at
+			p.amenities, p.docs, p.created_at, p.updated_at
 		FROM projects p
 		WHERE p.id = $1
 	`, id)
@@ -117,7 +174,6 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 		&proj.Gallery,
 		&proj.AvailabilityImg,
 		&proj.Amenities,
-		&proj.Associates,
 		&proj.Docs,
 		&proj.CreatedAt,
 		&proj.UpdatedAt,
@@ -143,7 +199,7 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 	row := conn.QueryRow(ctx, `
         SELECT
             p.id, p.slug, p.name, p.description, p.main_img, p.gallery, p.availability_img,
-            p.amenities, p.associates, p.docs, p.created_at, p.updated_at
+            p.amenities, p.docs, p.created_at, p.updated_at
         FROM projects p
         WHERE p.slug = $1
     `, slug)
@@ -158,7 +214,6 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 		&proj.Gallery,
 		&proj.AvailabilityImg,
 		&proj.Amenities,
-		&proj.Associates,
 		&proj.Docs,
 		&proj.CreatedAt,
 		&proj.UpdatedAt,
@@ -390,6 +445,43 @@ func DeleteProject(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func FindAssociateWithData(ctx context.Context, projectId, idcode, lotNum, appleNum string) (*ProjectAssociate, error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	row := conn.QueryRow(ctx, `
+        SELECT
+            a.name, a.phone, a.rfc, a.curp, pa.pending_payment
+        FROM project_associates pa
+        LEFT JOIN associates a ON pa.associate_id = a.id
+        WHERE (a.rfc = @idcode OR a.curp = @idcode)
+            AND pa.lot_num = @lot_num AND pa.apple_num = @apple_num
+            AND pa.project_id = @project_id
+    `, idcode, idcode, idcode)
+
+	var assoc ProjectAssociate
+	err = row.Scan(
+		&assoc.ID,
+		&assoc.Name,
+		&assoc.Phone,
+		&assoc.RFC,
+		&assoc.CURP,
+		&assoc.PendingPayment,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &assoc, nil
 }
 
 // CreateAssociate creates a new associate.
