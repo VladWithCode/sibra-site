@@ -124,6 +124,11 @@ func GetProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	for _, project := range projects {
+		project.Associates = nil
+		project.Docs = nil
+	}
+
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success":  true,
 		"projects": projects,
@@ -150,6 +155,8 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	project.Associates = nil
+	project.Docs = nil
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"project": project,
