@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	RemoveImgFlag      = "delete"
-	MaxImageUploadSize = 64 << 20 // 64MB
+	RemoveImgFlag       = "delete"
+	MaxImageUploadSize  = 8 << 20 // 8MB
+	MaxMultiUploadCount = 16
 
 	DefaultUploadsPath = "web/static/uploads"
 )
@@ -77,13 +78,13 @@ func Upload(file *FileData) (filename string, err error) {
 	return filename, nil
 }
 
-func UploadMultiple(files []*multipart.FileHeader) (writtenFiles []*WrittenFile, err error) {
-	date := time.Now().Format("2006-01-02T15:04:05")
+func UploadMultiple(filename string, files []*multipart.FileHeader) (writtenFiles []*WrittenFile, err error) {
 	uploadsPath := getUploadsPath()
 	writtenFiles = make([]*WrittenFile, len(files))
+	date := time.Now().Format("2006-01-02T15:04:05")
 
 	for i, fHeader := range files {
-		filename := fmt.Sprintf("upload_%s_%d%s", date, i, filepath.Ext(fHeader.Filename))
+		filename := fmt.Sprintf("%s-%s-%d%s", filename, date, i, filepath.Ext(fHeader.Filename))
 		writePath := filepath.Join(uploadsPath, filename)
 
 		sz, err := writeFile(fHeader, writePath)
