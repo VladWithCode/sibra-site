@@ -157,9 +157,47 @@ func GetProject(w http.ResponseWriter, r *http.Request) {
 
 	project.Associates = nil
 	project.Docs = nil
+
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"project": project,
+	})
+}
+
+func GetProjectDocs(w http.ResponseWriter, r *http.Request) {
+	// TODO: add full implementation for project authentication
+	tkStr, err := r.Cookie("project_auth")
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "No estás autorizado para acceder a este contenido",
+		})
+		log.Printf("Error getting project auth token: %v\n", err)
+		return
+	}
+	tk, err := auth.ParseToken(tkStr.Value)
+	if err != nil || !tk.Valid {
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "No estás autorizado para acceder a este contenido",
+		})
+		log.Printf("Error parsing project auth token: %v\n", err)
+		return
+	}
+
+	ctx := r.Context()
+	projectID := r.PathValue("id")
+
+	project, err := db.FindProject(ctx, projectID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar los documentos del proyecto",
+		})
+		log.Printf("Failed to find project docs: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"docs":    project.Docs,
 	})
 }
 
