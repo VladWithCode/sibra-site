@@ -18,68 +18,52 @@ import (
 )
 
 func RegisterUserRoutes(router *customServeMux) {
-	router.HandleFunc("POST /api/user", auth.CheckAuthMiddleware(CreateUser))
-	router.HandleFunc("PUT /api/users/{id}", auth.WithAuthMiddleware(UpdateUser))
-	router.HandleFunc("PUT /api/users/{id}/password", auth.WithAuthMiddleware(UpdatePassword))
-	router.HandleFunc("PUT /api/users/{id}/pic", auth.WithAuthMiddleware(UpdateUserPicture))
-	router.HandleFunc("DELETE /api/users/{id}/pic", auth.WithAuthMiddleware(DeleteUserPicture))
+	router.HandleFunc("POST /api/user", auth.WithAuthAccessLevelMiddleware(CreateUser, auth.AccessLevelAdmin))
+	router.HandleFunc("PUT /api/users/{id}", auth.WithAuthAccessLevelMiddleware(UpdateUser, auth.AccessLevelAdmin))
+	router.HandleFunc("PUT /api/users/{id}/password", auth.WithAuthAccessLevelMiddleware(UpdatePassword, auth.AccessLevelAdmin))
+	router.HandleFunc("DELETE /api/users/{id}/pic", auth.WithAuthAccessLevelMiddleware(DeleteUserPicture, auth.AccessLevelAdmin))
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func CreateUser(w http.ResponseWriter, r *http.Request) {
 	data := db.User{}
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
 
 	err := decoder.Decode(&data)
-
 	if err != nil {
-		fmt.Printf("Malformed json data: %v\n", err)
-		respondWithError(w, 400, ErrorParams{
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "La información proporcionada es inválida",
 		})
+		log.Printf("failed to parse json data: %v\n", err)
 		return
 	}
 
-	id, _ := uuid.NewV7()
-	data.Id = id.String()
-
-	phone := data.Phone
-
-	/*
-		if a.Role != db.RoleAdmin {
-			data.Role = db.RoleUser
-		} */
-
-	_, err = db.CreateUser(&db.User{
-		Id:       data.Id,
-		Fullname: data.Fullname,
-		Password: data.Password,
-		Phone:    phone,
-		Role:     data.Role,
-		Username: data.Username,
-		Email:    data.Email,
-	})
+	data.Id = uuid.Must(uuid.NewV7()).String()
+	_, err = db.CreateUser(&data)
 
 	if err != nil {
 		fmt.Printf("Create err: %v\n", err)
 
 		if strings.Contains(err.Error(), "duplicate key") {
-			respondWithError(w, 400, ErrorParams{
+			respondWithError(w, http.StatusBadRequest, ErrorParams{
 				ErrorMessage: "No se pudo crear el usuario, el email y/o telefono ya estan registrados",
 			})
 			return
 		}
 
-		respondWithError(w, 500, ErrorParams{})
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
+		})
 		return
 	}
 
-	w.Header().Add("Content-Type", "text/html")
-	w.WriteHeader(200)
-	w.Write([]byte("<p>Creación exitosa</p>"))
+	respondWithJSON(w, http.StatusCreated, rmap{
+		"success": true,
+		"user":    data,
+	})
 }
 
-func UpdateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	templ, err := template.New("user.html").Funcs(template.FuncMap{
 		"PrintRole": internal.PrintRole,
 	}).ParseFiles(
@@ -171,7 +155,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	})
 }
 
-func UpdatePassword(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	templ, err := template.New("user.html").Funcs(template.FuncMap{
 		"PrintRole": internal.PrintRole,
 	}).ParseFiles(
@@ -299,7 +283,7 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	})
 }
 
-func UpdateUserPicture(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func UpdateUserPicture(w http.ResponseWriter, r *http.Request) {
 	templ, err := template.New("user.html").Funcs(template.FuncMap{
 		"PrintRole": internal.PrintRole,
 	}).ParseFiles(
@@ -403,7 +387,7 @@ func UpdateUserPicture(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	})
 }
 
-func DeleteUserPicture(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func DeleteUserPicture(w http.ResponseWriter, r *http.Request) {
 	templ, err := template.New("user.html").Funcs(template.FuncMap{
 		"PrintRole": internal.PrintRole,
 	}).ParseFiles(

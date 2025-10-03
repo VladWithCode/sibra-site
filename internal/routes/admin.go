@@ -2,7 +2,6 @@ package routes
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -13,18 +12,19 @@ import (
 
 func RegisterAdminRoutes(router *customServeMux) {
 	// Signin
-	router.HandleFunc("POST /api/admin/sign-in", auth.CheckAuthMiddleware(AdminSignIn))
+	router.HandleFunc("POST /api/admin/sign-in", auth.PopulateAuthMiddleware(AdminSignIn))
+	router.HandleFunc("GET /api/admin/sign-out", auth.PopulateAuthMiddleware(AdminSignOut))
 
-	router.HandleFunc("GET /api/perfil", auth.WithAuthMiddleware(GetUserProfile))
+	router.HandleFunc("GET /api/perfil", auth.ValidateAuthMiddleware(GetUserProfile))
 }
 
-func AdminSignIn(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func AdminSignIn(w http.ResponseWriter, r *http.Request) {
 	login := db.User{}
 	err := json.NewDecoder(r.Body).Decode(&login)
 	defer r.Body.Close()
 	if err != nil {
-		respondWithError(w, 400, ErrorParams{
-			ErrorMessage: "La información proporcionada es inválida",
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
 		})
 		log.Printf("Malformed json data: %v\n", err)
 		return
@@ -32,25 +32,27 @@ func AdminSignIn(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 	user, err := db.GetUserByUsername(login.Username)
 	if err != nil {
-		respondWithError(w, 400, ErrorParams{ErrorMessage: "Usuario o contraseña inválidos."})
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "Usuario o contraseña inválidos."})
 		log.Printf("Error getting user: %v\n", err)
 		return
 	}
 
 	err = user.ValidatePass(login.Password)
 	if err != nil {
-		respondWithError(w, 400, ErrorParams{ErrorMessage: "Usuario o contraseña inválidos."})
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "Usuario o contraseña inválidos."})
 		return
 	}
 
-	if a.HasAccess(auth.AccessLevelEditor) {
-		respondWithError(w, 403, ErrorParams{ErrorMessage: "No tienes acceso a esta página"})
+	if auth.UserHasAccess(user, auth.AccessLevelEditor) {
+		respondWithError(w, http.StatusForbidden, ErrorParams{ErrorMessage: "No tienes acceso a esta página"})
 	}
 
 	t, err := auth.CreateToken(user)
 	if err != nil {
-		respondWithError(w, 500, ErrorParams{})
-		fmt.Printf("Error while creating token: %v\n", err)
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
+		})
+		log.Printf("failed to create auth token: %v\n", err)
 		return
 	}
 
@@ -67,12 +69,38 @@ func AdminSignIn(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	http.SetCookie(w, jwtCookie)
 	respondWithJSON(w, http.StatusCreated, map[string]any{
 		"success": true,
+		"user":    user,
 	})
 }
 
-func GetUserProfile(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
-	userId := auth.Id
-	user, err := db.GetUserById(userId)
+// TODO: add token blacklisting/revoking mechanism
+func AdminSignOut(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    "",
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		// Secure: true,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+	})
+
+	respondWithJSON(w, http.StatusOK, rmap{
+		"success": true,
+	})
+}
+
+func GetUserProfile(w http.ResponseWriter, r *http.Request) {
+	authData, err := auth.ExtractAuthDataFromCtx(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "No se encontro token",
+		})
+		log.Printf("Error getting project auth token: %v\n", err)
+		return
+	}
+
+	user, err := db.GetUserById(authData.Id)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al obtener el perfil del usuario",
@@ -80,5 +108,8 @@ func GetUserProfile(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, user)
+	respondWithJSON(w, http.StatusOK, rmap{
+		"success": true,
+		"user":    user,
+	})
 }

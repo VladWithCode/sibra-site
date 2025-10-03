@@ -22,7 +22,7 @@ const (
 type User struct {
 	Id            string         `db:"id" json:"id"`
 	Fullname      string         `db:"name" json:"name"`
-	Password      string         `db:"password" json:"password"`
+	Password      string         `db:"password" json:"-"`
 	Username      string         `db:"username" json:"username"`
 	Role          UserRole       `db:"role" json:"role"`
 	Email         string         `db:"email" json:"email"`

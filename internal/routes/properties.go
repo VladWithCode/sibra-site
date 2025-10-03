@@ -26,14 +26,14 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/propiedades/destacadas", FindFeaturedProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
-	router.HandleFunc("POST /api/property", auth.WithAuthMiddleware(CreateProperty))
-	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthMiddleware(UpdateProperty))
-	router.HandleFunc("DELETE /api/property/{id}/delete", auth.WithAuthMiddleware(DeletePropertyById))
-	router.HandleFunc("POST /api/property/pictures/{id}", auth.WithAuthMiddleware(UploadPropertyPictures))
+	router.HandleFunc("POST /api/property", auth.ValidateAuthMiddleware(CreateProperty))
+	router.HandleFunc("PUT /api/property/{id}", auth.ValidateAuthMiddleware(UpdateProperty))
+	router.HandleFunc("DELETE /api/property/{id}/delete", auth.ValidateAuthMiddleware(DeletePropertyById))
+	router.HandleFunc("POST /api/property/pictures/{id}", auth.ValidateAuthMiddleware(UploadPropertyPictures))
 	// router.HandleFunc("DELETE /api/property/pictures/{id}", auth.WithAuthMiddleware(UploadPropertyPictures))
 }
 
-func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func CreateProperty(w http.ResponseWriter, r *http.Request) {
 	property := db.Property{}
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
@@ -71,7 +71,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 }
 
-func UpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func UpdateProperty(w http.ResponseWriter, r *http.Request) {
 	property := db.Property{}
 	err := json.NewDecoder(r.Body).Decode(&property)
 	defer r.Body.Close()
@@ -99,7 +99,7 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	respondWithJSON(w, http.StatusCreated, resData)
 }
 
-func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func UploadPropertyPictures(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	ctx := r.Context()
 
@@ -230,7 +230,7 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 	})
 }
 
-func DeletePropertyById(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
+func DeletePropertyById(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 
 	err := db.DeletePropertyById(id)

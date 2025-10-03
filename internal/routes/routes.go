@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-
-	"github.com/vladwithcode/sibra-site/internal/auth"
 )
+
+type rmap map[string]any
 
 func NewRouter() http.Handler {
 	router := NewCustomServeMux()
@@ -24,12 +24,12 @@ func NewRouter() http.Handler {
 	fs := http.FileServer(http.Dir("web/static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
-	router.NotFoundHandleFunc(auth.CheckAuthMiddleware(respondWith404))
+	router.NotFoundHandleFunc(respondWith404)
 
 	return router
 }
 
-func respondWith404(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {
+func respondWith404(w http.ResponseWriter, r *http.Request) {
 	respondWithError(w, 404, ErrorParams{
 		ErrorMessage: "La página que estás buscando no existe",
 		Etc: map[string]any{
