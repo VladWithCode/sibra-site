@@ -66,7 +66,11 @@ export async function getProjects(): Promise<TProject[]> {
     const response = await fetch("/api/proyectos");
     const data = await response.json();
 
-    return data.projects;
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.message || "Error al obtener la información de los proyectos");
+    }
+
+    return data;
 }
 
 export async function getProject({ queryKey }: QueryFunctionContext<QKProjectsById>): Promise<TProjectDetailResult> {
@@ -74,7 +78,11 @@ export async function getProject({ queryKey }: QueryFunctionContext<QKProjectsBy
     const response = await fetch(`/api/proyectos/${id}`);
     const data = await response.json();
 
-    return data.project;
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.message || "Error al obtener la información del proyecto");
+    }
+
+    return data;
 }
 
 export async function getProjectBySlug({ queryKey }: QueryFunctionContext<QKProjectsBySlug>): Promise<TProjectDetailResult> {
@@ -82,7 +90,11 @@ export async function getProjectBySlug({ queryKey }: QueryFunctionContext<QKProj
     const response = await fetch(`/api/proyectos/${slug}`);
     const data = await response.json();
 
-    return data.project;
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.message || "Error al obtener la propiedad");
+    }
+
+    return data;
 }
 
 export async function getProjectAssociates({ queryKey }: QueryFunctionContext<QKProjectsAssociatesByProjectId>): Promise<TProjectAssociate[]> {

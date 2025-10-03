@@ -147,6 +147,11 @@ export type TProject = {
     updated_at: string;
 }
 
+export type TProjectListingResult = {
+    success?: boolean;
+    projects: TProject[];
+};
+
 export type TProjectAssociateDetailResult = {
     associate: TProjectAssociate;
 };
