@@ -32,9 +32,12 @@ CREATE TABLE associates (
 );
 
 CREATE TABLE project_associates (
-    project_id UUID REFERENCES projects(id) NOT NULL ON DELETE CASCADE,
-    associate_id UUID REFERENCES associates(id) NOT NULL ON DELETE CASCADE,
+    project_id UUID REFERENCES projects(id) ON DELETE CASCADE NOT NULL,
+    associate_id UUID REFERENCES associates(id) ON DELETE CASCADE NOT NULL,
     pending_payment BOOLEAN NOT NULL,
+    lot_num VARCHAR(10) NOT NULL,
+    apple_num VARCHAR(10) NOT NULL,
+
     created_at TIMESTAMPTZ NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL,
 
