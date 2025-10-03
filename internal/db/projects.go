@@ -335,9 +335,9 @@ func CreateProject(ctx context.Context, project *Project) error {
 	_, err = tx.Exec(
 		ctx,
 		`INSERT INTO projects (
-            id, slug, name, description, main_img, gallery, availability_img
+            id, slug, name, description, main_img, gallery, availability_img, amenities, docs
         ) VALUES (
-            @id, @slug, @name, @description, @main_img, @gallery, @availability_img
+            @id, @slug, @name, @description, @main_img, @gallery, @availability_img, @amenities, @docs
         )`,
 		args,
 	)
