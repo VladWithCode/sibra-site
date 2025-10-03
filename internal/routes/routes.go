@@ -19,8 +19,6 @@ func NewRouter() http.Handler {
 	RegisterRequestsRouter(router)
 	RegisterProjectRoutes(router)
 
-	router.HandleFunc("/api/check-project-auth", checkProjectAuth)
-
 	// Serve static
 	// *Might change it to serve static files through nginx
 	fs := http.FileServer(http.Dir("web/static/"))
@@ -29,38 +27,6 @@ func NewRouter() http.Handler {
 	router.NotFoundHandleFunc(auth.CheckAuthMiddleware(respondWith404))
 
 	return router
-}
-
-func checkProjectAuth(w http.ResponseWriter, r *http.Request) {
-	tkStr, err := r.Cookie("project_auth")
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, ErrorParams{
-			ErrorMessage: "No se encontro token",
-		})
-		log.Printf("Error getting project auth token: %v\n", err)
-		return
-	}
-
-	tk, err := auth.ParseToken(tkStr.Value)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, ErrorParams{
-			ErrorMessage: "Token invalido",
-		})
-		log.Printf("Error parsing project auth token: %v\n", err)
-		return
-	}
-
-	if !tk.Valid {
-		respondWithError(w, http.StatusUnauthorized, ErrorParams{
-			ErrorMessage: "Token invalido",
-		})
-		log.Printf("Invalid project auth token: %v\n", err)
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, map[string]any{
-		"success": true,
-	})
 }
 
 func respondWith404(w http.ResponseWriter, r *http.Request, auth *auth.Auth) {

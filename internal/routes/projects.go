@@ -3,6 +3,7 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -27,10 +28,72 @@ func RegisterProjectRoutes(router *customServeMux) {
 	router.HandleFunc("PUT /api/proyectos/{id}/socios/{associateID}", UpdateProjectAssociate)
 	router.HandleFunc("DELETE /api/proyectos/{id}/socios/{associateID}", RemoveProjectAssociate)
 
-	router.HandleFunc("POST /api/proyectos/{id}/acceso", CheckProjectAccess)
+	router.HandleFunc("GET /api/proyectos/{id}/acceso", CheckProjectAccess)
+	router.HandleFunc("POST /api/proyectos/{id}/acceso", ValidateProjectAccess)
 }
 
 func CheckProjectAccess(w http.ResponseWriter, r *http.Request) {
+	tkStr, err := r.Cookie("project_auth")
+	if err != nil {
+		respondWithJSON(w, http.StatusUnauthorized, map[string]any{
+			"authorized": false,
+		})
+		log.Printf("Error getting project auth token: %v\n", err)
+		return
+	}
+	tk, err := auth.ParseToken(tkStr.Value)
+	if err != nil || !tk.Valid {
+		respondWithJSON(w, http.StatusUnauthorized, map[string]any{
+			"authorized": false,
+		})
+		log.Printf("Error parsing project auth token: %v\n", err)
+		return
+	}
+
+	ctx := r.Context()
+	projectID := r.PathValue("id")
+	accessData, err := auth.ExtractProjectAccessDataFromToken(tk)
+	if err != nil {
+		respondWithJSON(w, http.StatusUnauthorized, map[string]any{
+			"authorized": false,
+		})
+		log.Printf("Error extracting project access data from token: %v\n", err)
+		return
+	}
+
+	if accessData.ProjectID != projectID {
+		respondWithJSON(w, http.StatusUnauthorized, map[string]any{
+			"authorized": false,
+		})
+		return
+	}
+
+	assoc, err := db.FindAssociateWithData(ctx, projectID, accessData.IDCode, accessData.LotNum, accessData.AppleNum)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithJSON(w, http.StatusUnauthorized, map[string]any{
+				"authorized": false,
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar el registro del socio",
+			Etc: map[string]any{
+				"authorized": false,
+			},
+		})
+		log.Printf("Failed to find associate: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"authorized": true,
+		"associate":  assoc,
+	})
+}
+
+func ValidateProjectAccess(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("id")
 
@@ -81,6 +144,7 @@ func CheckProjectAccess(w http.ResponseWriter, r *http.Request) {
 	tkStr, err := auth.CreateProjectToken(&auth.ProjectAccessTokenData{
 		ProjectID:   projectID,
 		AssociateID: assoc.ID,
+		IDCode:      accessData.IDcode,
 		LotNum:      accessData.LotNum,
 		AppleNum:    accessData.AppleNum,
 		ExpiresAt:   jwt.NewNumericDate(expTime),

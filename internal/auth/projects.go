@@ -1,15 +1,22 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
+var (
+	ErrMalformedProjectTokenClaims = errors.New("project access token claims are malformed")
+	ErrInvalidProjectToken         = errors.New("project access token is invalid")
+)
+
 type ProjectAccessClaims struct {
 	ProjectID   string
 	AssociateID string
+	IDCode      string
 	LotNum      string
 	AppleNum    string
 
@@ -19,6 +26,7 @@ type ProjectAccessClaims struct {
 type ProjectAccessTokenData struct {
 	ProjectID   string
 	AssociateID string
+	IDCode      string
 	LotNum      string
 	AppleNum    string
 	ExpiresAt   *jwt.NumericDate
@@ -33,6 +41,7 @@ func CreateProjectToken(tkData *ProjectAccessTokenData) (string, error) {
 	t = jwt.NewWithClaims(jwt.SigningMethodHS256, ProjectAccessClaims{
 		tkData.ProjectID,
 		tkData.AssociateID,
+		tkData.IDCode,
 		tkData.LotNum,
 		tkData.AppleNum,
 
@@ -63,4 +72,30 @@ func ParseProjectToken(tokenStr string) (*jwt.Token, error) {
 	}
 
 	return t, nil
+}
+
+func ExtractProjectAccessDataFromToken(tk *jwt.Token) (*ProjectAccessTokenData, error) {
+	if claims, ok := tk.Claims.(jwt.MapClaims); ok && tk.Valid {
+		var (
+			projectID, pidOk   = claims["ProjectID"].(string)
+			associateID, aidOk = claims["AssociateID"].(string)
+			idcode, icOk       = claims["IDCode"].(string)
+			lotNum, lnOk       = claims["LotNum"].(string)
+			appleNum, anOk     = claims["AppleNum"].(string)
+		)
+
+		if !pidOk || !aidOk || !lnOk || !anOk || !icOk {
+			return nil, ErrMalformedProjectTokenClaims
+		}
+
+		return &ProjectAccessTokenData{
+			ProjectID:   projectID,
+			AssociateID: associateID,
+			IDCode:      idcode,
+			LotNum:      lotNum,
+			AppleNum:    appleNum,
+		}, nil
+	}
+
+	return nil, ErrInvalidProjectToken
 }
