@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -37,7 +38,7 @@ type ProjectAssociate struct {
 
 type ProjectDoc struct {
 	ID          string `json:"id" db:"id"`
-	Name        string `json:"doc" db:"doc"`
+	Name        string `json:"name" db:"name"`
 	Description string `json:"description" db:"description"`
 
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
@@ -94,6 +95,10 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 	}
 	defer rows.Close()
 
+	var (
+		rawDocs      []byte
+		rawAmenities []byte
+	)
 	for rows.Next() {
 		var project Project
 		err = rows.Scan(
@@ -104,14 +109,31 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 			&project.MainImg,
 			&project.Gallery,
 			&project.AvailabilityImg,
-			&project.Amenities,
-			&project.Docs,
+			&rawAmenities,
+			&rawDocs,
 			&project.CreatedAt,
 			&project.UpdatedAt,
 		)
 
 		if err != nil {
 			return nil, err
+		}
+
+		if rawAmenities != nil {
+			project.Amenities = make([]ProjectAmenity, 0)
+			err = json.Unmarshal(rawAmenities, &project.Amenities)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if rawDocs != nil {
+			fmt.Printf("rawDocs: %v\n", rawDocs)
+			project.Docs = make([]ProjectDoc, 0)
+			err = json.Unmarshal(rawDocs, &project.Docs)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		projects = append(projects, &project)
@@ -164,7 +186,11 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 		WHERE p.id = $1
 	`, id)
 
-	var proj Project
+	var (
+		rawDocs      []byte
+		rawAmenities []byte
+		proj         Project
+	)
 	err = row.Scan(
 		&proj.ID,
 		&proj.Slug,
@@ -173,14 +199,30 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 		&proj.MainImg,
 		&proj.Gallery,
 		&proj.AvailabilityImg,
-		&proj.Amenities,
-		&proj.Docs,
+		&rawAmenities,
+		&rawDocs,
 		&proj.CreatedAt,
 		&proj.UpdatedAt,
 	)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if rawAmenities != nil {
+		proj.Amenities = make([]ProjectAmenity, 0)
+		err = json.Unmarshal(rawAmenities, &proj.Amenities)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if rawDocs != nil {
+		proj.Docs = make([]ProjectDoc, 0)
+		err = json.Unmarshal(rawDocs, &proj.Docs)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &proj, nil
@@ -204,7 +246,11 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
         WHERE p.slug = $1
     `, slug)
 
-	var proj Project
+	var (
+		rawDocs      []byte
+		rawAmenities []byte
+		proj         Project
+	)
 	err = row.Scan(
 		&proj.ID,
 		&proj.Slug,
@@ -213,14 +259,29 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 		&proj.MainImg,
 		&proj.Gallery,
 		&proj.AvailabilityImg,
-		&proj.Amenities,
-		&proj.Docs,
+		&rawAmenities,
+		&rawDocs,
 		&proj.CreatedAt,
 		&proj.UpdatedAt,
 	)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if rawAmenities != nil {
+		proj.Amenities = make([]ProjectAmenity, 0)
+		err = json.Unmarshal(rawAmenities, &proj.Amenities)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if rawDocs != nil {
+		err = json.Unmarshal(rawDocs, &proj.Docs)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &proj, nil
