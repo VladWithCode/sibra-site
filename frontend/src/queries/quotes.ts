@@ -1,10 +1,10 @@
-import { queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
+import { mutationOptions, queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
 import type {
     TQuote,
     TQuoteCreateResult,
     TQuoteFilters,
     TQuoteListingResult,
-    TQuoteType,
+    TQuotePropType,
 } from "./type";
 import { objectToQueryString } from "./util";
 
@@ -17,11 +17,19 @@ export const QuoteQueryKeys = {
     // Single quote
     detail: () => [...QuoteQueryKeys.all(), "detail"] as const,
     byId: (id: string) => [...QuoteQueryKeys.detail(), "byId", { id }] as const,
+
+    // Mutations
+    create: (propType: string) => [...QuoteQueryKeys.all(), "create", { propType }] as const,
+    update: (id: string) => [...QuoteQueryKeys.all(), "update", { id }] as const,
+    delete: (id: string) => [...QuoteQueryKeys.all(), "delete", { id }] as const,
 } as const;
 
 export type QKQuotesListing = ReturnType<typeof QuoteQueryKeys.listing>;
 export type QKQuotesFiltered = ReturnType<typeof QuoteQueryKeys.filtered>;
 export type QKQuotesById = ReturnType<typeof QuoteQueryKeys.byId>;
+export type QKQuotesCreate = ReturnType<typeof QuoteQueryKeys.create>;
+export type QKQuotesUpdate = ReturnType<typeof QuoteQueryKeys.update>;
+export type QKQuotesDelete = ReturnType<typeof QuoteQueryKeys.delete>;
 
 export const getQuotesOpts = (filters: TQuoteFilters) =>
     queryOptions({
@@ -49,6 +57,11 @@ export async function getQuoteListing({
 
     return data;
 }
+
+export const createQuoteOpts = (propType: TQuotePropType) => mutationOptions({
+    mutationKey: QuoteQueryKeys.create(propType),
+    mutationFn: createQuote,
+})
 
 export async function createQuote(newQuote: TQuote): Promise<TQuoteCreateResult> {
     const response = await fetch("/api/citas", {

@@ -1,5 +1,5 @@
 import { createQuote } from "@/queries/quotes";
-import type { TQuote, TQuoteCreateResult, TQuoteType } from "@/queries/type";
+import type { TQuote, TQuoteCreateResult, TQuotePropType, TQuoteType } from "@/queries/type";
 import { useGSAP } from "@gsap/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -21,7 +21,10 @@ export const ContactFormSchema = z.object({
         .min(new Date(), "La fecha de la cita no puede ser anterior a hoy"),
     quoteType: z.enum(["presencial", "whatsapp"], {
         error: "Debes elegir una cita presencial o atención por whatsapp/llamada teléfonica",
-    }),
+    }).default("presencial"),
+    propType: z
+        .enum(["proyecto", "propiedad", "general"])
+        .default("propiedad"),
     phone: z
         .string({ error: "El número de teléfono es obligatorio" })
         .min(10, "El número de teléfono debe tener al menos 10 dígitos"),
@@ -36,10 +39,15 @@ export type contactFormSchemaType = z.infer<typeof ContactFormSchema>;
 export function ContactForm({
     viewDetail,
     forPropertyID,
+    propType,
     onSuccess,
 }: {
     viewDetail: "simple" | "complete";
+    /** forPropertyID is the ID of the property the user is requesting a quote for
+      * if propType is "proyecto" or "propiedad", then forPropertyID is the ID of the project or property
+      */
     forPropertyID?: string;
+    propType?: "proyecto" | "propiedad" | "general";
     onSuccess?: (result: TQuoteCreateResult) => void;
 }) {
     const quoteMutation = useMutation({
@@ -52,6 +60,7 @@ export function ContactForm({
         defaultValues: {
             quoteDate: new Date(),
             quoteType: "presencial",
+            propType: propType || "propiedad",
             phone: "",
             name: isViewComplete ? "" : undefined,
         },
@@ -113,6 +122,7 @@ export function ContactForm({
             type: values.quoteType,
             scheduledDate: values.quoteDate.toISOString(),
             property: forPropertyID || "",
+            propType: propType || "propiedad",
         } as TQuote;
 
         try {
@@ -266,9 +276,11 @@ export function ContactForm({
 export function ContactFormDialog({
     children,
     forPropertyID,
+    propType,
     onSuccess,
 }: {
     forPropertyID?: string;
+    propType?: TQuotePropType;
     onSuccess?: (result: TQuoteCreateResult) => void;
 } & PropsWithChildren) {
     const triggerRef = useRef<HTMLButtonElement>(null);
@@ -316,6 +328,7 @@ export function ContactFormDialog({
                     viewDetail="complete"
                     forPropertyID={forPropertyID}
                     onSuccess={onSuccessCb}
+                    propType={propType}
                 />
             </DialogContent>
         </Dialog>
