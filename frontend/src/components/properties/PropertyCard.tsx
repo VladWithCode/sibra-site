@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { ShareIcon, SqMtIcon } from "../icons/icons";
 import { FormatMoney } from "@/lib/format";
 import { Button } from "../ui/button";
-import { Heart, Image, Map } from "lucide-react";
+import { Image, Map } from "lucide-react";
 import { PropertyLocationMap } from "@/maps/component";
 import { useState } from "react";
 import type { TProperty } from "@/queries/type";
