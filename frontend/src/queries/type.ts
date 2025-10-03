@@ -119,9 +119,14 @@ export type TProjectAmenity = {
     img: string;
 };
 
+export type TProjectDocsResult = {
+    success: boolean;
+    docs: TProjectDoc[];
+}
+
 export type TProjectDoc = {
     id: string;
-    doc: string;
+    name: string;
     description: string;
 
     created_at: string;

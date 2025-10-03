@@ -1,5 +1,5 @@
 import { queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
-import type { TProject, TProjectAssociate, TProjectAssociateDetailResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDetailResult } from "./type";
+import type { TProject, TProjectAssociate, TProjectAssociateDetailResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDetailResult, TProjectDocsResult } from "./type";
 
 export const ProjectQueryKeys = {
     all: () => ["projects"] as const,
@@ -11,6 +11,8 @@ export const ProjectQueryKeys = {
         [...ProjectQueryKeys.detail(), "byId", { id }] as const,
     bySlug: (slug: string) =>
         [...ProjectQueryKeys.detail(), "bySlug", { slug }] as const,
+    docs: (id: string) =>
+        [...ProjectQueryKeys.detail(), "docs", { id }] as const,
 
     // Associates
     associates: () => [...ProjectQueryKeys.all(), "associates"] as const,
@@ -30,6 +32,7 @@ export type QKProjectsListing = ReturnType<typeof ProjectQueryKeys.listing>;
 export type QKProjectsDetail = ReturnType<typeof ProjectQueryKeys.detail>;
 export type QKProjectsById = ReturnType<typeof ProjectQueryKeys.byId>;
 export type QKProjectsBySlug = ReturnType<typeof ProjectQueryKeys.bySlug>;
+export type QKProjectsDocs = ReturnType<typeof ProjectQueryKeys.docs>;
 
 export type QKProjectsAssociates = ReturnType<typeof ProjectQueryKeys.associates>;
 export type QKProjectsAssociatesByProjectId = ReturnType<typeof ProjectQueryKeys.associatesByProjectId>;
@@ -50,6 +53,11 @@ export const getProjectOpts = (id: string) => queryOptions({
 export const getProjectBySlugOpts = (slug: string) => queryOptions({
     queryKey: ProjectQueryKeys.bySlug(slug),
     queryFn: getProjectBySlug,
+});
+
+export const getProjectDocsOpts = (id: string) => queryOptions({
+    queryKey: ProjectQueryKeys.docs(id),
+    queryFn: getProjectDocs,
 });
 
 export const getProjectAssociatesOpts = (projectId: string) => queryOptions({
@@ -92,6 +100,18 @@ export async function getProjectBySlug({ queryKey }: QueryFunctionContext<QKProj
 
     if (response.status < 200 || response.status >= 300) {
         throw new Error(data.message || "Error al obtener la propiedad");
+    }
+
+    return data;
+}
+
+export async function getProjectDocs({ queryKey }: QueryFunctionContext<QKProjectsDocs>): Promise<TProjectDocsResult> {
+    const { id } = queryKey[3];
+    const response = await fetch(`/api/proyectos/${id}/documentos`);
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.message || "Error al obtener la información de los documentos");
     }
 
     return data;

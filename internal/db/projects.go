@@ -21,8 +21,8 @@ var (
 type ProjectAmenity struct {
 	ID   string `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
-	Icon string `json:"icon" db:"icon"`
-	Img  string `json:"img" db:"img"`
+	Icon string `json:"icon,omitempty" db:"icon"`
+	Img  string `json:"img,omitempty" db:"img"`
 }
 
 type ProjectAssociate struct {
@@ -41,8 +41,8 @@ type ProjectDoc struct {
 	Name        string `json:"name" db:"name"`
 	Description string `json:"description" db:"description"`
 
-	CreatedAt time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+	CreatedAt time.Time `json:"created_at,omitzero" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at,omitzero" db:"updated_at"`
 }
 
 type Project struct {
