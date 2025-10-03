@@ -12,6 +12,9 @@ bin
 web/static/properties/*
 !web/static/properties/.keep
 
+web/static/uploads/*
+!web/static/uploads/.keep
+
 web/static/users/*
 !web/static/users/sample.png
 !web/static/users/.keep
