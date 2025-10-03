@@ -37,17 +37,11 @@ type ProjectAssociate struct {
 
 type ProjectDoc struct {
 	ID          string `json:"id" db:"id"`
-	Slug        string `json:"slug" db:"slug"`
 	Name        string `json:"doc" db:"doc"`
 	Description string `json:"description" db:"description"`
 
 	CreatedAt string `json:"created_at" db:"created_at"`
 	UpdatedAt string `json:"updated_at" db:"updated_at"`
-}
-
-func (pd *ProjectDoc) GetSlug() string {
-	pd.Slug = internal.Slugify(pd.Name)
-	return pd.Slug
 }
 
 type Project struct {
@@ -205,6 +199,10 @@ func CreateProject(ctx context.Context, project *Project) error {
 	jsonb_docs, err := json.Marshal(project.Docs)
 	if err != nil {
 		return err
+	}
+
+	if project.Slug == "" {
+		project.GetSlug()
 	}
 
 	args := pgx.NamedArgs{
