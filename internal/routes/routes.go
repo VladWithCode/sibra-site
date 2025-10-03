@@ -17,6 +17,7 @@ func NewRouter() http.Handler {
 	RegisterPriceMapRoutes(router)
 	RegisterUserRoutes(router)
 	RegisterRequestsRouter(router)
+	RegisterProjectRoutes(router)
 
 	router.HandleFunc("/api/check-project-auth", checkProjectAuth)
 
