@@ -105,7 +105,7 @@ export async function checkProjectAccess(accessData: TProjectCheckAccessData): P
     const { projectId, idcode } = accessData;
 
     let url = "/api/proyectos/" + projectId + "/acceso";
-    if (idcode !== "") {
+    if (idcode === "") {
         throw new Error("RFC o CURP no puede estar vacío");
     }
 
