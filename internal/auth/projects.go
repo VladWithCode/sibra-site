@@ -1,11 +1,17 @@
 package auth
 
 import (
+	"context"
+	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"os"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
 var (
@@ -98,4 +104,104 @@ func ExtractProjectAccessDataFromToken(tk *jwt.Token) (*ProjectAccessTokenData, 
 	}
 
 	return nil, ErrInvalidProjectToken
+}
+
+func ValidateProjectAccessMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tkStr, err := r.Cookie("project_auth")
+		if err != nil {
+			respondWithError(w, http.StatusUnauthorized, ErrorParams{
+				ErrorMessage: "No se encontro token",
+			})
+			log.Printf("Error getting project auth token: %v\n", err)
+			return
+		}
+		tk, err := ParseToken(tkStr.Value)
+		if err != nil || !tk.Valid {
+			respondWithError(w, http.StatusUnauthorized, ErrorParams{
+				ErrorMessage: "No se encontro token",
+			})
+			log.Printf("Error parsing project auth token: %v\n", err)
+			return
+		}
+
+		data, err := ExtractProjectAccessDataFromToken(tk)
+		if err != nil {
+			respondWithError(w, http.StatusUnauthorized, ErrorParams{
+				ErrorMessage: "No se encontro token",
+			})
+			log.Printf("Error extracting project access data from token: %v\n", err)
+			return
+		}
+
+		assoc, err := db.FindAssociateWithData(r.Context(), data.ProjectID, data.IDCode, data.LotNum, data.AppleNum)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				respondWithError(w, http.StatusUnauthorized, ErrorParams{
+					ErrorMessage: "No se encontro el registro del socio",
+					Etc: map[string]any{
+						"authorized": false,
+					},
+				})
+				return
+			}
+
+			respondWithError(w, http.StatusInternalServerError, ErrorParams{
+				ErrorMessage: "Ocurrió un error al buscar el registro del socio",
+				Etc: map[string]any{
+					"authorized": false,
+				},
+			})
+			log.Printf("Failed to find associate: %v\n", err)
+			return
+		}
+
+		r = r.WithContext(context.WithValue(r.Context(), "project_access_data", data))
+		r = r.WithContext(context.WithValue(r.Context(), "project_associate", assoc))
+		next(w, r)
+	})
+}
+
+func ExtractProjectAccessDataFromCtx(ctx context.Context) (*ProjectAccessTokenData, error) {
+	data, ok := ctx.Value("project_access_data").(*ProjectAccessTokenData)
+	if !ok {
+		return nil, errors.New("no project access data found in context")
+	}
+	return data, nil
+}
+
+func ExtractProjectAssociateFromCtx(ctx context.Context) (*db.ProjectAssociate, error) {
+	data, ok := ctx.Value("project_associate").(*db.ProjectAssociate)
+	if !ok {
+		return nil, errors.New("no project associate found in context")
+	}
+	return data, nil
+}
+
+// TODO: add proper implementation for response handling
+type ErrorParams struct {
+	ErrorMessage string         `json:"error"`
+	Etc          map[string]any `json:"etc"`
+}
+
+func respondWithError(w http.ResponseWriter, code int, params ErrorParams) {
+	response := map[string]any{
+		"error": params.ErrorMessage,
+		"etc":   params.Etc,
+	}
+	if response["error"] == "" {
+		response["error"] = "Ocurrio un error inesperado en el servidor"
+	}
+
+	respondWithJSON(w, code, response)
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, data any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	err := json.NewEncoder(w).Encode(data)
+	if err != nil {
+		http.Error(w, "Ocurrio un error inesperado en el servidor", http.StatusInternalServerError)
+		log.Printf("Error: %v\n", err)
+	}
 }
