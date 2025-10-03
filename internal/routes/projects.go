@@ -334,13 +334,11 @@ func AddProjectAssociate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("id")
 	associateID := r.PathValue("associateID")
-	associate := db.ProjectAssociate{}
+	var relData db.ProjectAssociate
 
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
-
-	err := decoder.Decode(&associate)
-
+	err := decoder.Decode(&relData)
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
@@ -349,7 +347,20 @@ func AddProjectAssociate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.AddProjectAssociate(ctx, projectID, associateID, associate.PendingPayment)
+	associate, err := db.FindAssociateByID(ctx, associateID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar el socio",
+		})
+		log.Printf("Failed to find associate: %v\n", err)
+		return
+	}
+
+	associate.PendingPayment = relData.PendingPayment
+	associate.LotNum = relData.LotNum
+	associate.AppleNum = relData.AppleNum
+
+	err = db.AddProjectAssociate(ctx, projectID, associate)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al crear la relación de proyecto-asociado",
