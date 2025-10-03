@@ -8,10 +8,10 @@ CREATE TABLE projects (
     main_img VARCHAR(256) NOT NULL,
     gallery VARCHAR(256)[] NOT NULL,
     availability_img VARCHAR(256),
-    amenities JSONB NOT NULL,
-    docs JSONB NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL
+    amenities JSONB,
+    docs JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE associates (
@@ -21,8 +21,8 @@ CREATE TABLE associates (
     rfc VARCHAR(13) UNIQUE,
     curp VARCHAR(18) UNIQUE,
 
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     -- Ensure either RFC or CURP is set
     CONSTRAINT associates_either_rfc_or_curp CHECK (
@@ -38,8 +38,8 @@ CREATE TABLE project_associates (
     lot_num VARCHAR(10) NOT NULL,
     apple_num VARCHAR(10) NOT NULL,
 
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     PRIMARY KEY (project_id, associate_id)
 );
