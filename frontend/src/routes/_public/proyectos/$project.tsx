@@ -5,7 +5,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { checkProjectAccess, getProjectBySlug, getProjectBySlugOpts, getProjectDocsOpts, getProjectOpts } from '@/queries/projects';
+import { checkProjectAccess, getProjectBySlugOpts, getProjectDocsOpts } from '@/queries/projects';
 import { useGSAP } from '@gsap/react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -15,7 +15,7 @@ import { CircleX, ImageIcon, StarIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type Ref } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
-import type { TProject, TProjectAssociate, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDoc } from '@/queries/type';
+import type { TProject, TProjectAssociate, TProjectCheckAccessResult, TProjectDoc } from '@/queries/type';
 import { toast } from 'sonner';
 import { PalapaIcon, PlaygroundIcon, PoolIcon } from '@/components/icons/icons';
 
