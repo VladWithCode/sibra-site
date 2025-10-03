@@ -30,8 +30,8 @@ type ProjectAssociate struct {
 	Phone          string `json:"phone" db:"phone"`
 	RFC            string `json:"rfc" db:"rfc"`
 	CURP           string `json:"curp" db:"curp"`
-	LotNum         string `json:"lot_num" db:"lot_num"`
-	AppleNum       string `json:"apple_num" db:"apple_num"`
+	LotNum         string `json:"lot_num,omitempty" db:"lot_num"`
+	AppleNum       string `json:"apple_num,omitempty" db:"apple_num"`
 	PendingPayment bool   `json:"pending_payment" db:"pending_payment"`
 }
 
@@ -40,8 +40,8 @@ type ProjectDoc struct {
 	Name        string `json:"doc" db:"doc"`
 	Description string `json:"description" db:"description"`
 
-	CreatedAt string `json:"created_at" db:"created_at"`
-	UpdatedAt string `json:"updated_at" db:"updated_at"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type Project struct {
@@ -58,8 +58,8 @@ type Project struct {
 	Associates []ProjectAssociate `json:"associates" db:"associates"`
 	Docs       []ProjectDoc       `json:"docs" db:"docs"`
 
-	CreatedAt string `json:"created_at" db:"created_at"`
-	UpdatedAt string `json:"updated_at" db:"updated_at"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 func (p *Project) GetSlug() string {
@@ -447,7 +447,7 @@ func DeleteProject(ctx context.Context, id string) error {
 	return nil
 }
 
-func FindAssociateWithData(ctx context.Context, projectId, idcode, lotNum, appleNum string) (*ProjectAssociate, error) {
+func FindAssociateByID(ctx context.Context, id string) (*ProjectAssociate, error) {
 	conn, err := GetPool()
 	if err != nil {
 		return nil, err
@@ -458,14 +458,53 @@ func FindAssociateWithData(ctx context.Context, projectId, idcode, lotNum, apple
 	defer cancel()
 
 	row := conn.QueryRow(ctx, `
+		SELECT
+			id, name, phone, rfc, curp
+		FROM associates
+		WHERE id = $1
+	`, id)
+
+	var assoc ProjectAssociate
+	err = row.Scan(
+		&assoc.ID,
+		&assoc.Name,
+		&assoc.Phone,
+		&assoc.RFC,
+		&assoc.CURP,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &assoc, nil
+}
+
+func FindAssociateWithData(ctx context.Context, projectId, idcode, lotNum, appleNum string) (*ProjectAssociate, error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	args := pgx.NamedArgs{
+		"idcode":     idcode,
+		"lot_num":    lotNum,
+		"apple_num":  appleNum,
+		"project_id": projectId,
+	}
+	row := conn.QueryRow(ctx, `
         SELECT
-            a.name, a.phone, a.rfc, a.curp, pa.pending_payment
+            a.id, a.name, a.phone, a.rfc, a.curp, pa.pending_payment
         FROM project_associates pa
-        LEFT JOIN associates a ON pa.associate_id = a.id
-        WHERE (a.rfc = @idcode OR a.curp = @idcode)
+        LEFT JOIN associates a ON a.id = pa.associate_id
+        WHERE
+            (pa.project_id = @project_id AND a.rfc = @idcode OR a.curp = @idcode)
             AND pa.lot_num = @lot_num AND pa.apple_num = @apple_num
-            AND pa.project_id = @project_id
-    `, idcode, idcode, idcode)
+    `, args)
 
 	var assoc ProjectAssociate
 	err = row.Scan(
@@ -494,6 +533,10 @@ func CreateAssociate(ctx context.Context, associate *ProjectAssociate) error {
 
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
+
+	if associate.ID == "" {
+		associate.ID = uuid.Must(uuid.NewV7()).String()
+	}
 
 	args := pgx.NamedArgs{
 		"id": associate.ID,
@@ -564,7 +607,7 @@ func UpdateAssociate(ctx context.Context, associate *ProjectAssociate) error {
 	_, err = conn.Exec(
 		ctx,
 		`UPDATE associates SET
-            name = @name, phone = @phone, rfc = @rfc, curp = @curp,
+            name = @name, phone = @phone, rfc = @rfc, curp = @curp
         WHERE id = @id`,
 		args,
 	)
@@ -598,7 +641,7 @@ func DeleteAssociate(ctx context.Context, id string) error {
 }
 
 // AddProjectAssociate adds a project-associate relationship
-func AddProjectAssociate(ctx context.Context, projectID, associateID string, pendingPayment bool) error {
+func AddProjectAssociate(ctx context.Context, projectID string, associate *ProjectAssociate) error {
 	conn, err := GetPool()
 	if err != nil {
 		return err
@@ -610,14 +653,16 @@ func AddProjectAssociate(ctx context.Context, projectID, associateID string, pen
 
 	args := pgx.NamedArgs{
 		"project_id":      projectID,
-		"associate_id":    associateID,
-		"pending_payment": pendingPayment,
+		"associate_id":    associate.ID,
+		"pending_payment": associate.PendingPayment,
+		"lot_num":         associate.LotNum,
+		"apple_num":       associate.AppleNum,
 	}
 	_, err = conn.Exec(
 		ctx,
 		`INSERT INTO project_associates
-            (project_id, associate_id, pending_payment)
-        VALUES (@project_id, @associate_id, @pending_payment)`,
+            (project_id, associate_id, pending_payment, lot_num, apple_num)
+        VALUES (@project_id, @associate_id, @pending_payment, @lot_num, @apple_num)`,
 		args,
 	)
 

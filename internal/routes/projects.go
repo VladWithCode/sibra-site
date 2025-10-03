@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
@@ -58,7 +58,7 @@ func CheckProjectAccess(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	record, err := db.FindAssociateWithData(ctx, projectID, accessData.IDcode, accessData.LotNum, accessData.AppleNum)
+	assoc, err := db.FindAssociateWithData(ctx, projectID, accessData.IDcode, accessData.LotNum, accessData.AppleNum)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			respondWithError(w, http.StatusUnauthorized, ErrorParams{
@@ -77,26 +77,14 @@ func CheckProjectAccess(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var (
-		tk *jwt.Token
-		k  = os.Getenv("JWT_SECRET")
-	)
 	expTime := time.Now().Add(24 * time.Hour)
-	tk = jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"idcode":   accessData.IDcode,
-		"lotNum":   accessData.LotNum,
-		"appleNum": accessData.AppleNum,
-		"exp":      expTime,
+	tkStr, err := auth.CreateProjectToken(&auth.ProjectAccessTokenData{
+		ProjectID:   projectID,
+		AssociateID: assoc.ID,
+		LotNum:      accessData.LotNum,
+		AppleNum:    accessData.AppleNum,
+		ExpiresAt:   jwt.NewNumericDate(expTime),
 	})
-
-	tkStr, err := tk.SignedString([]byte(k))
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, ErrorParams{
-			ErrorMessage: "Ocurrió un error al generar el token de autorización",
-		})
-		log.Printf("Failed to generate token: %v\n", err)
-		return
-	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "project_auth",
@@ -105,11 +93,12 @@ func CheckProjectAccess(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		// Secure: true,
 		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
 	})
 
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"authorized": true,
-		"associate":  record,
+		"associate":  assoc,
 	})
 }
 
