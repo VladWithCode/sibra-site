@@ -63,11 +63,14 @@ export type TPropertyDetailResult = {
 
 export type TQuoteType = "presencial" | "whatsapp";
 
+export type TQuotePropType = "proyecto" | "propiedad" | "general";
+
 export type TQuoteStatus = "pendiente" | "atendida" | "confirmada" | "volver a atender";
 
 export type TQuote = {
     id: string;
     type: TQuoteType;
+    propType: TQuotePropType;
     phone: string;
     name: string;
     scheduledDate: string;
@@ -105,13 +108,69 @@ type TQuoteCreateSuccess = {
     quote: TQuote;
 };
 
+export type TProjectDetailResult = {
+    project: TProject;
+};
+
+export type TProjectAmenity = {
+    id: string;
+    name: string;
+    icon: string;
+    img: string;
+};
+
+export type TProjectDoc = {
+    id: string;
+    doc: string;
+    description: string;
+
+    created_at: string;
+    updated_at: string;
+};
+
 export type TProject = {
-    id: number;
+    id: string;
+    slug: string;
     name: string;
     description: string;
-    img: string;
-    imgAlt: string;
-    slug: string;
+    main_img: string;
+    availability_img: string;
+    gallery: string[];
+
+    amenities: TProjectAmenity[];
+    associates: TProjectAssociate[];
+    docs: TProjectDoc[];
     lat?: number;
     lon?: number;
+
+    created_at: string;
+    updated_at: string;
+}
+
+export type TProjectAssociateDetailResult = {
+    associate: TProjectAssociate;
+};
+
+export type TProjectCheckAccessResult = {
+    authorized: true;
+    associate: TProjectAssociate;
+} | {
+    authorized: false;
+    etc: Record<string, any>;
+};
+
+export type TProjectAssociate = {
+    id: string;
+    name: string;
+    phone: string;
+    rfc: string;
+    curp: string;
+    pendingPayment: boolean;
+}
+
+export type TProjectCheckAccessData = {
+    projectId: string;
+    idcode: string;
+    lotNum: string;
+    appleNum: string;
 }
