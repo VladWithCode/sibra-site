@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -128,7 +127,6 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 		}
 
 		if rawDocs != nil {
-			fmt.Printf("rawDocs: %v\n", rawDocs)
 			project.Docs = make([]ProjectDoc, 0)
 			err = json.Unmarshal(rawDocs, &project.Docs)
 			if err != nil {
