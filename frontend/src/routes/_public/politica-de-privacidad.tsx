@@ -72,7 +72,7 @@ function RouteComponent() {
                     <p className="text-current/80">
                         Para cualquier aclaración, duda o ejercicio de derechos relacionados
                         con datos personales, el usuario puede comunicarse al correo sibramx.business@gmail.com
-                        o al teléfono +52 618 194 1145.
+                        o al teléfono <span className="font-secondary">+52 618 194 1145</span>.
                     </p>
                 </div>
             </div>

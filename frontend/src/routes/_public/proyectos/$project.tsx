@@ -142,7 +142,7 @@ function ProjectFetchError({ error }: { error: Error }) {
                 <img src="/sample.webp" alt="" className="w-full h-full object-cover object-center brightness-80" />
             </div>
             <div className="relative z-10 flex flex-col gap-12 px-6 pt-24 pb-20 text-gray-50 bg-linear-to-b from-sbr-blue-dark/60 to-sbr-blue-light/60">
-                <h1 className="flex flex-col gap-1.5 text-6xl text-current/80 font-[sans] font-bold text-center">
+                <h1 className="flex flex-col gap-1.5 text-6xl text-current/80 font-secondary font-bold text-center">
                     Ocurrió un error inesperado
                 </h1>
                 <p className="text-gray-50 font-semibold">

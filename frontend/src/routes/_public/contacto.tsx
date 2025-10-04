@@ -67,7 +67,7 @@ function RouteComponent() {
                                     <div className="text-xs font-semibold">Mazatlán</div>
                                     <Phone className="size-6" />
                                 </div>
-                                <div className="col-start-2 xs:text-xl ml-4 mr-auto mt-auto">
+                                <div className="col-start-2 xs:text-xl ml-4 mr-auto mt-auto font-secondary">
                                     (669) 112-9742
                                 </div>
                             </div>
@@ -76,7 +76,7 @@ function RouteComponent() {
                                     <div className="text-xs font-semibold">Durango</div>
                                     <Phone className="size-6" />
                                 </div>
-                                <div className="col-start-2 xs:text-xl ml-4 mr-auto mt-auto">
+                                <div className="col-start-2 xs:text-xl ml-4 mr-auto mt-auto font-secondary">
                                     (618) 194-1145
                                 </div>
                             </div>
@@ -117,7 +117,7 @@ function RouteComponent() {
                         </TabsList>
                         <TabsContent value="dgo">
                             <p className="text-current/60 mb-3">
-                                Domicilio: C. Cancer #132. Fracc. Sahop, 34190 Durango, Dgo.
+                                Domicilio: C. Cancer <span className="font-secondary">132</span>. Fracc. Sahop, <span className="font-secondary">34190</span> Durango, Dgo.
                             </p>
                             <Card className="p-0 rounded-lg overflow-hidden">
                                 <CardContent className="p-0">
@@ -135,8 +135,8 @@ function RouteComponent() {
                         </TabsContent>
                         <TabsContent value="mzt">
                             <p className="text-current/60 mb-3">
-                                Domicilio: Av. Ejercito Mexicano 1102B, Sembradores de la
-                                Amistad, 82146 Mazatlán, Sin.
+                                Domicilio: Av. Ejercito Mexicano <span className="font-secondary">1102B</span>, Sembradores de la
+                                Amistad, <span className="font-secondary">82146</span> Mazatlán, Sin.
                             </p>
                             <Card className="p-0 rounded-lg overflow-hidden">
                                 <CardContent className="p-0">
