@@ -43,17 +43,17 @@ function RouteComponent() {
     }, []);
 
     return (
-        <>
-            <div className="flex p-3 border-b border-gray-200">
-                <h1 className="text-sm font-medium">Propiedades en {contract}</h1>
+        <main>
+            <div className="flex p-3 sm:px-6 lg:px-8 border-b border-gray-200">
+                <h1 className="w-full max-w-6xl text-sm md:text-base font-medium text-muted-foreground mx-auto">Propiedades en {contract}</h1>
             </div>
-            <div className="flex items-center px-3 py-1.5 font-medium">
-                <p className="whitespace-nowrap text-muted-foreground text-sm">
-                    <span className="text-2xl">{data.pagination.total} </span>
+            <div className="w-full max-w-6xl flex items-center px-3 sm:px-6 lg:px-8 xl:px-0 py-1.5 sm:py-2 font-medium mx-auto">
+                <p className="whitespace-nowrap text-current/80 text-sm sm:text-base">
+                    <span className="text-2xl sm:text-4xl">{data.pagination.total} </span>
                     resultados
                 </p>
                 <Select defaultValue="listing_date-desc">
-                    <SelectTrigger className="font-semibold ml-auto border-transparent active:border-primary-foreground whitespace-break-spaces line-clamp-1">
+                    <SelectTrigger className="sm:text-base font-semibold ml-auto border-transparent active:border-primary-foreground whitespace-break-spaces line-clamp-1">
                         <SelectValue placeholder="Ordenar por" />
                     </SelectTrigger>
                     <SelectContent>
@@ -67,17 +67,21 @@ function RouteComponent() {
                     </SelectContent>
                 </Select>
                 <div className="shrink-0 basis-min">
-                    <Button className="font-semibold" variant="ghost">
+                    <Button className="sm:text-base font-semibold" variant="ghost">
                         <MapPin className="size-6" />
                         Mapa
                     </Button>
                 </div>
             </div>
-            <div className="p-3 space-y-3 bg-gray-200">
-                {data.properties.map((prop) => (
-                    <PropertyCard key={prop.id} propData={prop} withMap={false} />
-                ))}
+            <div className="p-3 sm:p-6 lg:px-8 lg:py-12 xl:py-16 bg-gray-200">
+                <div className="max-w-6xl grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-auto gap-4 sm:gap-y-6 mx-auto">
+                    {data.properties.map((prop) => (
+                        <div className="w-full max-w-lg">
+                            <PropertyCard key={prop.id} propData={prop} withMap={false} />
+                        </div>
+                    ))}
+                </div>
             </div>
-        </>
+        </main>
     );
 }
