@@ -2,10 +2,9 @@ import { Heart, Home, LucideX } from "lucide-react";
 import { Button } from "./ui/button";
 import {
     NavigationMenu,
-    NavigationMenuContent,
     NavigationMenuItem,
+    NavigationMenuLink,
     NavigationMenuList,
-    NavigationMenuTrigger,
 } from "./ui/navigation-menu";
 import {
     Sidebar,
@@ -21,7 +20,7 @@ import {
 } from "./ui/sidebar";
 import { FilterIcon, HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { cn } from "@/lib/utils";
@@ -127,10 +126,12 @@ export function Header() {
             >
                 <div className="flex items-center justify-between gap-6 text-gray-50">
                     <SidebarTrigger
-                        className="stroke-current data-[header-floating=false]:text-gray-800 my-auto"
+                        className="lg:hidden stroke-current data-[header-floating=false]:text-gray-800 my-auto"
                         data-header-floating={headerFloating}
                     />
-                    <HeaderNavigationMenu className="hidden xl:block" />
+                    <div className="hidden lg:block">
+                        <HeaderNavigationMenu />
+                    </div>
                     <HeaderComplement {...headerComplementProps} />
                     <Link
                         to="/"
@@ -430,18 +431,58 @@ function HeaderComplementProject({ projectName }: { projectName: string }) {
     )
 }
 
-export function HeaderNavigationMenu({ className }: { className?: string }) {
+export function HeaderNavigationMenu() {
+    const { headerFloating } = useUIStore();
+
     return (
-        <NavigationMenu className={className} viewport={false}>
-            <NavigationMenuList>
-                <NavigationMenuItem>
-                    <NavigationMenuTrigger>Inicio</NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                        <p>Inicio</p>
-                    </NavigationMenuContent>
-                </NavigationMenuItem>
+        <NavigationMenu viewport={false}>
+            <NavigationMenuList className="bg-transparent">
+                {desktopNavigationItems.map((item) => (
+                    <NavigationMenuItem>
+                        <HeaderNavigationMenuLink item={item} headerFloating={headerFloating} />
+                    </NavigationMenuItem>
+                ))}
             </NavigationMenuList>
         </NavigationMenu>
+    );
+}
+
+function HeaderNavigationMenuLink({ item, headerFloating }: {
+    item: typeof desktopNavigationItems[number];
+    headerFloating: boolean;
+}) {
+    const [styleVal, setStyleVal] = useState<React.CSSProperties>({});
+
+    useEffect(() => {
+        if (headerFloating) {
+            setStyleVal({
+                "--base-color": "var(--color-gray-50)",
+                "--base-fwg": "500",
+                "--active-color": "var(--color-gray-800)",
+                "--active-bg": "var(--color-gray-100)",
+                "--active-fwg": "500",
+            } as React.CSSProperties);
+        } else {
+            setStyleVal({
+                "--base-color": "var(--color-gray-800)",
+                "--base-fwg": "400",
+                "--active-color": "var(--color-gray-50)",
+                "--active-bg": "var(--color-sbr-blue-light)",
+                "--active-fwg": "500",
+            } as React.CSSProperties);
+        }
+    }, [headerFloating]);
+
+    return (
+        <NavigationMenuLink asChild>
+            <Link
+                className="text-base text-(--base-color) font-(--base-fwg) data-[status=active]:text-(--active-color) data-[status=active]:font-(--active-fwg) data-[status=active]:bg-(--active-bg) transition-colors duration-300"
+                to={item.to}
+                style={styleVal}
+            >
+                {item.label}
+            </Link>
+        </NavigationMenuLink>
     );
 }
 
@@ -517,6 +558,25 @@ export function HeaderSidebar() {
         </Sidebar>
     );
 }
+
+const desktopNavigationItems = linkOptions([
+    {
+        label: "Inicio",
+        to: "/",
+    },
+    {
+        label: "Propiedades en Venta",
+        to: "/propiedades",
+    },
+    {
+        label: "Terrenos y proyectos",
+        to: "/proyectos",
+    },
+    {
+        label: "Contacto",
+        to: "/contacto",
+    },
+]);
 
 const mainNavigationItems = linkOptions([
     {
