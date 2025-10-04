@@ -1,9 +1,32 @@
+import { useWindowSize } from "@/hooks/use-window-size";
 import { cn } from "@/lib/utils";
-import type { SVGAttributes } from "react";
+import { useEffect, useState, type SVGAttributes } from "react";
 
 export function ProjectCurve({ className, ...props }: { className?: string } & SVGAttributes<SVGElement>) {
+    const { width } = useWindowSize()
+    const [mvViewBox, setMvViewBox] = useState("0 0")
+
+    useEffect(() => {
+        if (width >= 1536) {
+            setMvViewBox("100 -250")
+            return
+        }
+
+        if (width >= 1024) {
+            setMvViewBox("200 -230")
+            return
+        }
+
+        if (width >= 768) {
+            setMvViewBox("200 -130")
+            return
+        }
+
+        setMvViewBox("200 0")
+    }, [width])
+
     return (
-        <svg className={cn("", className)} viewBox="0 0 1440 490" {...props}>
+        <svg className={cn("", className)} viewBox={`${mvViewBox} 1440 490`} {...props}>
             <path
                 fill="var(--bottom-bg)"
                 d="M0,98L360,98L720,49L1080,98L1440,343L1800,196L2160,441L2520,245L2880,343L3240,147L3600,294L3960,147L4320,294L4680,0L5040,441L5400,343L5760,196L6120,147L6480,294L6840,245L7200,98L7560,441L7920,441L8280,196L8640,147L8640,490L8280,490L7920,490L7560,490L7200,490L6840,490L6480,490L6120,490L5760,490L5400,490L5040,490L4680,490L4320,490L3960,490L3600,490L3240,490L2880,490L2520,490L2160,490L1800,490L1440,490L1080,490L720,490L360,490L0,490Z">

@@ -18,6 +18,7 @@ import z from 'zod';
 import type { TProject, TProjectAssociate, TProjectCheckAccessResult, TProjectDoc } from '@/queries/type';
 import { toast } from 'sonner';
 import { PalapaIcon, PlaygroundIcon, PoolIcon } from '@/components/icons/icons';
+import { cn } from '@/lib/utils';
 
 export const Route = createFileRoute('/_public/proyectos/$project')({
     component: RouteComponent,
@@ -46,24 +47,26 @@ function RouteComponent() {
                     <ProjectCurve className="w-full" style={{
                         '--top-bg': 'var(--color-sbr-green-dark)',
                         '--bottom-bg': 'var(--color-sbr-green-light)',
-                    } as React.CSSProperties} viewBox='0 45 1200 400' />
+                    } as React.CSSProperties} />
                 </div>
-                <div className="relative z-10 text-gray-50 px-6 pt-48 pb-8">
-                    <h2 className="flex flex-col gap-0.5 text-2xl font-bold uppercase tracking-wide text-shadow-lg">
-                        <span className="text-4xl">Terreno</span>
+                <div className="relative z-10 text-gray-50 px-6 pt-48 sm:pt-60 lg:pt-72 xl:pt-96 pb-8">
+                    <h2 className="max-w-6xl flex flex-col gap-0.5 text-2xl sm:text-4xl 2xl:text-5xl font-bold uppercase tracking-wide text-shadow-lg mx-auto">
+                        <span className="text-4xl sm:text-6xl 2xl:text-7xl">Terreno</span>
                         <span>en Oferta</span>
                     </h2>
                 </div>
             </section>
-            <section className="p-6 space-y-3">
-                <h1 className="text-xl font-bold">Conoce {projectData.name}</h1>
-                <p className="text-current/60 font-medium leading-tight">{projectData.description}</p>
+            <section className="p-6 sm:pt-12 xl:py-24 2xl:pt-36 sm:px-8 xl:px-12">
+                <div className="max-w-6xl space-y-3 2xl:space-y-6 mx-auto">
+                    <h1 className="text-xl sm:text-3xl xl:text-4xl 2xl:text-5xl font-bold">Conoce {projectData.name}</h1>
+                    <p className="2xl:text-lg text-current/60 font-medium leading-tight">{projectData.description}</p>
+                </div>
             </section>
-            <section className="p-6 space-y-3">
-                <div className="space-y-1.5">
+            <section className="p-6 sm:px-8 space-y-3">
+                <div className="space-y-1.5 sm:space-y-6 xl:space-y-12">
                     <div className="relative z-0">
                         <HouseClip />
-                        <div className="aspect-[4/3] mx-auto" style={{ clipPath: 'url(#house-clip)' }} >
+                        <div className="max-w-xl xl:max-w-2xl aspect-[4/3] mx-auto" style={{ clipPath: 'url(#house-clip)' }} >
                             <img
                                 src="/sample.webp"
                                 alt={projectData.name}
@@ -71,17 +74,19 @@ function RouteComponent() {
                             />
                         </div>
                     </div>
-                    <h3 className="text-4xl text-center">Amenidades</h3>
+                    <h3 className="text-3xl xl:text-4xl 2xl:text-5xl text-center">Amenidades</h3>
                 </div>
                 <AmenitiesCarousel projectData={projectData} />
             </section>
-            <section className="py-6 space-y-3">
-                <h3 className="text-lg text-center font-semibold px-6">
+            <section className="py-6 sm:py-8 space-y-3 sm:space-y-8">
+                <h3 className="text-lg sm:text-3xl xl:text-4xl text-center font-semibold px-6">
                     ¿De dónde nace {projectData.name}?
                 </h3>
-                <ProjectGallery projectData={projectData} />
+                <div className="max-w-6xl mx-auto xl:rounded-lg overflow-hidden">
+                    <ProjectGallery projectData={projectData} />
+                </div>
             </section>
-            <section className="py-6 space-y-6">
+            <section className="max-w-6xl py-6 sm:py-8 space-y-6 sm:space-y-8 mx-auto">
                 <h3 className="text-4xl text-center">Disponibilidad</h3>
                 {projectData.availability_img !== ""
                     ? (
@@ -101,10 +106,10 @@ function RouteComponent() {
                     )
                 }
             </section>
-            <section className="p-3">
-                <div className="bg-gray-50 border-2 border-sbr-green rounded-lg text-gray-800 space-y-3 p-3">
-                    <div className="space-y-1">
-                        <h3 className="text-xl font-bold">Conoce el proyecto</h3>
+            <section className="p-3 sm:px-8 sm:py-6">
+                <div className="max-w-6xl bg-gray-50 border-2 border-sbr-green rounded-lg text-gray-800 space-y-3 p-3 sm:p-6 mx-auto">
+                    <div className="space-y-1 sm:space-y-3">
+                        <h3 className="text-xl sm:text-3xl font-bold">Conoce el proyecto</h3>
                         <p className="text-sm text-muted-foreground">Agenda una cita para visitar el proyecto junto con un agente de SIBRA, quien te dará un tour y te brindara toda la información necesaria sobre los proyectos de SIBRA.</p>
                     </div>
                     <div className="rounded-b-lg">
@@ -113,23 +118,21 @@ function RouteComponent() {
                     <div className="text-tiny text-muted-foreground">Toda visita es sin compromiso. Asesoría completamente gratis.</div>
                 </div>
             </section>
-            <section className="p-3">
-                <div className="border-2 border-sbr-green rounded-lg p-3 space-y-6">
-                    <div className="space-y-1">
-                        <h3 className="text-xl font-bold">¿Ya eres socio?</h3>
+            <section className="p-3 sm:px-8 sm:py-6">
+                <div className="max-w-6xl border-2 border-sbr-green rounded-lg p-3 sm:p-6 space-y-6 mx-auto">
+                    <div className="space-y-1 sm:space-y-3">
+                        <h3 className="text-xl sm:text-3xl font-bold">¿Ya eres socio?</h3>
                         <p className="text-sm font-medium text-current/60">
                             Si ya eres socio de SIBRA, puedes dar clic en el botón para obtener acceso a la documentación
                             y a las más recientes actualizaciones del proyecto.
                         </p>
                     </div>
                     <ProjectAssociates projectData={projectData} />
-                    <p className="text-tiny text-current/80">*Únicamente informativo sobre procesos del desarrollo en cuestión.</p>
+                    <p className="text-tiny sm:text-sm text-current/80">*Únicamente informativo sobre procesos del desarrollo en cuestión.</p>
                 </div>
             </section>
             <section className="relative z-0 space-y-6">
-                <div className="grid grid-cols-1 auto-rows-auto">
-                    <SimilarProjects projectData={projectData} />
-                </div>
+                <SimilarProjects projectData={projectData} />
             </section>
         </main>
     );
@@ -183,9 +186,9 @@ function SimilarProjects({ projectData }: { projectData: TProject }) {
     }
 
     return (
-        <section className="py-6 space-y-6">
-            <h3 className="text-xl font-bold text-center">Otros Proyectos de SIBRA</h3>
-            <div className="grid grid-cols-1 auto-rows-auto">
+        <section className="pt-6 sm:pt-12 space-y-6 xl:space-y-12">
+            <h3 className="text-xl sm:text-3xl xl:text-4xl font-bold text-center">Otros Proyectos de SIBRA</h3>
+            <div className="grid grid-cols-1 xl:grid-cols-2 auto-rows-auto">
                 {data.projects.length === 0
                     ? (
                         <div className="relative flex items-center justify-center w-full aspect-video px-6 py-12">
@@ -203,8 +206,8 @@ function SimilarProjects({ projectData }: { projectData: TProject }) {
                                     className="w-full h-full object-cover object-center brightness-75"
                                 />
                             </div>
-                            <div className="relative z-10 flex items-center justify-center gap-3 bg-gray-700/50 py-28 px-6">
-                                <h4 className="text-lg font-semibold">{project.name}</h4>
+                            <div className="relative z-10 flex items-center justify-center gap-3 bg-gray-700/50 py-28 xl:py-36 px-6">
+                                <h4 className="text-lg sm:text-2xl font-semibold">{project.name}</h4>
                             </div>
                         </Link>
                     ))}
@@ -216,8 +219,8 @@ function SimilarProjects({ projectData }: { projectData: TProject }) {
 function AmenitiesCarousel({ projectData }: { projectData: TProject }) {
     if (!projectData.amenities || projectData.amenities.length === 0) {
         return (
-            <div className="relative flex items-center justify-center w-full aspect-video px-6 py-12">
-                <p className="font-medium leading-tight text-center text-current/80">
+            <div className="relative flex items-center justify-center max-w-lg w-full aspect-video px-6 py-12 mx-auto">
+                <p className="lg:text-lg font-medium leading-tight text-center text-current/80">
                     Aún no se han agregado las amenidades del proyecto.
                 </p>
             </div>
@@ -230,14 +233,14 @@ function AmenitiesCarousel({ projectData }: { projectData: TProject }) {
             align: "center",
             slidesToScroll: "auto",
         }}>
-            <CarouselContent className="py-8 px-4">
+            <CarouselContent className="py-8 lg:py-12 xl:py-24 px-4">
                 {projectData.amenities.map((amenity) => (
-                    <CarouselItem className="shrink-0 basis-1/3">
-                        <div className="flex flex-col items-center justify-start gap-1.5 text-center" key={amenity.name}>
-                            <div className="flex items-center justify-center w-4/5 aspect-square rounded-full bg-gray-50 p-3 text-sbr-blue">
+                    <CarouselItem className="shrink-0 basis-1/3 lg:basis-1/4">
+                        <div className="flex flex-col items-center justify-start gap-1.5 sm:gap-4 2xl:gap-8 text-center" key={amenity.name}>
+                            <div className="flex items-center justify-center w-4/5 lg:w-3/4 xl:w-3/5 2xl:w-1/2 aspect-square rounded-full bg-gray-50 p-3 text-sbr-blue">
                                 <AmenityIcon icon={amenity.icon} />
                             </div>
-                            <p className="text">{amenity.name}</p>
+                            <p className="sm:text-lg 2xl:text-xl font-semibold">{amenity.name}</p>
                         </div>
                     </CarouselItem>
                 ))}
@@ -251,10 +254,10 @@ function AmenitiesCarousel({ projectData }: { projectData: TProject }) {
 type TAmenityIcon = "pool" | "playground" | "palapa" | "services" | string;
 
 function AmenityIcon({ icon }: { icon: TAmenityIcon }) {
-    const className = "size-4/5";
+    const className = "size-4/5 lg:size-3/5 2xl:size-1/2";
     switch (icon) {
         case "pool":
-            return <PoolIcon className={className} />;
+            return <PoolIcon className={cn(className, "lg:size-3/4 2xl:size-2/3")} />;
         case "playground":
             return <PlaygroundIcon className={className} />;
         case "palapa":
@@ -284,7 +287,7 @@ function ProjectGallery({ projectData }: { projectData: TProject }) {
     if (!projectData.gallery || projectData.gallery.length === 0) {
         return (
             <div className="relative flex items-center justify-center w-full aspect-video text-gray-800 bg-gray-200 px-6 py-12">
-                <p className="font-medium leading-tight text-center text-current/80">
+                <p className="sm:text-lg font-medium leading-tight text-center text-current/80">
                     Aún no hay fotos de este proyecto
                 </p>
             </div>
@@ -402,7 +405,7 @@ function ProjectAssociates({ projectData }: { projectData: TProject }) {
     return (
         <div className="space-y-3">
             <Button
-                className="w-full bg-sbr-green text-lg font-bold"
+                className="w-full bg-sbr-green text-lg sm:text-xl font-bold sm:py-6"
                 variant="ghost"
                 size="lg"
                 onClick={() => setOpen(state => !state)}
@@ -410,7 +413,7 @@ function ProjectAssociates({ projectData }: { projectData: TProject }) {
                 Soy socio
             </Button>
             <div className="h-0 overflow-hidden text-gray-800" ref={contentRef as Ref<HTMLDivElement>}>
-                <div className="bg-gray-50 rounded-lg p-3 space-y-6">
+                <div className="bg-gray-50 rounded-lg p-3 sm:p-6 space-y-6">
                     {
                         customerAuthenticated
                             ? <ProjectAssociatesDocumentListing projectData={projectData} customerData={customerData as TProjectAssociate} />
