@@ -14,12 +14,12 @@ export function ProjectCard({ project }: { project: TProject, withMap?: boolean 
                 </Link>
             </CardHeader>
             <CardContent className="pt-0 pb-3 px-3 sm:px-3.5 space-y-3">
-                <div className="grid grid-cols-[1fr_auto] items-start gap-3">
+                <div className="grid grid-cols-[1fr_auto] auto-rows-min items-start gap-3">
                     <Link to={`/proyectos/${project.slug}`} className="mt-auto">
                         <p className="text-sm text-muted-foreground">
-                            {project.description}
+                            Desarrollo SIBRA
                         </p>
-                        <h3 className="text-xl xs:text-2xl font-bold">
+                        <h3 className="text-lg xs:text-2xl font-bold line-clamp-1">
                             {project.name}
                         </h3>
                     </Link>

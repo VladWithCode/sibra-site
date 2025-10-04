@@ -5,14 +5,14 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { checkProjectAccess, getProjectBySlugOpts, getProjectDocsOpts } from '@/queries/projects';
+import { checkProjectAccess, getProjectBySlugOpts, getProjectDocsOpts, getProjectsOpts } from '@/queries/projects';
 import { useGSAP } from '@gsap/react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router'
 import gsap from 'gsap';
 import { CircleX, ImageIcon, StarIcon } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type Ref } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type Ref } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 import type { TProject, TProjectAssociate, TProjectCheckAccessResult, TProjectDoc } from '@/queries/type';
@@ -21,20 +21,20 @@ import { PalapaIcon, PlaygroundIcon, PoolIcon } from '@/components/icons/icons';
 
 export const Route = createFileRoute('/_public/proyectos/$project')({
     component: RouteComponent,
+    loader: async ({ context, params }) => {
+        await context.queryClient.ensureQueryData(getProjectBySlugOpts(params.project));
+    },
 })
 
 function RouteComponent() {
-    const { project } = Route.useParams()
-    const { data, status } = useQuery(getProjectBySlugOpts(project))
-    const projectData = data?.project
+    const { project } = Route.useParams();
+    const { data, status, error } = useSuspenseQuery(getProjectBySlugOpts(project))
 
-    if (status === "pending") {
-        return <ProjectLoading />
+    if (status === "error") {
+        return <ProjectFetchError error={error} />
     }
 
-    if (status === "error" || !projectData) {
-        return <ProjectNotFound />
-    }
+    const projectData = data.project
 
     return (
         <main className="bg-sbr-blue text-gray-50 space-y-6">
@@ -83,9 +83,23 @@ function RouteComponent() {
             </section>
             <section className="py-6 space-y-6">
                 <h3 className="text-4xl text-center">Disponibilidad</h3>
-                <div className="aspect-video">
-                    <img src={"/static/uploads/" + projectData.availability_img} alt={projectData.name} className="w-full h-full object-contain object-center" />
-                </div>
+                {projectData.availability_img !== ""
+                    ? (
+                        <div className="aspect-video">
+                            <img
+                                src={"/static/uploads/" + projectData.availability_img}
+                                alt={"Imagen del plano de disponibilidad del projecto " + projectData.name}
+                                className="w-full h-full object-contain object-center"
+                            />
+                        </div>
+                    ) : (
+                        <div className="relative flex items-center justify-center w-full aspect-video px-6 py-12">
+                            <p className="font-medium leading-tight text-center text-current/80">
+                                Aún no se ha agregado la disponibilidad del proyecto.
+                            </p>
+                        </div>
+                    )
+                }
             </section>
             <section className="p-3">
                 <div className="bg-gray-50 border-2 border-sbr-green rounded-lg text-gray-800 space-y-3 p-3">
@@ -113,47 +127,29 @@ function RouteComponent() {
                 </div>
             </section>
             <section className="relative z-0 space-y-6">
-                <h3 className="text-xl font-bold text-center">Otros Proyectos de SIBRA</h3>
                 <div className="grid grid-cols-1 auto-rows-auto">
-                    {/* {projectsData.slice(0, 2).map((project) => ( */}
-                    {/*     <Link to={`/proyectos/${project.slug}`} className="relative z-0" key={project.slug}> */}
-                    {/*         <div className="absolute inset-0 z-0"> */}
-                    {/*             <img src={"/" + project.main_img} alt={project.name} className="w-full h-full object-cover object-center brightness-75" /> */}
-                    {/*         </div> */}
-                    {/*         <div className="relative z-10 flex items-center justify-center gap-3 bg-gray-700/50 py-20 px-6"> */}
-                    {/*             <h4 className="text-lg font-semibold">{project.name}</h4> */}
-                    {/*         </div> */}
-                    {/*     </Link> */}
-                    {/* ))} */}
+                    <SimilarProjects projectData={projectData} />
                 </div>
             </section>
         </main>
     );
 }
 
-function ProjectLoading() {
-    return (
-        <main className="relative z-0 flex flex-col items-center justify-center gap-6 bg-gray-200 py-48 px-6">
-            <h1 className="text-4xl font-bold text-center text-current/60">Cargando proyecto...</h1>
-            <span className="loader"></span>
-        </main>
-    );
-}
-
-function ProjectNotFound() {
+function ProjectFetchError({ error }: { error: Error }) {
     return (
         <main className="relative z-0 bg-gray-200">
             <div className="absolute inset-0 z-0">
                 <img src="/sample.webp" alt="" className="w-full h-full object-cover object-center brightness-80" />
             </div>
             <div className="relative z-10 flex flex-col gap-12 px-6 pt-24 pb-20 text-gray-50 bg-linear-to-b from-sbr-blue-dark/60 to-sbr-blue-light/60">
-                <h1 className="flex flex-col gap-1.5 text-9xl text-current/80 font-[sans] font-bold text-center">
-                    <span>404</span>
-                    <span className="text-xl font-normal">Proyecto no encontrado</span>
+                <h1 className="flex flex-col gap-1.5 text-6xl text-current/80 font-[sans] font-bold text-center">
+                    Ocurrió un error inesperado
                 </h1>
                 <p className="text-gray-50 font-semibold">
-                    El proyecto que buscas no existe o ya no está disponible. Da clic en el botón de abajo para
-                    volver a la lista de proyectos.
+                    {error !== null ?
+                        error.message
+                        : "Ocurrió un error al recuperar los datos del proyecto. Intenta de nuevo más tarde."
+                    }
                 </p>
                 <Button className="mx-auto font-bold" variant="default" size="lg" asChild>
                     <Link to="/proyectos">Regresar a Proyectos</Link>
@@ -163,7 +159,71 @@ function ProjectNotFound() {
     )
 }
 
+function SimilarProjects({ projectData }: { projectData: TProject }) {
+    const { data, status, error } = useQuery(getProjectsOpts);
+    const similarProjects = useMemo(() => {
+        if (status !== "success") {
+            return [];
+        }
+
+        return data.projects.filter(p => p.id !== projectData.id).slice(0, 2);
+    }, [status]);
+
+    if (status === "error") {
+        return <ProjectFetchError error={error} />
+    }
+
+    if (status === "pending") {
+        return (
+            <div className="flex flex-col items-center justify-center gap-6 py-24 px-6 text-center">
+                <span className="loader"></span>
+                <p className="text-xl font-bold text-muted-foreground">Cargando proyectos similares...</p>
+            </div>
+        );
+    }
+
+    return (
+        <section className="py-6 space-y-6">
+            <h3 className="text-xl font-bold text-center">Otros Proyectos de SIBRA</h3>
+            <div className="grid grid-cols-1 auto-rows-auto">
+                {data.projects.length === 0
+                    ? (
+                        <div className="relative flex items-center justify-center w-full aspect-video px-6 py-12">
+                            <p className="font-medium leading-tight text-center text-current/80">
+                                No hay proyectos similares disponibles
+                            </p>
+                        </div>
+                    )
+                    : similarProjects.map((project) => (
+                        <Link to={`/proyectos/${project.slug}`} className="relative z-0" key={project.id}>
+                            <div className="absolute inset-0 z-0">
+                                <img
+                                    src={"/static/uploads/" + project.main_img}
+                                    alt={"Imagen principal mostrando el proyecto " + project.name}
+                                    className="w-full h-full object-cover object-center brightness-75"
+                                />
+                            </div>
+                            <div className="relative z-10 flex items-center justify-center gap-3 bg-gray-700/50 py-28 px-6">
+                                <h4 className="text-lg font-semibold">{project.name}</h4>
+                            </div>
+                        </Link>
+                    ))}
+            </div>
+        </section>
+    );
+}
+
 function AmenitiesCarousel({ projectData }: { projectData: TProject }) {
+    if (!projectData.amenities || projectData.amenities.length === 0) {
+        return (
+            <div className="relative flex items-center justify-center w-full aspect-video px-6 py-12">
+                <p className="font-medium leading-tight text-center text-current/80">
+                    Aún no se han agregado las amenidades del proyecto.
+                </p>
+            </div>
+        );
+    }
+
     return (
         <Carousel opts={{
             loop: true,
@@ -220,6 +280,16 @@ function ProjectGallery({ projectData }: { projectData: TProject }) {
             clearTimeout(timerId);
         };
     }, []);
+
+    if (!projectData.gallery || projectData.gallery.length === 0) {
+        return (
+            <div className="relative flex items-center justify-center w-full aspect-video text-gray-800 bg-gray-200 px-6 py-12">
+                <p className="font-medium leading-tight text-center text-current/80">
+                    Aún no hay fotos de este proyecto
+                </p>
+            </div>
+        );
+    }
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

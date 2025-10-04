@@ -1,5 +1,5 @@
 import { queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
-import type { TProject, TProjectAssociate, TProjectAssociateDetailResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDetailResult, TProjectDocsResult, TProjectListingResult } from "./type";
+import type { TProjectAssociate, TProjectAssociateDetailResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDetailResult, TProjectDocsResult, TProjectListingResult } from "./type";
 
 export const ProjectQueryKeys = {
     all: () => ["projects"] as const,
