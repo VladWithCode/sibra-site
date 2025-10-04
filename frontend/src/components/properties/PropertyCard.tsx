@@ -26,7 +26,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
             )}
             <CardContent className="pt-0 px-4 sm:px-6 space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                    <CardTitle className="text-2xl lg:text-3xl text-current/80 font-[sans] font-bold">
+                    <CardTitle className="text-2xl lg:text-3xl text-current/80 font-secondary font-bold">
                         <Link to={`/propiedades/${property.contract}/${property.slug}`}>
                             {FormatMoney(property.price)}
                         </Link>
@@ -49,7 +49,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
                             </div>
                             <div className="flex items-center gap-1.5 text-xs sm:text-sm">
                                 <SqMtIcon className="size-4" />
-                                <span className="font-[sans]">
+                                <span className="font-secondary">
                                     {property.sqMt.toFixed(2)}mt<sup>2</sup>
                                 </span>
                             </div>

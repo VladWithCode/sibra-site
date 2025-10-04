@@ -5,7 +5,7 @@
 
 @theme {
     --font-sans: "Raleway", sans-serif;
-    --font-serif: "Lora", serif;
+    --font-secondary: "Montserrat", "Raleway", sans-serif;
 
     --color-sbr-blue: #2c47a0;
     --color-sbr-blue-dark: #083357;
