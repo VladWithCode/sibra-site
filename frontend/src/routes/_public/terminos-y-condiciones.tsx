@@ -14,7 +14,7 @@ function RouteComponent() {
     }, []);
 
     return (
-        <div className="px-6 py-12">
+        <main className="bg-gray-200 max-w-6xl space-y-4 px-6 xl:px-12 py-12 xl:py-24 mx-auto">
             <h1 className="text-3xl font-bold mb-6">Términos y Condiciones de Uso</h1>
             <div className="prose max-w-none space-y-8 ">
                 <p className="text-current/80">Estos términos de servicio rigen el uso de nuestros servicios inmobiliarios.</p>
@@ -88,6 +88,6 @@ function RouteComponent() {
                     </p>
                 </div>
             </div>
-        </div>
+        </main>
     );
 }
