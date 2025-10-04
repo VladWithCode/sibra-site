@@ -73,18 +73,18 @@ function RouteComponent() {
                 </div>
                 <PropertyCarousel properties={properties} />
             </section>
-            <section className="relative z-0 bg-gray-200 px-6 py-12 xl:py-32 space-y-6">
+            <section className="relative z-0 bg-gray-200 px-6 py-12 xl:py-32 2xl:py-56 space-y-6">
                 <h2 className="sr-only">Nuestros servicios</h2>
-                <div className="max-w-6xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-auto gap-6 xl:px-6 mx-auto">
+                <div className="max-w-8xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-auto gap-6 xl:px-6 mx-auto">
                     {
                         serviceList.map(service => (
                             <Card className="w-full max-w-sm mx-auto">
                                 <CardContent className="space-y-4">
                                     <div className="flex items-center justify-center w-40 aspect-square text-sbr-green rounded-full mx-auto">
-                                        <service.icon className="size-40" />
+                                        <service.icon className="size-40 xl:size-32" />
                                     </div>
-                                    <h3 className="text-2xl lg:text-3xl font-bold text-center">{service.title}</h3>
-                                    <p className="text-current/60 px-6">{service.description}</p>
+                                    <h3 className="text-2xl lg:text-3xl xl:text-2xl font-bold text-center">{service.title}</h3>
+                                    <p className="xl:text-sm text-current/60 px-6">{service.description}</p>
                                     <div className="flex justify-center">
                                         <SecondaryLinkButton label="Más Información" to={service.link} />
                                     </div>
