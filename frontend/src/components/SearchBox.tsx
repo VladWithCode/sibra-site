@@ -36,7 +36,7 @@ export function SearchBox({ className, placeholder, onSubmit, onChange }: Search
                 value={search}
                 onChange={_onChange}
                 placeholder={placeholder}
-                className="w-full pr-28 py-6"
+                className="w-full pr-28 py-6 md:text-base xl:text-lg"
             />
             <div className="absolute inset-y-0 right-0 flex items-center pr-1">
                 <Button

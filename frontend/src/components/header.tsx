@@ -109,7 +109,7 @@ export function Header() {
             ></div>
             <header
                 className={cn(
-                    "col-start-1 col-span-1 top-0 inset-x-0 -translate-y-24 z-10 bg-sbr-blue-dark/0 px-2 py-1.5 data-[inView=false]:sticky",
+                    "col-start-1 col-span-1 top-0 inset-x-0 -translate-y-24 z-10 bg-sbr-blue-dark/0 px-2 lg:px-8 py-1.5 lg:py-2 data-[inView=false]:sticky",
                     !headerFloating
                         ? "relative bg-top-normal data-[in-view=false]:bg-top-normal shadow-sm"
                         : "absolute data-[inView=false]:bg-top-floating",
@@ -124,7 +124,7 @@ export function Header() {
                     } as React.CSSProperties
                 }
             >
-                <div className="flex items-center justify-between gap-6 text-gray-50">
+                <div className="max-w-6xl flex items-center justify-between gap-6 text-gray-50 mx-auto">
                     <SidebarTrigger
                         className="lg:hidden stroke-current data-[header-floating=false]:text-gray-800 my-auto"
                         data-header-floating={headerFloating}
@@ -141,7 +141,7 @@ export function Header() {
                         <img
                             src="/sibra_logo_white_256.webp"
                             alt="Sibra logo"
-                            className="h-8 w-auto"
+                            className="h-8 lg:h-10 w-auto -mt-0.5"
                         />
                     </Link>
                 </div>

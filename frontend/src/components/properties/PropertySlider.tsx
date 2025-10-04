@@ -26,8 +26,8 @@ export function PropertyCarousel({ properties }: { properties: TProperty[] }) {
     }, [api]);
 
     return (
-        <Carousel className="space-y-3" setApi={setApi}>
-            <CarouselContent>
+        <Carousel className="flex flex-col gap-3" setApi={setApi}>
+            <CarouselContent className="items-start">
                 {properties.map((property) => (
                     <PropertyCarouselItem key={property.id}>
                         <PropertyCard
@@ -54,7 +54,7 @@ export function PropertyCarousel({ properties }: { properties: TProperty[] }) {
 
 export function PropertyCarouselItem({ children }: {} & PropsWithChildren) {
     return (
-        <CarouselItem className="not-first:pl-6 shrink-0 basis-full aspect-[2/1]">
+        <CarouselItem className="not-first:pl-6 shrink-0 basis-full aspect-[2/1] sm:basis-2/3 md:basis-1/2 lg:basis-1/3">
             {children}
         </CarouselItem>
     );

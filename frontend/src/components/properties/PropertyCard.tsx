@@ -26,7 +26,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
             )}
             <CardContent className="pt-0 px-4 sm:px-6 space-y-3">
                 <div className="flex items-center justify-between gap-3">
-                    <CardTitle className="text-2xl text-current/80 font-[sans] font-bold">
+                    <CardTitle className="text-2xl lg:text-3xl text-current/80 font-[sans] font-bold">
                         <Link to={`/propiedades/${property.contract}/${property.slug}`}>
                             {FormatMoney(property.price)}
                         </Link>
@@ -44,17 +44,17 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
                         className="space-y-0.5"
                     >
                         <div className="flex items-center gap-3 text-current/60 font-semibold tracking-wide">
-                            <div className="flex items-center gap-1 text-sm sm:text-base">
+                            <div className="flex items-center gap-1 text-sm sm:text-base capitalize">
                                 <span>{property.propertyType}</span>
                             </div>
-                            <div className="flex items-end gap-1.5 text-xs sm:text-sm">
+                            <div className="flex items-center gap-1.5 text-xs sm:text-sm">
                                 <SqMtIcon className="size-4" />
-                                <span className="font-serif">
+                                <span className="font-[sans]">
                                     {property.sqMt.toFixed(2)}mt<sup>2</sup>
                                 </span>
                             </div>
                         </div>
-                        <p className="line-clamp-2 font-medium">
+                        <p className="line-clamp-1 font-medium">
                             {property.address}, {property.nbHood}. C.P. {property.zip}
                         </p>
                     </Link>
