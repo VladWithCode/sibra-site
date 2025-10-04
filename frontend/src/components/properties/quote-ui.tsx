@@ -49,7 +49,7 @@ export function ContactFormDatePicker({
 
     return (
         <ScrollArea className="w-full mx-auto">
-            <div className="flex w-max gap-4 text-gray-800">
+            <div className="flex w-max gap-4 text-gray-800 p-1.5">
                 {dateItems.map((item) => (
                     <DatePickerItem
                         key={item.value.toISOString()}
@@ -83,8 +83,8 @@ export function DatePickerItem({
             variant="secondary"
             onClick={() => handleItemClick(item)}
             className={cn(
-                "size-24 flex flex-col items-center justify-center gap-0 text-current/95 text-center font-semibold border border-muted-foreground rounded-lg",
-                isActive && "border-2 border-sbr-blue-dark bg-sbr-blue-light/15 text-current",
+                "size-24 flex flex-col items-center justify-center gap-0 text-current/95 text-center font-semibold border border-muted-foreground rounded-lg cursor-pointer hover:bg-sbr-blue-light/40 hover:ring-2 hover:ring-sbr-blue-dark",
+                isActive && "border-2 border-sbr-blue-dark bg-sbr-blue-light/15 text-current hover:bg-sbr-blue-light/15",
             )}
         >
             <p className="text-xs uppercase text-current/80">{item.dayName}</p>
@@ -146,7 +146,7 @@ function QuoteTypeItem({
         <Button
             type="button"
             variant="default"
-            className="flex-1 border-2 border-gray-300 text-secondary-foreground bg-sbr-blue/0 shadow-none data-[active=true]:border-sbr-blue data-[active=true]:bg-sbr-blue/15 data-[active=true]:font-bold"
+            className="flex-1 border-2 border-gray-300 text-secondary-foreground bg-sbr-blue/0 shadow-none hover:bg-sbr-blue-light/40 hover:font-semibold data-[active=true]:border-sbr-blue data-[active=true]:bg-sbr-blue/15 data-[active=true]:font-bold cursor-pointer"
             onClick={handleClick}
             data-active={active}
         >

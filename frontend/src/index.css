@@ -54,6 +54,10 @@
         cursor: default;
         opacity: 0.9;
     }
+
+    button:not(:disabled):hover {
+        cursor: pointer;
+    }
 }
 
 @layer utilities {

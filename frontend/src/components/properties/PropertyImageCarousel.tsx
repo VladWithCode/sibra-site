@@ -4,14 +4,14 @@ import type { PropsWithChildren } from "react";
 
 export function PropertyImageCarousel({ property }: { property: TProperty }) {
     return (
-        <Carousel>
-            <CarouselContent className="aspect-[3/2]">
+        <Carousel className="w-full h-full [&>*]:w-full [&>*]:h-full">
+            <CarouselContent className="w-full h-full ml-0">
                 {property.imgs.map((img) => (
                     <PropertyImageCarouselItem key={img}>
                         <img
                             src={"/static/properties/" + property.id + "/" + img}
                             alt={`Foto de la propiedad ${property.address}, ${property.nbHood}. C.P. ${property.zip}. ${property.city}, ${property.state}`}
-                            className="w-full h-full object-cover object-center"
+                            className="pl-0 w-full max-h-full object-cover object-center"
                         />
                     </PropertyImageCarouselItem>
                 ))}
@@ -21,5 +21,5 @@ export function PropertyImageCarousel({ property }: { property: TProperty }) {
 }
 
 export function PropertyImageCarouselItem({ children }: {} & PropsWithChildren) {
-    return <CarouselItem className="grow shrink-0 basis-full h-full">{children}</CarouselItem>;
+    return <CarouselItem className="grow shrink-0 basis-full h-full pl-0">{children}</CarouselItem>;
 }

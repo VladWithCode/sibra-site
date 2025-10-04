@@ -148,7 +148,7 @@ export function ContactForm({
     return (
         <Form {...form}>
             <form
-                className="w-full space-y-6 overflow-hidden"
+                className="w-full space-y-6 overflow-hidden px-1"
                 onSubmit={form.handleSubmit(onQuoteSubmit, onInvalidSubmit)}
                 ref={formRef as unknown as React.RefObject<HTMLFormElement>}
             >

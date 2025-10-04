@@ -30,8 +30,8 @@ export function LikeButton({ className, propData }: { className?: string, propDa
             onClick={handleLike}
         >
             <Heart className={cn(
-                "transition-[color,_fill,_height,_width] duration-500 stroke-[2.5]",
-                liked ? "text-sbr-green! fill-current size-5 " : ""
+                "lg:size-5 transition-[color,_fill,_scale] duration-500 stroke-[2.5]",
+                liked ? "text-sbr-green! fill-current scale-125" : ""
             )} />
         </Button>
     );
