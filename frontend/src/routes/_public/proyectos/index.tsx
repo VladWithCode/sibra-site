@@ -1,13 +1,22 @@
 import { ProjectCard } from '@/components/projects/ProjectCard';
+import { getProjectsOpts } from '@/queries/projects';
+import { queryClient } from '@/queries/queryClient';
 import { useUIStore } from '@/stores/uiStore';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_public/proyectos/')({
     component: RouteComponent,
+    loader: async () => {
+        await queryClient.ensureQueryData(getProjectsOpts)
+    },
 })
 
 function RouteComponent() {
+    const { data } = useSuspenseQuery(getProjectsOpts);
+    const projects = data.projects;
+
     const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
     useEffect(() => {
         setHeaderFloating(true);
@@ -30,7 +39,7 @@ function RouteComponent() {
                 </div>
             </section>
             <section className="relative z-0 grid grid-cols-[repeat(auto-fill,_minmax(300px,_1fr))] gap-6 px-4 py-12">
-                {projectListing.map((project) => (
+                {projects.map((project) => (
                     <ProjectCard key={project.id} project={project} />
                 ))}
             </section>
@@ -38,46 +47,3 @@ function RouteComponent() {
         </main>
     );
 }
-
-const projectListing = [
-    {
-        id: 1,
-        name: "Col. Emperadores",
-        description: "Desarrollo SIBRA",
-        slug: "colonia-emperadores",
-        img: "/colonia-emperadores.webp",
-        imgAlt: "Fotografía del Desarrollo Colonia Emperadores",
-    },
-    {
-        id: 2,
-        name: "Circuito Emperador",
-        description: "Desarrollo SIBRA",
-        slug: "circuito-emperador",
-        img: "/circuito-emperador.webp",
-        imgAlt: "Fotografía del Desarrollo Circuito Emperador",
-    },
-    {
-        id: 3,
-        name: "Circuito Emperador II",
-        description: "Desarrollo SIBRA",
-        slug: "circuito-emperador-ii",
-        img: "/circuito-emperador-ii.webp",
-        imgAlt: "Fotografía del Desarrollo Circuito Emperador II",
-    },
-    {
-        id: 4,
-        name: "Villa Emperadores",
-        description: "Desarrollo SIBRA",
-        slug: "villa-emperadores",
-        img: "/villa-emperadores.webp",
-        imgAlt: "Fotografía del Desarrollo Villa Emperadores",
-    },
-    {
-        id: 5,
-        name: "Conquistadores",
-        description: "Desarrollo SIBRA",
-        slug: "conquistadores",
-        img: "/conquistadores.webp",
-        imgAlt: "Fotografía del Desarrollo Conquistadores SIBRA",
-    },
-]
