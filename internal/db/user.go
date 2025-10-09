@@ -120,7 +120,20 @@ func GetUserById(id string) (*User, error) {
 
 	err = conn.QueryRow(
 		ctx,
-		"SELECT * FROM users WHERE id = $1",
+		`SELECT (
+			id,
+			name,
+			lastname,
+			password,
+			username,
+			role,
+			email,
+			phone,
+			email_verified,
+			phone_verified,
+			golden_boy,
+			img
+		)FROM users WHERE id = $1`,
 		id,
 	).Scan(
 		&user.Id,
@@ -158,7 +171,20 @@ func GetUserByUsername(username string) (*User, error) {
 
 	err = conn.QueryRow(
 		ctx,
-		"SELECT * FROM users WHERE username = $1",
+		`SELECT (
+			id,
+			name,
+			lastname,
+			password,
+			username,
+			role,
+			email,
+			phone,
+			email_verified,
+			phone_verified,
+			golden_boy,
+			img
+		) FROM users WHERE username = $1`,
 		username,
 	).Scan(
 		&user.Id,
