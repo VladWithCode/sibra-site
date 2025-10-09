@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"strconv"
@@ -108,7 +109,7 @@ type Property struct {
 	Baths             int            `json:"baths" db:"baths"`
 	SqMt              float64        `json:"sqMt" db:"square_mt"`
 	LotSize           float64        `json:"lotSize" db:"lot_size"`
-	ListingDate       time.Time      `json:"listingDate" db:"listing_date"`
+	ListingDate       time.Time      `json:"listingDate,omitzero" db:"listing_date"`
 	YearBuilt         int            `json:"yearBuilt" db:"year_built"`
 	Status            PropertyStatus `json:"status" db:"status"`
 	Coords            *Point         `json:"coords" db:"earth_coords"`
@@ -116,7 +117,7 @@ type Property struct {
 	Lat               float64        `json:"lat" db:"lat"`
 	Lon               float64        `json:"lon" db:"lon"`
 	Featured          bool           `json:"featured" db:"featured"`
-	FeaturedExpiresAt time.Time      `json:"featuredExpiresAt" db:"featured_expires_at"`
+	FeaturedExpiresAt time.Time      `json:"featuredExpiresAt,omitzero" db:"featured_expires_at"`
 	MainImg           string         `json:"mainImg" db:"main_img"`
 	Images            []string       `json:"imgs" db:"imgs"`
 	Agent             string         `json:"agent" db:"agent"`
@@ -260,6 +261,11 @@ func NewPropertyFilterFromQuery(query *url.Values) *PropertyFilter {
 		filter.MaxYearBuilt = &maxYearBuiltInt
 	}
 	return filter
+}
+
+type PropertyListingResult struct {
+	Properties []*Property
+	Pagination *Pagination
 }
 
 type InvalidPropertyFields map[string]bool
@@ -829,9 +835,11 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 
 	row := conn.QueryRow(ctx, `
 		SELECT
-			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
-			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
-			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
+			p.id, p.address, p.description, p.city, p.state, p.zip, p.country,
+            p.price, p.property_type, p.beds, p.baths, p.square_mt, p.lot_size,
+            p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
+			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at,
+            p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
 			u.fullname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
@@ -840,7 +848,7 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		WHERE p.id = $1
 	`, propId)
 
-	var featsJSON sql.NullString
+	var featsJSON []byte
 	var phone sql.NullString
 	var img sql.NullString
 	var featuredExpiresAt sql.NullTime
@@ -889,8 +897,11 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		return nil, err
 	}
 
-	if featsJSON.Valid {
-		_ = json.Unmarshal([]byte(featsJSON.String), &property.Features)
+	if featsJSON != nil {
+		err = json.Unmarshal(featsJSON, &property.Features)
+		if err != nil {
+			log.Printf("failed to unmarshal features for property with id %s: %v\n", propId, err)
+		}
 	}
 
 	if listingDate.Valid {

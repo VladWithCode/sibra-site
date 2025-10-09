@@ -12,7 +12,7 @@ func NewRouter() http.Handler {
 	router := NewCustomServeMux()
 
 	// Api router
-	// RegisterAdminRoutes(router)
+	RegisterAdminRoutes(router)
 	RegisterPropertyRoutes(router)
 	RegisterPriceMapRoutes(router)
 	RegisterUserRoutes(router)

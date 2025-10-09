@@ -24,6 +24,7 @@ import (
 func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/propiedades", FindFilteredProperties)
 	router.HandleFunc("GET /api/propiedades/destacadas", FindFeaturedProperties)
+	router.HandleFunc("GET /api/propiedades/panel/{id}", auth.ValidateAuthMiddleware(FindSingleProperty))
 	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
 	router.HandleFunc("POST /api/property", auth.ValidateAuthMiddleware(CreateProperty))
@@ -278,8 +279,20 @@ func FindFilteredProperties(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	pagination, err := db.GetPaginationData(filter, perPage, page)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding pagination data: %v\n", err)
+		return
+	}
+
+	time.Sleep(time.Second * 1)
+
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"properties": props,
+		"pagination": pagination,
 	})
 }
 
@@ -302,7 +315,11 @@ func FindSingleProperty(w http.ResponseWriter, r *http.Request) {
 
 	prop, err := db.FindPropertyById(ctx, propId)
 	if err != nil {
-		respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{})
 		log.Printf("Error while finding property: %v\n", err)
 		return
 	}

@@ -148,7 +148,7 @@ func PopulateAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tkCookie, err := r.Cookie("auth_token")
 		if err != nil {
-			RejectUnauthorized(w, r, http.StatusUnauthorized, "No se encontro token")
+			next(w, r)
 			return
 		}
 		authData, err := GetAuthDataFromCookie(tkCookie)

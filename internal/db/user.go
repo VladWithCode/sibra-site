@@ -22,7 +22,7 @@ const (
 type User struct {
 	Id            string         `db:"id" json:"id"`
 	Fullname      string         `db:"name" json:"name"`
-	Password      string         `db:"password" json:"-"`
+	Password      string         `db:"password" json:"password"`
 	Username      string         `db:"username" json:"username"`
 	Role          UserRole       `db:"role" json:"role"`
 	Email         string         `db:"email" json:"email"`
@@ -36,17 +36,11 @@ type User struct {
 }
 
 func (u *User) ValidatePass(pw string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pw))
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(pw))
 }
 
 func (u *User) HashPass(pw string) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(pw), 12)
 
 	if err != nil {
 		return err
@@ -107,6 +101,7 @@ func GetUserById(id string) (*User, error) {
 	defer cancel()
 
 	var user User
+	var img sql.NullString
 
 	err = conn.QueryRow(
 		ctx,
@@ -126,11 +121,17 @@ func GetUserById(id string) (*User, error) {
 		&user.Phone,
 		&user.EmailVerified,
 		&user.PhoneVerified,
-		&user.Img,
+		&img,
+		&user.CreatedAt,
+		&user.UpdatedAt,
 	)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if img.Valid {
+		user.Img = img.String
 	}
 
 	return &user, nil
@@ -148,6 +149,9 @@ func GetUserByUsername(username string) (*User, error) {
 
 	var user User
 
+	var (
+		img sql.NullString
+	)
 	err = conn.QueryRow(
 		ctx,
 		`SELECT
@@ -166,13 +170,17 @@ func GetUserByUsername(username string) (*User, error) {
 		&user.Phone,
 		&user.EmailVerified,
 		&user.PhoneVerified,
-		&user.Img,
+		&img,
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if img.Valid {
+		user.Img = img.String
 	}
 
 	return &user, nil

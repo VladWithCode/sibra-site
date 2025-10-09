@@ -11,6 +11,10 @@ export type TPagination = {
     hasPrev: boolean;
 };
 
+export type TPropertyStatus = "borrador" | "archivada" | "publicada" | "en_revision" | "vendida" | "no_disponible";
+export type TPropertyType = "casa" | "apartamento" | "terreno";
+export type TPropertyContract = "venta" | "renta";
+
 export type TProperty = {
     id: string;
     address: string;
@@ -21,15 +25,15 @@ export type TProperty = {
     nbHood: string;
     country: string;
     price: number;
-    propertyType: string;
-    contract: string;
+    propertyType: TPropertyType;
+    contract: TPropertyContract;
     beds: number;
     baths: number;
     sqMt: number;
     lotSize: number;
     listingDate: string;
     yearBuilt: number;
-    status: string;
+    status: TPropertyStatus;
     coords: string;
     features: string;
     lat: number;
@@ -40,7 +44,11 @@ export type TProperty = {
     imgs: string[];
     agent: string;
     slug: string;
-    agentData: string;
+    agentData: {
+        name: string;
+        phone: string;
+        img: string;
+    };
 };
 
 export type TPropertyFilters = Partial<TProperty> & {
@@ -184,3 +192,35 @@ export type TProjectCheckAccessData = {
     lotNum: string;
     appleNum: string;
 }
+
+// Users
+export type TUserRole = "admin" | "editor" | "user";
+export type TUser = {
+    id: string;
+    name: string;
+    username: string;
+    role: TUserRole;
+    email: string;
+    phone: string;
+    img: string;
+}
+
+export type TUserDetail = TUser & {
+    emailVerified: boolean;
+    phoneVerified: boolean;
+
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export type TLogin = {
+    username: string;
+    password: string;
+}
+
+export type TUserProfileResult = {
+    success: boolean;
+    user: TUser;
+}
+
+export type TLoginResult = TUserProfileResult

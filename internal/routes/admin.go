@@ -12,8 +12,8 @@ import (
 
 func RegisterAdminRoutes(router *customServeMux) {
 	// Signin
-	router.HandleFunc("POST /api/admin/sign-in", auth.PopulateAuthMiddleware(AdminSignIn))
-	router.HandleFunc("GET /api/admin/sign-out", auth.PopulateAuthMiddleware(AdminSignOut))
+	router.HandleFunc("POST /api/auth/login", auth.PopulateAuthMiddleware(AdminSignIn))
+	router.HandleFunc("GET /api/auth/logout", auth.PopulateAuthMiddleware(AdminSignOut))
 
 	router.HandleFunc("GET /api/perfil", auth.ValidateAuthMiddleware(GetUserProfile))
 }
@@ -43,8 +43,9 @@ func AdminSignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if auth.UserHasAccess(user, auth.AccessLevelEditor) {
+	if !auth.UserHasAccess(user, auth.AccessLevelEditor) {
 		respondWithError(w, http.StatusForbidden, ErrorParams{ErrorMessage: "No tienes acceso a esta página"})
+		return
 	}
 
 	t, err := auth.CreateToken(user)
@@ -59,7 +60,7 @@ func AdminSignIn(w http.ResponseWriter, r *http.Request) {
 	jwtCookie := &http.Cookie{
 		Name:     "auth_token",
 		Value:    t,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(auth.AuthTokenDuration),
 		HttpOnly: true,
 		//Secure:   true,
 		SameSite: http.SameSiteStrictMode,

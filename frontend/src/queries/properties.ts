@@ -33,6 +33,7 @@ export const PropertyQueryKeys = {
         [...PropertyQueryKeys.detail(), "byId", { id, contract }] as const,
     bySlug: (slug: string, contract: string) =>
         [...PropertyQueryKeys.detail(), "bySlug", { slug, contract }] as const,
+    single: (id: string) => [...PropertyQueryKeys.all(), "single", { id }] as const,
 } as const;
 
 // Type helpers for queryFns to recognize the queryKey type
@@ -43,8 +44,15 @@ export type QKPropertyByContract = ReturnType<typeof PropertyQueryKeys.byContrac
 export type QKPropertiesNearby = ReturnType<typeof PropertyQueryKeys.nearby>;
 export type QKPropertyById = ReturnType<typeof PropertyQueryKeys.byId>;
 export type QKPropertyBySlug = ReturnType<typeof PropertyQueryKeys.bySlug>;
+export type QKPropertySingle = ReturnType<typeof PropertyQueryKeys.single>;
+
 
 export const getPropertiesOpts = queryOptions({
+    queryKey: PropertyQueryKeys.listing(),
+    queryFn: getProperties,
+});
+
+export const getFeaturedPropertiesOpts = queryOptions({
     queryKey: PropertyQueryKeys.featured(),
     queryFn: getFeaturedProperties,
 });
@@ -67,6 +75,12 @@ export const getPropertyByIdOpts = (id: string, contract: string) =>
         queryFn: getPropertyById,
     });
 
+export const getSinglePropertyOpts = (id: string) =>
+    queryOptions({
+        queryKey: PropertyQueryKeys.single(id),
+        queryFn: getSingleProperty,
+    });
+
 export const getPropertyBySlugOpts = (slug: string, contract: string) =>
     queryOptions({
         queryKey: PropertyQueryKeys.bySlug(slug, contract),
@@ -75,6 +89,31 @@ export const getPropertyBySlugOpts = (slug: string, contract: string) =>
 
 export const ErrFailedToFetchProperties = new Error("Error al obtener las propiedades"),
     ErrFailedToFetchPropertyDetail = new Error("Error al obtener detalles de la propiedad");
+
+
+export async function getProperties(): Promise<TPropertyListingResult> {
+    const response = await fetch("/api/propiedades");
+    const data = await response.json();
+
+    if (response.status === 404) {
+        return {
+            properties: [],
+            pagination: {
+                total: 0,
+                page: 1,
+                perPage: 10,
+                hasNext: false,
+                hasPrev: false,
+            }
+        }
+    }
+
+    if (!response.ok) {
+        throw new Error(data.error || "Error al obtener las propiedades");
+    }
+
+    return data;
+}
 
 export async function getFeaturedProperties(): Promise<TProperty[]> {
     const response = await fetch("/api/propiedades/destacadas");
@@ -127,6 +166,22 @@ export async function getPropertyBySlug({
     if (!response.ok) throw new Error("Error al obtener la propiedad");
 
     const data = await response.json();
+    return data;
+}
+
+export async function getSingleProperty({
+    queryKey,
+}: QueryFunctionContext<QKPropertySingle>): Promise<TPropertyDetailResult> {
+    const { id } = queryKey[2];
+    const response = await fetch(`/api/propiedades/panel/${id}`);
+    const data = await response.json();
+    if (response.status === 404) {
+        throw new Error("No se encontró la propiedad");
+    }
+    if (!response.ok) {
+        throw new Error("Error al obtener la propiedad");
+    }
+
     return data;
 }
 

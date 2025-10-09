@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { SecondaryLinkButton } from "@/components/sibra_buttons";
 import { HomeIcon, LoanIcon, ProjectsIcon, SellHomeIcon } from "@/components/icons/icons";
-import { getPropertiesOpts } from "@/queries/properties";
+import { getFeaturedPropertiesOpts } from "@/queries/properties";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { PropertyCarousel } from "@/components/properties/PropertySlider";
 import { useUIStore } from "@/stores/uiStore";
@@ -13,13 +13,13 @@ import { useEffect } from "react";
 export const Route = createFileRoute("/_public/")({
     component: RouteComponent,
     loader: async ({ context }) => {
-        await context.queryClient.ensureQueryData(getPropertiesOpts);
+        await context.queryClient.ensureQueryData(getFeaturedPropertiesOpts);
     },
 });
 
 function RouteComponent() {
     const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
-    const { data: properties } = useSuspenseQuery(getPropertiesOpts);
+    const { data: properties } = useSuspenseQuery(getFeaturedPropertiesOpts);
     const onSearch = (search: string) => {
         console.log(search);
     };
