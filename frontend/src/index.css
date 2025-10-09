@@ -73,11 +73,11 @@
         position: absolute;
         inset: 0px;
         border-radius: 50%;
-        border: 5px solid var(--color-outer, var(--color-sbr-blue-light));
+        border: 0.3em solid var(--color-outer, var(--color-sbr-blue-light));
         animation: prixClipFix 2s linear infinite ;
       }
       .loader::after{
-        inset: 8px;
+        inset: 0.6em;
         transform: rotate3d(90, 90, 0, 180deg );
         border-color: var(--color-inner, var(--color-sbr-green-dark));
       }

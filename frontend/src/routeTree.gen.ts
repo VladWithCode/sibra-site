@@ -11,7 +11,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PanelRouteRouteImport } from './routes/panel/route'
 import { Route as PublicRouteRouteImport } from './routes/_public/route'
+import { Route as PanelIndexRouteImport } from './routes/panel/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
 import { Route as PublicTerrenosRouteImport } from './routes/_public/terrenos'
 import { Route as PublicTerminosYCondicionesRouteImport } from './routes/_public/terminos-y-condiciones'
@@ -22,7 +24,11 @@ import { Route as PublicInfonavitRouteImport } from './routes/_public/infonavit'
 import { Route as PublicFavoritosRouteImport } from './routes/_public/favoritos'
 import { Route as PublicContactoRouteImport } from './routes/_public/contacto'
 import { Route as PublicProyectosRouteRouteImport } from './routes/_public/proyectos/route'
+import { Route as PanelProyectosIndexRouteImport } from './routes/panel/proyectos/index'
+import { Route as PanelPropiedadesIndexRouteImport } from './routes/panel/propiedades/index'
+import { Route as PanelCitasIndexRouteImport } from './routes/panel/citas/index'
 import { Route as PublicProyectosIndexRouteImport } from './routes/_public/proyectos/index'
+import { Route as PanelPropiedadesIdRouteImport } from './routes/panel/propiedades/$id'
 import { Route as PublicProyectosProjectRouteImport } from './routes/_public/proyectos/$project'
 import { Route as PublicPropiedadesListingRouteRouteImport } from './routes/_public/propiedades/_listing/route'
 import { Route as PublicPropiedadesDetailRouteRouteImport } from './routes/_public/propiedades/_detail/route'
@@ -32,6 +38,11 @@ import { Route as PublicPropiedadesDetailContractSlugRouteImport } from './route
 
 const PublicPropiedadesRouteImport = createFileRoute('/_public/propiedades')()
 
+const PanelRouteRoute = PanelRouteRouteImport.update({
+  id: '/panel',
+  path: '/panel',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PublicRouteRoute = PublicRouteRouteImport.update({
   id: '/_public',
   getParentRoute: () => rootRouteImport,
@@ -40,6 +51,11 @@ const PublicPropiedadesRoute = PublicPropiedadesRouteImport.update({
   id: '/propiedades',
   path: '/propiedades',
   getParentRoute: () => PublicRouteRoute,
+} as any)
+const PanelIndexRoute = PanelIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PanelRouteRoute,
 } as any)
 const PublicIndexRoute = PublicIndexRouteImport.update({
   id: '/',
@@ -93,10 +109,30 @@ const PublicProyectosRouteRoute = PublicProyectosRouteRouteImport.update({
   path: '/proyectos',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PanelProyectosIndexRoute = PanelProyectosIndexRouteImport.update({
+  id: '/proyectos/',
+  path: '/proyectos/',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
+const PanelPropiedadesIndexRoute = PanelPropiedadesIndexRouteImport.update({
+  id: '/propiedades/',
+  path: '/propiedades/',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
+const PanelCitasIndexRoute = PanelCitasIndexRouteImport.update({
+  id: '/citas/',
+  path: '/citas/',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
 const PublicProyectosIndexRoute = PublicProyectosIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PublicProyectosRouteRoute,
+} as any)
+const PanelPropiedadesIdRoute = PanelPropiedadesIdRouteImport.update({
+  id: '/propiedades/$id',
+  path: '/propiedades/$id',
+  getParentRoute: () => PanelRouteRoute,
 } as any)
 const PublicProyectosProjectRoute = PublicProyectosProjectRouteImport.update({
   id: '/$project',
@@ -133,6 +169,7 @@ const PublicPropiedadesDetailContractSlugRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/panel': typeof PanelRouteRouteWithChildren
   '/proyectos': typeof PublicProyectosRouteRouteWithChildren
   '/contacto': typeof PublicContactoRoute
   '/favoritos': typeof PublicFavoritosRoute
@@ -143,9 +180,14 @@ export interface FileRoutesByFullPath {
   '/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
   '/terrenos': typeof PublicTerrenosRoute
   '/': typeof PublicIndexRoute
+  '/panel/': typeof PanelIndexRoute
   '/propiedades': typeof PublicPropiedadesListingRouteRouteWithChildren
   '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/proyectos/': typeof PublicProyectosIndexRoute
+  '/panel/citas': typeof PanelCitasIndexRoute
+  '/panel/propiedades': typeof PanelPropiedadesIndexRoute
+  '/panel/proyectos': typeof PanelProyectosIndexRoute
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/propiedades/': typeof PublicPropiedadesListingIndexRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
@@ -160,15 +202,21 @@ export interface FileRoutesByTo {
   '/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
   '/terrenos': typeof PublicTerrenosRoute
   '/': typeof PublicIndexRoute
+  '/panel': typeof PanelIndexRoute
   '/propiedades': typeof PublicPropiedadesListingIndexRoute
   '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/proyectos': typeof PublicProyectosIndexRoute
+  '/panel/citas': typeof PanelCitasIndexRoute
+  '/panel/propiedades': typeof PanelPropiedadesIndexRoute
+  '/panel/proyectos': typeof PanelProyectosIndexRoute
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_public': typeof PublicRouteRouteWithChildren
+  '/panel': typeof PanelRouteRouteWithChildren
   '/_public/proyectos': typeof PublicProyectosRouteRouteWithChildren
   '/_public/contacto': typeof PublicContactoRoute
   '/_public/favoritos': typeof PublicFavoritosRoute
@@ -179,11 +227,16 @@ export interface FileRoutesById {
   '/_public/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
   '/_public/terrenos': typeof PublicTerrenosRoute
   '/_public/': typeof PublicIndexRoute
+  '/panel/': typeof PanelIndexRoute
   '/_public/propiedades': typeof PublicPropiedadesRouteWithChildren
   '/_public/propiedades/_detail': typeof PublicPropiedadesDetailRouteRouteWithChildren
   '/_public/propiedades/_listing': typeof PublicPropiedadesListingRouteRouteWithChildren
   '/_public/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/_public/proyectos/': typeof PublicProyectosIndexRoute
+  '/panel/citas/': typeof PanelCitasIndexRoute
+  '/panel/propiedades/': typeof PanelPropiedadesIndexRoute
+  '/panel/proyectos/': typeof PanelProyectosIndexRoute
   '/_public/propiedades/_listing/$contract': typeof PublicPropiedadesListingContractRoute
   '/_public/propiedades/_listing/': typeof PublicPropiedadesListingIndexRoute
   '/_public/propiedades/_detail/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
@@ -191,6 +244,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/panel'
     | '/proyectos'
     | '/contacto'
     | '/favoritos'
@@ -201,9 +255,14 @@ export interface FileRouteTypes {
     | '/terminos-y-condiciones'
     | '/terrenos'
     | '/'
+    | '/panel/'
     | '/propiedades'
     | '/proyectos/$project'
+    | '/panel/propiedades/$id'
     | '/proyectos/'
+    | '/panel/citas'
+    | '/panel/propiedades'
+    | '/panel/proyectos'
     | '/propiedades/$contract'
     | '/propiedades/'
     | '/propiedades/$contract/$slug'
@@ -218,14 +277,20 @@ export interface FileRouteTypes {
     | '/terminos-y-condiciones'
     | '/terrenos'
     | '/'
+    | '/panel'
     | '/propiedades'
     | '/proyectos/$project'
+    | '/panel/propiedades/$id'
     | '/proyectos'
+    | '/panel/citas'
+    | '/panel/propiedades'
+    | '/panel/proyectos'
     | '/propiedades/$contract'
     | '/propiedades/$contract/$slug'
   id:
     | '__root__'
     | '/_public'
+    | '/panel'
     | '/_public/proyectos'
     | '/_public/contacto'
     | '/_public/favoritos'
@@ -236,11 +301,16 @@ export interface FileRouteTypes {
     | '/_public/terminos-y-condiciones'
     | '/_public/terrenos'
     | '/_public/'
+    | '/panel/'
     | '/_public/propiedades'
     | '/_public/propiedades/_detail'
     | '/_public/propiedades/_listing'
     | '/_public/proyectos/$project'
+    | '/panel/propiedades/$id'
     | '/_public/proyectos/'
+    | '/panel/citas/'
+    | '/panel/propiedades/'
+    | '/panel/proyectos/'
     | '/_public/propiedades/_listing/$contract'
     | '/_public/propiedades/_listing/'
     | '/_public/propiedades/_detail/$contract/$slug'
@@ -248,10 +318,18 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
+  PanelRouteRoute: typeof PanelRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/panel': {
+      id: '/panel'
+      path: '/panel'
+      fullPath: '/panel'
+      preLoaderRoute: typeof PanelRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_public': {
       id: '/_public'
       path: ''
@@ -265,6 +343,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/propiedades'
       preLoaderRoute: typeof PublicPropiedadesRouteImport
       parentRoute: typeof PublicRouteRoute
+    }
+    '/panel/': {
+      id: '/panel/'
+      path: '/'
+      fullPath: '/panel/'
+      preLoaderRoute: typeof PanelIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
     }
     '/_public/': {
       id: '/_public/'
@@ -336,12 +421,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicProyectosRouteRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/panel/proyectos/': {
+      id: '/panel/proyectos/'
+      path: '/proyectos'
+      fullPath: '/panel/proyectos'
+      preLoaderRoute: typeof PanelProyectosIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
+    '/panel/propiedades/': {
+      id: '/panel/propiedades/'
+      path: '/propiedades'
+      fullPath: '/panel/propiedades'
+      preLoaderRoute: typeof PanelPropiedadesIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
+    '/panel/citas/': {
+      id: '/panel/citas/'
+      path: '/citas'
+      fullPath: '/panel/citas'
+      preLoaderRoute: typeof PanelCitasIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
     '/_public/proyectos/': {
       id: '/_public/proyectos/'
       path: '/'
       fullPath: '/proyectos/'
       preLoaderRoute: typeof PublicProyectosIndexRouteImport
       parentRoute: typeof PublicProyectosRouteRoute
+    }
+    '/panel/propiedades/$id': {
+      id: '/panel/propiedades/$id'
+      path: '/propiedades/$id'
+      fullPath: '/panel/propiedades/$id'
+      preLoaderRoute: typeof PanelPropiedadesIdRouteImport
+      parentRoute: typeof PanelRouteRoute
     }
     '/_public/proyectos/$project': {
       id: '/_public/proyectos/$project'
@@ -480,8 +593,29 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
   PublicRouteRouteChildren,
 )
 
+interface PanelRouteRouteChildren {
+  PanelIndexRoute: typeof PanelIndexRoute
+  PanelPropiedadesIdRoute: typeof PanelPropiedadesIdRoute
+  PanelCitasIndexRoute: typeof PanelCitasIndexRoute
+  PanelPropiedadesIndexRoute: typeof PanelPropiedadesIndexRoute
+  PanelProyectosIndexRoute: typeof PanelProyectosIndexRoute
+}
+
+const PanelRouteRouteChildren: PanelRouteRouteChildren = {
+  PanelIndexRoute: PanelIndexRoute,
+  PanelPropiedadesIdRoute: PanelPropiedadesIdRoute,
+  PanelCitasIndexRoute: PanelCitasIndexRoute,
+  PanelPropiedadesIndexRoute: PanelPropiedadesIndexRoute,
+  PanelProyectosIndexRoute: PanelProyectosIndexRoute,
+}
+
+const PanelRouteRouteWithChildren = PanelRouteRoute._addFileChildren(
+  PanelRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   PublicRouteRoute: PublicRouteRouteWithChildren,
+  PanelRouteRoute: PanelRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -438,7 +438,7 @@ export function HeaderNavigationMenu() {
         <NavigationMenu viewport={false}>
             <NavigationMenuList className="bg-transparent">
                 {desktopNavigationItems.map((item) => (
-                    <NavigationMenuItem>
+                    <NavigationMenuItem key={item.label}>
                         <HeaderNavigationMenuLink item={item} headerFloating={headerFloating} />
                     </NavigationMenuItem>
                 ))}
