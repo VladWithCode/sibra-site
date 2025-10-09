@@ -1270,7 +1270,7 @@ func UpdatePropForm(property *db.Property, invalidFields *templates.InvalidField
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 127, "<div class=\"flex justify-end pt-2\"><button class=\"basis-1/3 px-4 py-2 rounded bg-dark/80 text-stone-50\" type=\"submit\">Enviar</button></div></form>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 127, "<div class=\"flex justify-end pt-2\"><button class=\"basis-1/3 px-4 py-2 rounded bg-slate-800 text-stone-50\" type=\"submit\">Enviar</button></div></form>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

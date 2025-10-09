@@ -173,8 +173,7 @@ func GetUserByUsername(username string) (*User, error) {
 		ctx,
 		`SELECT
 			id,
-			name,
-			lastname,
+			fullname,
 			password,
 			username,
 			role,
@@ -182,14 +181,12 @@ func GetUserByUsername(username string) (*User, error) {
 			phone,
 			email_verified,
 			phone_verified,
-			golden_boy,
 			img
 		FROM users WHERE username = $1`,
 		username,
 	).Scan(
 		&user.Id,
 		&user.Name,
-		&user.Lastname,
 		&user.Password,
 		&user.Username,
 		&user.Role,
@@ -197,7 +194,6 @@ func GetUserByUsername(username string) (*User, error) {
 		&user.Phone,
 		&user.EmailVerified,
 		&user.PhoneVerified,
-		&user.GoldenBoy,
 		&user.Img,
 	)
 

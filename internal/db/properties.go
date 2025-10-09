@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/wkb"
 	"github.com/vladwithcode/sibra-site/internal"
@@ -228,61 +229,62 @@ func UpdateProperty(property *Property) error {
 		return err
 	}
 
+	args := pgx.NamedArgs{
+		"id":                  property.Id,
+		"address":             property.Address,
+		"description":         property.Description,
+		"city":                property.City,
+		"state":               property.State,
+		"zip":                 property.Zip,
+		"nb_hood":             property.NbHood,
+		"country":             property.Country,
+		"price":               property.Price,
+		"property_type":       property.PropType,
+		"contract":            property.Contract,
+		"beds":                property.Beds,
+		"baths":               property.Baths,
+		"square_mt":           property.SqMt,
+		"lot_size":            property.LotSize,
+		"listing_date":        property.ListingDate,
+		"year_built":          property.YearBuilt,
+		"status":              property.Status,
+		"features":            wkbCoords,
+		"lat":                 property.Lat,
+		"lon":                 property.Lon,
+		"featured":            property.Featured,
+		"featured_expires_at": property.FeaturedExpiresAt,
+		"agent":               property.Agent,
+		"slug":                property.Slug,
+	}
 	_, err = conn.Exec(
 		ctx,
 		`UPDATE properties SET 
-		address = $2,
-		description = $3,
-		city = $4,
-		state = $5,
-		zip = $6,
-		nb_hood = $7,
-		country = $8,
-		price = $9,
-		property_type = $10,
-		contract = $11,
-		beds = $12,
-		baths = $13,
-		square_mt = $14,
-		lot_size = $15,
-		listing_date = $16,
-		year_built = $17,
-		status = $18,
-		coords = $19,
-		features = $20,
-		lat = $21,
-		lon = $22,
-		featured = $23,
-		featured_expires_at = $24,
-		agent = $25,
-		slug = $26
-		WHERE id = $1`,
-		property.Id,
-		property.Address,
-		property.Description,
-		property.City,
-		property.State,
-		property.Zip,
-		property.NbHood,
-		property.Country,
-		property.Price,
-		property.PropType,
-		property.Contract,
-		property.Beds,
-		property.Baths,
-		property.SqMt,
-		property.LotSize,
-		property.ListingDate,
-		property.YearBuilt,
-		property.Status,
-		wkbCoords,
-		property.Features,
-		property.Lat,
-		property.Lon,
-		property.Featured,
-		property.FeaturedExpiresAt,
-		property.Agent,
-		property.Slug,
+			address = @address,
+			description = @description,
+			city = @city,
+			state = @state,
+			zip = @zip,
+			nb_hood = @nb_hood,
+			country = @country,
+			price = @price,
+			property_type = @property_type,
+			contract = @contract,
+			beds = @beds,
+			baths = @baths,
+			square_mt = @square_mt,
+			lot_size = @lot_size,
+			listing_date = @listing_date,
+			year_built = @year_built,
+			status = @status,
+			features = @features,
+			lat = @lat,
+			lon = @lon,
+			featured = @featured,
+			featured_expires_at = @featured_expires_at,
+			agent = @agent,
+			slug = @slug
+		WHERE id = @id`,
+		args,
 	)
 
 	if err != nil {
@@ -701,9 +703,9 @@ func FindPropertyById(propId string) (property *Property, err error) {
 	row := conn.QueryRow(ctx, `
 		SELECT 
 			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
-			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.coords, p.features,
+			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
-			u.name || ' ' || u.lastname AS agent_name,
+			u.fullname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
 		FROM properties p  
@@ -715,6 +717,7 @@ func FindPropertyById(propId string) (property *Property, err error) {
 	var featsJSON sql.NullString
 	var phone sql.NullString
 	var img sql.NullString
+	var d sql.NullTime
 	property = &Property{}
 	property.AgentData = &AgentData{}
 	err = row.Scan(
@@ -740,7 +743,7 @@ func FindPropertyById(propId string) (property *Property, err error) {
 		&property.Lon,
 		&property.Contract,
 		&property.Featured,
-		&property.FeaturedExpiresAt,
+		&d,
 		&property.NbHood,
 		&property.MainImg,
 		&property.Images,
@@ -765,6 +768,10 @@ func FindPropertyById(propId string) (property *Property, err error) {
 
 	if err != nil {
 		return nil, err
+	}
+
+	if d.Valid {
+		property.FeaturedExpiresAt = d.Time
 	}
 
 	return

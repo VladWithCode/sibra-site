@@ -2,6 +2,10 @@
   "name": "style",
   "module": "index.ts",
   "type": "module",
+    "scripts": {
+        "dev": "tailwindcss -i styles.css -o ../static/styles.css --watch",
+        "build": "tailwindcss -i styles.css -o ../static/styles.css"
+    },
   "devDependencies": {
     "@types/bun": "latest"
   },

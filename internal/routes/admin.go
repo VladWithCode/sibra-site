@@ -120,21 +120,14 @@ func RenderUpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) 
 			a,
 			"Error :( | Sibra Durango",
 		).Render(context.Background(), w)
-
-		if err != nil {
-			panic(err)
-		}
+		return
 	}
 
-	err = pages.AdminLayout(
+	pages.AdminLayout(
 		pages.EditProperty(property),
 		a,
 		"Editar Propiedad | Sibra Durango",
 	).Render(context.Background(), w)
-
-	if err != nil {
-		panic(err)
-	}
 }
 
 func RenderDeleteProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
