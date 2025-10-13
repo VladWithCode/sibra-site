@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vladwithcode/sibra-site/internal"
 )
 
@@ -348,61 +349,65 @@ func UpdateProperty(property *Property) error {
 	// Ensure coords are set from lat/lon
 	property.SetCoords()
 
+	args := pgx.NamedArgs{
+		"id":            property.Id,
+		"address":       property.Address,
+		"description":   property.Description,
+		"city":          property.City,
+		"state":         property.State,
+		"zip":           property.Zip,
+		"country":       property.Country,
+		"price":         property.Price,
+		"property_type": property.PropertyType,
+		"contract":      property.Contract,
+		"beds":          property.Beds,
+		"baths":         property.Baths,
+		"square_mt":     property.SqMt,
+		"lot_size":      property.LotSize,
+		"year_built":    property.YearBuilt,
+		"listing_date": sql.NullTime{
+			Time:  property.ListingDate,
+			Valid: property.ListingDate.IsZero() == false,
+		},
+		"status":       property.Status,
+		"earth_coords": property.Coords,
+		"features":     property.Features,
+		"lat":          property.Lat,
+		"lon":          property.Lon,
+		"nb_hood":      property.NbHood,
+		"slug":         property.Slug,
+		"main_img":     property.MainImg,
+		"imgs":         property.Images,
+	}
 	_, err = conn.Exec(
 		ctx,
 		`UPDATE properties SET
-		address = $2,
-		description = $3,
-		city = $4,
-		state = $5,
-		zip = $6,
-		nb_hood = $7,
-		country = $8,
-		price = $9,
-		property_type = $10,
-		contract = $11,
-		beds = $12,
-		baths = $13,
-		square_mt = $14,
-		lot_size = $15,
-		listing_date = $16,
-		year_built = $17,
-		status = $18,
-		earth_coords = $19,
-		features = $20,
-		lat = $21,
-		lon = $22,
-		featured = $23,
-		featured_expires_at = $24,
-		agent = $25,
-		slug = $26
-		WHERE id = $1`,
-		property.Id,
-		property.Address,
-		property.Description,
-		property.City,
-		property.State,
-		property.Zip,
-		property.NbHood,
-		property.Country,
-		property.Price,
-		property.PropertyType,
-		property.Contract,
-		property.Beds,
-		property.Baths,
-		property.SqMt,
-		property.LotSize,
-		property.ListingDate,
-		property.YearBuilt,
-		property.Status,
-		property.Coords,
-		property.Features,
-		property.Lat,
-		property.Lon,
-		property.Featured,
-		property.FeaturedExpiresAt,
-		property.Agent,
-		property.Slug,
+            address = @address,
+            description = @description,
+            city = @city,
+            state = @state,
+            zip = @zip,
+            country = @country,
+            price = @price,
+            property_type = @property_type,
+            contract = @contract,
+            beds = @beds,
+            baths = @baths,
+            square_mt = @square_mt,
+            lot_size = @lot_size,
+            year_built = @year_built,
+            listing_date = @listing_date,
+            status = @status,
+            earth_coords = @earth_coords,
+            features = @features,
+            lat = @lat,
+            lon = @lon,
+            nb_hood = @nb_hood,
+            slug = @slug,
+            main_img = @main_img,
+            imgs = @imgs
+        WHERE id = @id`,
+		args,
 	)
 
 	if err != nil {
@@ -645,7 +650,11 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 
 	for rows.Next() {
 		var prop Property
-		var featsJSON []byte
+		var (
+			featsJSON   []byte
+			listingDate sql.NullTime
+			imgs        pgtype.Array[pgtype.Text]
+		)
 		err = rows.Scan(
 			&prop.Id,
 			&prop.Address,
@@ -661,7 +670,7 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 			&prop.SqMt,
 			&prop.LotSize,
 			&prop.YearBuilt,
-			&prop.ListingDate,
+			&listingDate,
 			&prop.Status,
 			&featsJSON,
 			&prop.Lat,
@@ -669,7 +678,7 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 			&prop.Contract,
 			&prop.NbHood,
 			&prop.MainImg,
-			&prop.Images,
+			&imgs,
 			&prop.Agent,
 			&prop.Slug,
 			&prop.Coords,
@@ -683,6 +692,18 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 			err = json.Unmarshal(featsJSON, &prop.Features)
 			if err != nil {
 				return
+			}
+		}
+
+		if listingDate.Valid {
+			prop.ListingDate = listingDate.Time
+		}
+
+		if imgs.Valid {
+			for _, img := range imgs.Elements {
+				if img.Valid {
+					prop.Images = append(prop.Images, img.String)
+				}
 			}
 		}
 
@@ -724,6 +745,8 @@ func FindFeaturedProperties() ([]*Property, error) {
 
 	for rows.Next() {
 		var property Property
+		var listingDate sql.NullTime
+		var imgs pgtype.Array[pgtype.Text]
 		err = rows.Scan(
 			&property.Id,
 			&property.Address,
@@ -738,15 +761,25 @@ func FindFeaturedProperties() ([]*Property, error) {
 			&property.Baths,
 			&property.SqMt,
 			&property.LotSize,
-			&property.ListingDate,
+			&listingDate,
 			&property.MainImg,
-			&property.Images,
+			&imgs,
 			&property.Slug,
 			&property.Lat,
 			&property.Lon,
 		)
 		if err != nil {
 			return nil, err
+		}
+		if listingDate.Valid {
+			property.ListingDate = listingDate.Time
+		}
+		if imgs.Valid {
+			for _, img := range imgs.Elements {
+				if img.Valid {
+					property.Images = append(property.Images, img.String)
+				}
+			}
 		}
 		properties = append(properties, &property)
 	}

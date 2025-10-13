@@ -85,6 +85,30 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request) {
 	}
 
 	property.Id = r.PathValue("id")
+	foundProp, err := db.FindPropertyById(r.Context(), property.Id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró la propiedad",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding property: %v\n", err)
+		return
+	}
+	property.Agent = foundProp.Agent
+	property.Images = foundProp.Images
+	property.MainImg = foundProp.MainImg
+	if foundProp.Slug != "" {
+		property.Slug = foundProp.Slug
+	} else {
+		property.SetSlug()
+	}
+
 	err = db.UpdateProperty(&property)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
@@ -95,8 +119,16 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resData, err := json.Marshal(map[string]any{
-		"success": true,
+		"success":  true,
+		"property": property,
 	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar la propiedad",
+		})
+		log.Printf("Error marshaling response: %v", err)
+		return
+	}
 	respondWithJSON(w, http.StatusCreated, resData)
 }
 
