@@ -188,7 +188,7 @@ export function ContactForm({
                                 <FormLabel>Hora</FormLabel>
                                 <FormControl>
                                     <Input
-                                        className="w-fit font-secondary"
+                                        className="w-fit"
                                         type="time"
                                         id="quoteDate-time"
                                         name="quoteDate-time"

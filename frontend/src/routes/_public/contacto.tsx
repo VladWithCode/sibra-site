@@ -69,7 +69,7 @@ function RouteComponent() {
                                     <div className="text-xs sm:text-base font-semibold">Mazatlán</div>
                                     <Phone className="size-6 sm:size-8" />
                                 </div>
-                                <div className="col-start-2 xs:text-xl sm:text-2xl ml-4 mr-auto mt-auto font-secondary">
+                                <div className="col-start-2 xs:text-xl sm:text-2xl ml-4 mr-auto mt-auto">
                                     (669) 112-9742
                                 </div>
                             </div>
@@ -78,7 +78,7 @@ function RouteComponent() {
                                     <div className="text-xs sm:text-base font-semibold">Durango</div>
                                     <Phone className="size-6 sm:size-8" />
                                 </div>
-                                <div className="col-start-2 xs:text-xl sm:text-2xl ml-4 mr-auto mt-auto font-secondary">
+                                <div className="col-start-2 xs:text-xl sm:text-2xl ml-4 mr-auto mt-auto">
                                     (618) 194-1145
                                 </div>
                             </div>
@@ -119,7 +119,7 @@ function RouteComponent() {
                         </TabsList>
                         <TabsContent value="dgo">
                             <p className="sm:text-lg text-current/80 mb-3">
-                                Domicilio: C. Cancer <span className="font-secondary">132</span>. Fracc. Sahop, <span className="font-secondary">34190</span> Durango, Dgo.
+                                Domicilio: C. Cancer 132. Fracc. Sahop, 34190 Durango, Dgo.
                             </p>
                             <Card className="aspect-[4/3] p-0 rounded-lg overflow-hidden [&>*]:h-full">
                                 <CardContent className="h-full p-0">
@@ -137,8 +137,8 @@ function RouteComponent() {
                         </TabsContent>
                         <TabsContent value="mzt">
                             <p className="sm:text-lg text-current/80 mb-3">
-                                Domicilio: Av. Ejercito Mexicano <span className="font-secondary">1102B</span>, Sembradores de la
-                                Amistad, <span className="font-secondary">82146</span> Mazatlán, Sin.
+                                Domicilio: Av. Ejercito Mexicano 1102B, Sembradores de la
+                                Amistad, 82146 Mazatlán, Sin.
                             </p>
                             <Card className="aspect-[4/3] p-0 rounded-lg overflow-hidden [&>*]:h-full">
                                 <CardContent className="h-full p-0">

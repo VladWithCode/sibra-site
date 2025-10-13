@@ -68,7 +68,7 @@ function RouteComponent() {
                         <p className="text-3xl sm:text-5xl font-bold font-secondary">{FormatMoney(property.price)}</p>
                     </div>
                     <div className="space-y-2">
-                        <ul className="flex items-center gap-3 text-sm xs:text-base font-bold font-secondary text-current/80">
+                        <ul className="flex items-center gap-3 text-sm xs:text-base font-bold text-current/80">
                             <li className="flex items-center gap-1.5 align-bottom">
                                 <span>{property.beds} Req.</span>
                                 <span>
@@ -91,7 +91,7 @@ function RouteComponent() {
                             </li>
                         </ul>
                         <h1 className="sm:text-lg text-current/60">
-                            {property.address}, C.P. <span className="font-secondary">{property.zip}</span>, {property.nbHood}. {property.city},{" "}
+                            {property.address}, C.P. {property.zip}, {property.nbHood}. {property.city},{" "}
                             {property.state}
                         </h1>
                     </div>

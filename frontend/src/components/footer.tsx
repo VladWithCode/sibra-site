@@ -20,7 +20,7 @@ export function Footer() {
                             Manejamos todas tus necesidades inmobiliarias con experiencia y
                             cuidado.
                         </p>
-                        <div className="space-y-3 text-sm font-secondary">
+                        <div className="space-y-3 text-sm">
                             <div className="flex items-center gap-3">
                                 <Phone className="h-4 w-4 text-primary flex-shrink-0" />
                                 <span className="text-foreground">(669) 112-9742</span>

@@ -22,9 +22,9 @@ function RouteComponent() {
                     <h2 className="text-2xl font-semibold">1. Identificación de la empresa</h2>
                     <p className="text-current/80">
                         El presente sitio web es operado por <strong>consorcio SIBRA</strong> (en adelante, “SIBRA”),
-                        con domicilio en Cáncer <span className="font-secondary">132</span>, Sahop, <span className="font-secondary">34190</span> Durango, Dgo,
+                        con domicilio en Cáncer 132, Sahop, 34190 Durango, Dgo,
                         correo electrónico de contacto sibramx.business@gmail.com
-                        y teléfono <span className="font-secondary">+52 618 194 1145</span>.
+                        y teléfono +52 618 194 1145.
                     </p>
                     <h2 className="text-2xl font-semibold">2. Objeto y Alcance de los Servicios</h2>
                     <p className="text-current/80 mb-3">

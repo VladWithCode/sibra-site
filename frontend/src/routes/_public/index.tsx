@@ -42,7 +42,7 @@ function RouteComponent() {
                 <div className="relative z-10 bg-linear-to-b from-gray-700/80 to-45% sm:to-60% to-gray-700/50 py-24 sm:py-32 md:py-36 lg:py-56 xl:py-72 px-6 sm:px-12 md:px-16 xl:px-24">
                     <div className="max-w-4xl space-y-6 md:space-y-8 xl:space-y-16 mx-auto">
                         <h1 className="text-4xl md:text-5xl xl:text-7xl text-gray-50 font-medium tracking-tight leading-14">
-                            Casas en todo <span className="font-semibold font-secondary">Durango</span>
+                            Casas en todo <span className="font-semibold">Durango</span>
                         </h1>
                         <SearchBox
                             placeholder="Buscar por domicilio, tipo de casa, C.P., etc"
