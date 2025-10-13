@@ -4,8 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-    --font-sans: "Raleway", sans-serif;
-    --font-secondary: "Montserrat", "Raleway", sans-serif;
+    --font-sans: "Roboto", sans-serif;
 
     --color-sbr-blue: #2c47a0;
     --color-sbr-blue-dark: #083357;
