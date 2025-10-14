@@ -66,6 +66,7 @@ export type TPropertyListingResult = {
 
 export type TPropertyDetailResult = {
     property: TProperty;
+    success?: boolean;
     nearbyProperties: TProperty[] | null;
 };
 

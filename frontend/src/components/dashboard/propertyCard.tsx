@@ -5,8 +5,28 @@ import { Button } from "../ui/button";
 import { BedIcon, Edit2, ToiletIcon, TrashIcon } from "lucide-react";
 import { FormatMoney } from "@/lib/format";
 import { SqMtIcon } from "../icons/icons";
+import { toast } from "sonner";
+import { useCallback, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { deletePropertyOpts } from "@/queries/properties";
+import { Dialog, DialogTitle, DialogHeader, DialogContent, DialogTrigger } from "../ui/dialog";
 
 export function PropertyCard({ propData }: { propData: TProperty }) {
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const deletePropMut = useMutation(deletePropertyOpts(propData.id));
+    const onDelete = useCallback(() => {
+        deletePropMut.mutate({
+            id: propData.id,
+        }, {
+            onSuccess: () => {
+                toast.success("La propiedad ha sido eliminada correctamente.", { closeButton: true });
+            },
+            onError: (err) => {
+                toast.error(err.message, { closeButton: true });
+            },
+        });
+    }, [propData.id]);
+
     return (
         <Card className="py-0">
             <CardHeader className="p-0 bg-gray-100 gap-0">
@@ -55,10 +75,28 @@ export function PropertyCard({ propData }: { propData: TProperty }) {
                                 Editar
                             </Link>
                         </Button>
-                        <Button className="flex items-center justify-center gap-3 text-sm" variant="destructive" size="sm">
-                            <TrashIcon className="size-3" />
-                            Eliminar
-                        </Button>
+                        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+                            <DialogTrigger asChild>
+                                <Button className="flex items-center justify-center gap-3 text-sm" variant="destructive" size="sm">
+                                    <TrashIcon className="size-3" />
+                                    Eliminar
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Confirmar eliminación</DialogTitle>
+                                </DialogHeader>
+                                <p className="text-sm text-current/60">¿Estás seguro de que quieres eliminar esta propiedad?</p>
+                                <div className="flex justify-end gap-3">
+                                    <Button variant="secondary" size="sm" onClick={() => setDeleteConfirmOpen(false)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button variant="destructive" size="sm" onClick={onDelete}>
+                                        Eliminar
+                                    </Button>
+                                </div>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
             </CardContent>

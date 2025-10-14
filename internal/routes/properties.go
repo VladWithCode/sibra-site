@@ -29,9 +29,9 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
 	router.HandleFunc("POST /api/property", auth.ValidateAuthMiddleware(CreateProperty))
 	router.HandleFunc("PUT /api/property/{id}", auth.ValidateAuthMiddleware(UpdateProperty))
-	router.HandleFunc("DELETE /api/property/{id}/delete", auth.ValidateAuthMiddleware(DeletePropertyById))
+	router.HandleFunc("DELETE /api/property/{id}", auth.ValidateAuthMiddleware(DeletePropertyById))
 	router.HandleFunc("POST /api/property/pictures/{id}", auth.ValidateAuthMiddleware(UploadPropertyPictures))
-	// router.HandleFunc("DELETE /api/property/pictures/{id}", auth.WithAuthMiddleware(UploadPropertyPictures))
+	router.HandleFunc("DELETE /api/property/pictures/{id}", auth.ValidateAuthMiddleware(DeletePropertyPictures))
 }
 
 func CreateProperty(w http.ResponseWriter, r *http.Request) {
@@ -47,8 +47,18 @@ func CreateProperty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user, err := auth.ExtractAuthDataFromRequest(r)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "No se pudo autenticar el usuario",
+		})
+		log.Printf("Error extracting auth data: %v\n", err)
+		return
+	}
+
 	id := uuid.Must(uuid.NewV7()).String()
 	property.Id = id
+	property.Agent = user.Id
 	property.SetSlug()
 	property.SyncLatLon()
 
@@ -147,6 +157,13 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request) {
 
 	property, err := db.FindPropertyById(ctx, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró la propiedad",
+			})
+			return
+		}
+
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
 		})
@@ -165,8 +182,9 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	uploadDateStr := time.Now().Format("20060102-150405")
 	pics := r.MultipartForm.File["pics"]
-	for _, fileHeader := range pics {
+	for picIdx, fileHeader := range pics {
 		pic, err := fileHeader.Open()
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, ErrorParams{
@@ -177,7 +195,7 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request) {
 		}
 		defer pic.Close()
 
-		fileName := time.Now().Format("20060102-150405") + "-" + uuid.NewString() + filepath.Ext(fileHeader.Filename)
+		fileName := fmt.Sprintf("pic-%s-%d%s", uploadDateStr, picIdx, filepath.Ext(fileHeader.Filename))
 		filep := filepath.Join(filePath, fileName)
 		outFile, err := os.Create(filep)
 		if err != nil {
@@ -213,7 +231,7 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request) {
 	if handle != nil {
 		defer mainPic.Close()
 
-		mainFileName := "main-pic" + filepath.Ext(handle.Filename)
+		mainFileName := fmt.Sprintf("main-pic-%s%s", uploadDateStr, filepath.Ext(handle.Filename))
 		file, err := os.Create(filepath.Join(filePath, mainFileName))
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, ErrorParams{
@@ -237,7 +255,7 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request) {
 
 	delPicIds := r.MultipartForm.Value["delPics"]
 	if len(delPicIds) > 0 {
-		newPics := [12]string{}
+		newPics := make([]string, 0, len(property.Images))
 		i := 0
 		for _, img := range property.Images {
 			if !slices.Contains(delPicIds, img) && img != "" {
@@ -259,6 +277,79 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusCreated, map[string]any{
+		"success": true,
+	})
+}
+
+func DeletePropertyPictures(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	ctx := r.Context()
+
+	var imgData struct {
+		ImgName string `json:"imgName"`
+		Type    string `json:"type"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&imgData)
+	defer r.Body.Close()
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "El formulario contiene información inválida",
+		})
+		log.Printf("Error decoding request body: %v", err)
+		return
+	}
+
+	property, err := db.FindPropertyById(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró la propiedad",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding property: %v\n", err)
+		return
+	}
+
+	err = os.Remove(filepath.Join("web/static/properties", property.Id, imgData.ImgName))
+	if err != nil && !os.IsNotExist(err) {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error deleting picture: %v\n", err)
+		return
+	}
+
+	if imgData.Type == "main" {
+		property.MainImg = ""
+	} else {
+		newImgs := make([]string, 0, len(property.Images))
+		i := 0
+		for _, img := range property.Images {
+			if imgData.ImgName != img {
+				newImgs = append(newImgs, img)
+				i++
+			}
+		}
+
+		property.Images = newImgs[:i]
+	}
+
+	// Update property
+	err = db.UpdatePropertyImages(property)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar las imágenes de la propiedad",
+		})
+		log.Printf("UpdatePropertyImages err: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 	})
 }

@@ -1063,7 +1063,7 @@ func UpdatePropertyImages(property *Property) error {
 
 	_, err = tx.Exec(
 		ctx,
-		"UPDATE properties SET images = @images, main_img = @main_img WHERE id = @id",
+		"UPDATE properties SET imgs = @images, main_img = @main_img WHERE id = @id",
 		args,
 	)
 	if err != nil {

@@ -22,6 +22,7 @@ export const Route = createFileRoute("/_public/propiedades/_listing/$contract")(
         const { contract } = params;
         await context.queryClient.ensureQueryData(
             getPropertyListingOpts({
+                // @ts-ignore
                 contract,
             }),
         );
@@ -33,6 +34,7 @@ function RouteComponent() {
     const { contract } = Route.useParams();
     const { data } = useSuspenseQuery(
         getPropertyListingOpts({
+            // @ts-ignore
             contract,
         }),
     );
@@ -77,7 +79,7 @@ function RouteComponent() {
                 <div className="max-w-6xl grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-auto gap-4 sm:gap-y-6 mx-auto">
                     {data.properties.map((prop) => (
                         <div className="w-full max-w-lg">
-                            <PropertyCard key={prop.id} propData={prop} withMap={false} />
+                            <PropertyCard key={prop.id} propData={prop} withMap={!!prop.lat && !!prop.lon} />
                         </div>
                     ))}
                 </div>
