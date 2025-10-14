@@ -15,7 +15,7 @@ export function PublicLayout({ children }: {} & React.PropsWithChildren) {
                 id="main-content"
                 className={cn(
                     "relative h-screen w-screen grid grid-cols-1 z-0 overflow-x-hidden overflow-y-auto",
-                    headerFloating ? "grid-rows-[1fr_auto]" : "grid-rows-[1fr_auto_1fr]",
+                    headerFloating ? "grid-rows-[1fr_auto]" : "grid-rows-[auto_1fr_auto]",
                 )}
             >
                 <Header />

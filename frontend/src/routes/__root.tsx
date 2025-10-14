@@ -1,4 +1,4 @@
-import { Link, Outlet, createRootRouteWithContext, type ErrorComponentProps } from "@tanstack/react-router";
+import { HeadContent, Link, Outlet, createRootRouteWithContext, type ErrorComponentProps } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/queries/queryClient";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -15,20 +15,10 @@ export const Route = createRootRouteWithContext<IRouteContext>()({
         <QueryClientProvider client={queryClient}>
             <SidebarProvider defaultOpen={false}>
                 <MapsAPIProvider>
+                    <HeadContent />
                     <Outlet />
                 </MapsAPIProvider>
                 <Toaster />
-                {/* <TanstackDevtools */}
-                {/*     config={{ */}
-                {/*         position: 'bottom-left', */}
-                {/*     }} */}
-                {/*     plugins={[ */}
-                {/*         { */}
-                {/*             name: 'Tanstack Router', */}
-                {/*             render: <TanStackRouterDevtoolsPanel />, */}
-                {/*         }, */}
-                {/*     ]} */}
-                {/* /> */}
             </SidebarProvider>
         </QueryClientProvider>
     ),

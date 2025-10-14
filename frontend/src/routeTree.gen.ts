@@ -27,6 +27,7 @@ import { Route as PublicProyectosRouteRouteImport } from './routes/_public/proye
 import { Route as PanelProyectosIndexRouteImport } from './routes/panel/proyectos/index'
 import { Route as PanelPropiedadesIndexRouteImport } from './routes/panel/propiedades/index'
 import { Route as PanelCitasIndexRouteImport } from './routes/panel/citas/index'
+import { Route as ConquistadoresCampanaFbIndexRouteImport } from './routes/conquistadores_/campana-fb.index'
 import { Route as PublicProyectosIndexRouteImport } from './routes/_public/proyectos/index'
 import { Route as PanelPropiedadesNuevaRouteImport } from './routes/panel/propiedades/nueva'
 import { Route as PanelPropiedadesIdRouteImport } from './routes/panel/propiedades/$id'
@@ -125,6 +126,12 @@ const PanelCitasIndexRoute = PanelCitasIndexRouteImport.update({
   path: '/citas/',
   getParentRoute: () => PanelRouteRoute,
 } as any)
+const ConquistadoresCampanaFbIndexRoute =
+  ConquistadoresCampanaFbIndexRouteImport.update({
+    id: '/conquistadores_/campana-fb/',
+    path: '/conquistadores/campana-fb/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const PublicProyectosIndexRoute = PublicProyectosIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -192,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/proyectos/': typeof PublicProyectosIndexRoute
+  '/conquistadores/campana-fb': typeof ConquistadoresCampanaFbIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
@@ -215,6 +223,7 @@ export interface FileRoutesByTo {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/proyectos': typeof PublicProyectosIndexRoute
+  '/conquistadores/campana-fb': typeof ConquistadoresCampanaFbIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
@@ -243,6 +252,7 @@ export interface FileRoutesById {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/_public/proyectos/': typeof PublicProyectosIndexRoute
+  '/conquistadores_/campana-fb/': typeof ConquistadoresCampanaFbIndexRoute
   '/panel/citas/': typeof PanelCitasIndexRoute
   '/panel/propiedades/': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos/': typeof PanelProyectosIndexRoute
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/proyectos/'
+    | '/conquistadores/campana-fb'
     | '/panel/citas'
     | '/panel/propiedades'
     | '/panel/proyectos'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/proyectos'
+    | '/conquistadores/campana-fb'
     | '/panel/citas'
     | '/panel/propiedades'
     | '/panel/proyectos'
@@ -320,6 +332,7 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/_public/proyectos/'
+    | '/conquistadores_/campana-fb/'
     | '/panel/citas/'
     | '/panel/propiedades/'
     | '/panel/proyectos/'
@@ -331,6 +344,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   PublicRouteRoute: typeof PublicRouteRouteWithChildren
   PanelRouteRoute: typeof PanelRouteRouteWithChildren
+  ConquistadoresCampanaFbIndexRoute: typeof ConquistadoresCampanaFbIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -453,6 +467,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/panel/citas'
       preLoaderRoute: typeof PanelCitasIndexRouteImport
       parentRoute: typeof PanelRouteRoute
+    }
+    '/conquistadores_/campana-fb/': {
+      id: '/conquistadores_/campana-fb/'
+      path: '/conquistadores/campana-fb'
+      fullPath: '/conquistadores/campana-fb'
+      preLoaderRoute: typeof ConquistadoresCampanaFbIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_public/proyectos/': {
       id: '/_public/proyectos/'
@@ -637,6 +658,7 @@ const PanelRouteRouteWithChildren = PanelRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   PublicRouteRoute: PublicRouteRouteWithChildren,
   PanelRouteRoute: PanelRouteRouteWithChildren,
+  ConquistadoresCampanaFbIndexRoute: ConquistadoresCampanaFbIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
