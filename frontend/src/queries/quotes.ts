@@ -1,6 +1,8 @@
 import { mutationOptions, queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
 import type {
+    TConqsQuoteSchedule,
     TQuote,
+    TQuoteConquistadores,
     TQuoteCreateResult,
     TQuoteFilters,
     TQuoteListingResult,
@@ -22,6 +24,11 @@ export const QuoteQueryKeys = {
     create: (propType: string) => [...QuoteQueryKeys.all(), "create", { propType }] as const,
     update: (id: string) => [...QuoteQueryKeys.all(), "update", { id }] as const,
     delete: (id: string) => [...QuoteQueryKeys.all(), "delete", { id }] as const,
+
+    // Conquistadores
+    createConqsQuote: (schedule: TConqsQuoteSchedule | "") => [...QuoteQueryKeys.all(), "createConqsQuote", { schedule }] as const,
+    updateConqsQuote: (id: string) => [...QuoteQueryKeys.all(), "updateConqsQuote", { id }] as const,
+    deleteConqsQuote: (id: string) => [...QuoteQueryKeys.all(), "deleteConqsQuote", { id }] as const,
 } as const;
 
 export type QKQuotesListing = ReturnType<typeof QuoteQueryKeys.listing>;
@@ -30,6 +37,9 @@ export type QKQuotesById = ReturnType<typeof QuoteQueryKeys.byId>;
 export type QKQuotesCreate = ReturnType<typeof QuoteQueryKeys.create>;
 export type QKQuotesUpdate = ReturnType<typeof QuoteQueryKeys.update>;
 export type QKQuotesDelete = ReturnType<typeof QuoteQueryKeys.delete>;
+export type QKQuotesCreateConqsQuote = ReturnType<typeof QuoteQueryKeys.createConqsQuote>;
+export type QKQuotesUpdateConqsQuote = ReturnType<typeof QuoteQueryKeys.updateConqsQuote>;
+export type QKQuotesDeleteConqsQuote = ReturnType<typeof QuoteQueryKeys.deleteConqsQuote>;
 
 export const getQuotesOpts = (filters: TQuoteFilters) =>
     queryOptions({
@@ -63,6 +73,21 @@ export const createQuoteOpts = (propType: TQuotePropType) => mutationOptions({
     mutationFn: createQuote,
 })
 
+export const createConqsQuoteOpts = (schedule: TConqsQuoteSchedule | "") => mutationOptions({
+    mutationKey: QuoteQueryKeys.createConqsQuote(schedule),
+    mutationFn: createConqsQuote,
+});
+
+export const updateConqsQuoteOpts = (id: string) => mutationOptions({
+    mutationKey: QuoteQueryKeys.updateConqsQuote(id),
+    // mutationFn: updateConqsQuote,
+});
+
+export const deleteConqsQuoteOpts = (id: string) => mutationOptions({
+    mutationKey: QuoteQueryKeys.deleteConqsQuote(id),
+    // mutationFn: deleteConqsQuote,
+});
+
 export async function createQuote(newQuote: TQuote): Promise<TQuoteCreateResult> {
     const response = await fetch("/api/citas", {
         method: "POST",
@@ -70,6 +95,23 @@ export async function createQuote(newQuote: TQuote): Promise<TQuoteCreateResult>
             "Content-Type": "application/json",
         },
         body: JSON.stringify(newQuote),
+    });
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || "Error al crear cita");
+    }
+
+    return data;
+}
+
+export async function createConqsQuote({ quoteData }: { quoteData: Partial<TQuoteConquistadores> }): Promise<TQuoteCreateResult> {
+    const response = await fetch("/api/citas/demo", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(quoteData),
     });
     const data = await response.json();
 

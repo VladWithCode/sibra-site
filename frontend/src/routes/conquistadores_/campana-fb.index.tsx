@@ -1,3 +1,4 @@
+import { ConqsQuoteForm } from '@/components/contact/ConqsQuoteForm';
 import { PublicLayout } from '@/components/layout/publicLayout'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -71,34 +72,7 @@ function RouteComponent() {
                     <div className="absolute inset-0 z-0">
                         <img src="/agent_showcase.png" alt="" className="h-full w-full object-cover object-center brightness-75" />
                     </div>
-                    <div className="relative z-10 flex flex-col items-center justify-center px-6 py-24">
-                        <div className="w-full p-6 bg-sbr-blue-dark/30 backdrop-blur-md rounded space-y-6">
-                            <h2 className="text-2xl font-bold uppercase">¡Contáctanos!</h2>
-                            <div className="space-y-3">
-                                <div className="relative flex flex-col items-start justify-center gap-1 z-0">
-                                    <label htmlFor="name" className="translate-y-8 text-sm text-muted-foreground px-2.5">Nombre</label>
-                                    <Input type="text" id="name" name="name" placeholder="" className="bg-card" />
-                                </div>
-                                <div className="relative flex flex-col items-start justify-center gap-1 z-0">
-                                    <label htmlFor="phone" className="translate-y-8 text-sm text-muted-foreground px-2.5">Teléfono</label>
-                                    <Input type="tel" id="phone" name="phone" placeholder="" className="bg-card" />
-                                </div>
-                                <div className="relative flex items-start justify-center gap-1 z-0 mt-8">
-                                    <Checkbox id="consent" name="consent" className="bg-card" />
-                                    <label htmlFor="consent" className="block text-sm px-2.5 -mt-1">Acepto que se me contacte a través de Whatsapp o llamada telefónica.</label>
-                                </div>
-                            </div>
-                            <div className="">
-                                <Button
-                                    type="submit"
-                                    className="w-full bg-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark text-gray-50 shadow active:shadow-sm hover:scale-105 active:scale-95"
-                                    size="lg"
-                                >
-                                    Enviar
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
+                    <ConqsQuoteForm />
                 </section>
 
                 <section className="relative z-0 text-center space-y-3">

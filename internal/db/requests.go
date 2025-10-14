@@ -34,7 +34,7 @@ type Request struct {
 	Name          string        `json:"name" db:"name"`
 	ScheduledDate time.Time     `json:"scheduledDate" db:"scheduled_date"`
 	Status        RequestStatus `json:"status" db:"status"`
-	Agent         string        `json:"agent" db:"status"`
+	Agent         string        `json:"agent" db:"agent"`
 	Property      string        `json:"property,omitempty" db:"property"`
 
 	CreatedAt time.Time `json:"date" db:"date"`
@@ -48,6 +48,20 @@ func NewRequest(reqType RequestType) *Request {
 		Status:    RequestStatusPending,
 		CreatedAt: time.Now(),
 	}
+}
+
+type QuoteSchedule string
+
+const (
+	QuoteScheduleWeekend QuoteSchedule = "fin de semana"
+	QuoteScheduleMidWeek QuoteSchedule = "entre semana"
+	QuoteScheduleOther   QuoteSchedule = "otro"
+)
+
+type ConqsRequest struct {
+	Request
+
+	Schedule QuoteSchedule `json:"quoteSchedule" db:"quote_schedule"`
 }
 
 type RequestFilter struct {

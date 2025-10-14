@@ -91,6 +91,12 @@ export type TQuote = {
     updatedAt: string;
 };
 
+export type TConqsQuoteSchedule = "fin de semana" | "entre semana" | "otro";
+
+export type TQuoteConquistadores = TQuote & {
+    schedule: TConqsQuoteSchedule;
+}
+
 export type TQuoteFilters = Partial<TQuote> & {
     page?: TPagination["page"];
     perPage?: TPagination["perPage"];
