@@ -157,6 +157,7 @@ export function ConqsFooterQuoteForm() {
             }, {
                 onSuccess: () => {
                     toast.success("La cita ha sido creada correctamente.", { closeButton: true });
+                    form.reset();
                 },
                 onError: (err) => {
                     toast.error(err.message, { closeButton: true });

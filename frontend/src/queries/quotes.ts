@@ -106,7 +106,7 @@ export async function createQuote(newQuote: TQuote): Promise<TQuoteCreateResult>
 }
 
 export async function createConqsQuote({ quoteData }: { quoteData: Partial<TQuoteConquistadores> }): Promise<TQuoteCreateResult> {
-    const response = await fetch("/api/citas/demo", {
+    const response = await fetch("/api/citas/conquistadores", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
