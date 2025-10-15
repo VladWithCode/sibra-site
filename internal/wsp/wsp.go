@@ -22,6 +22,7 @@ type TemplateData struct {
 	TemplateName string
 	BodyVars     []TemplateVar
 	HeaderVars   []TemplateVar
+	Language     string
 }
 
 type templatePayload struct {
@@ -118,6 +119,10 @@ func SendTemplateMessage(phoneNumber string, data TemplateData) error {
 		})
 	}
 
+	if data.Language == "" {
+		data.Language = "es"
+	}
+
 	reqPayload.MessageType = "template"
 	reqPayload.MessagingProduct = "whatsapp"
 	reqPayload.ToPhone = phoneNumber
@@ -125,7 +130,7 @@ func SendTemplateMessage(phoneNumber string, data TemplateData) error {
 		Name: data.TemplateName,
 		Language: struct {
 			Code string `json:"code"`
-		}{Code: "es"},
+		}{Code: data.Language},
 		Components: components,
 	}
 

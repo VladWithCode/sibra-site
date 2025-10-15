@@ -71,7 +71,7 @@ func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tplData := wsp.TemplateData{
-		TemplateName: "conqs_quote_request",
+		TemplateName: "info_request",
 		BodyVars: []wsp.TemplateVar{
 			{
 				"type": "text",
@@ -82,6 +82,7 @@ func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
 				"text": req.Phone,
 			},
 		},
+		Language: "es",
 	}
 
 	if req.Schedule != "" {
@@ -113,6 +114,10 @@ func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Error sending request: %v\n", err)
 		return
 	}
+
+	respondWithJSON(w, http.StatusCreated, map[string]any{
+		"success": true,
+	})
 }
 
 func CreateDemoQuote(w http.ResponseWriter, r *http.Request) {
