@@ -1,12 +1,9 @@
 import { ConqsFooterQuoteForm, ConqsQuoteForm } from '@/components/contact/ConqsQuoteForm';
 import { PublicLayout } from '@/components/layout/publicLayout'
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { useUIStore } from '@/stores/uiStore'
 import { createFileRoute } from '@tanstack/react-router'
-import { Calendar, CheckCircle, CheckCircle2, Clock, MapPin, Phone } from 'lucide-react';
+import { CheckCircle2, Clock, MapPin, Phone } from 'lucide-react';
 import { useEffect } from 'react';
 
 export const Route = createFileRoute('/conquistadores_/campana-fb/')({
