@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
 	"github.com/vladwithcode/sibra-site/internal/wsp"
 )
@@ -14,7 +15,7 @@ func RegisterRequestsRouter(r *customServeMux) {
 	r.HandleFunc("POST /api/citas", CreateRequest)
 
 	r.HandleFunc("POST /api/citas/conquistadores", CreateConquistadoresRequest)
-	r.HandleFunc("POST /api/citas/demo", CreateDemoQuote)
+	r.HandleFunc("POST /api/citas/demo", auth.ValidateAuthMiddleware(CreateDemoQuote))
 }
 
 func CreateRequest(w http.ResponseWriter, r *http.Request) {
@@ -180,6 +181,9 @@ func CreateDemoQuote(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Notification phone not set.\n")
 		return
 	}
+
+	u, _ := auth.ExtractAuthDataFromRequest(r)
+	log.Printf("Sending demo quote request for user: %s\n", u.Username)
 
 	err = wsp.SendTemplateMessage(notifPhone, tplData)
 	if err != nil {
