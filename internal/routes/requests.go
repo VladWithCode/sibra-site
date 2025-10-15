@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/vladwithcode/sibra-site/internal/db"
 	"github.com/vladwithcode/sibra-site/internal/wsp"
@@ -126,14 +125,29 @@ func CreateDemoQuote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	invalidFields := make(map[string]bool)
+	if req.Name == "" {
+		invalidFields["name"] = true
+	}
+
+	if req.Phone == "" {
+		invalidFields["phone"] = true
+	}
+
+	if len(invalidFields) > 0 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "No se pudo procesar la solicitud porque faltan datos obligatorios.",
+			Etc: rmap{
+				"formInvalid":   true,
+				"invalidFields": invalidFields,
+			},
+		})
+		log.Printf("Error parsing request body: %v\n", err)
+		return
+	}
+
 	tplData := wsp.TemplateData{
 		TemplateName: "info_request",
-		// HeaderVars: []wsp.TemplateVar{
-		// 	{
-		// 		"type": "text",
-		// 		"text": req.Name,
-		// 	},
-		// },
 		BodyVars: []wsp.TemplateVar{
 			{
 				"type": "text",
@@ -143,11 +157,19 @@ func CreateDemoQuote(w http.ResponseWriter, r *http.Request) {
 				"type": "text",
 				"text": req.Phone,
 			},
-			{
-				"type": "text",
-				"text": time.Now().Format("2006-01-02 15:04:05"),
-			},
 		},
+	}
+
+	if req.Schedule != "" {
+		tplData.BodyVars = append(tplData.BodyVars, wsp.TemplateVar{
+			"type": "text",
+			"text": req.Schedule,
+		})
+	} else {
+		tplData.BodyVars = append(tplData.BodyVars, wsp.TemplateVar{
+			"type": "text",
+			"text": "sin especificar",
+		})
 	}
 
 	notifPhone := os.Getenv(wsp.EnvVarNotificationPhone)

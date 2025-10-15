@@ -1,4 +1,4 @@
-import { ConqsQuoteForm } from '@/components/contact/ConqsQuoteForm';
+import { ConqsFooterQuoteForm, ConqsQuoteForm } from '@/components/contact/ConqsQuoteForm';
 import { PublicLayout } from '@/components/layout/publicLayout'
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -294,17 +294,7 @@ function RouteComponent() {
                             </li>
                         </ul>
                     </div>
-                    <form>
-                        <input type="text" placeholder="Nombre" style={{ width: "90%", padding: "10px", margin: "5px 0", }} /><br />
-                        <input type="tel" placeholder="WhatsApp" style={{ width: "90%", padding: "10px", margin: "5px 0", }} /><br />
-                        <select style={{ width: "90%", padding: "10px", margin: "5px 0", }}>
-                            <option>¿Cuándo deseas visitar?</option>
-                            <option>Este fin de semana</option>
-                            <option>Entre semana</option>
-                            <option>Otro horario</option>
-                        </select><br />
-                        <button type="submit" className="cta">Agendar cita</button>
-                    </form>
+                    <ConqsFooterQuoteForm />
                     <p style={{ marginTop: "20px" }}>Terrenos listos. Escritura lista. Solo faltas tú.</p>
                 </div>
 
