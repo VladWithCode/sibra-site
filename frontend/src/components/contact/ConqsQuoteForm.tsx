@@ -64,7 +64,7 @@ export function ConqsQuoteForm() {
                         <span className="loader"></span>
                         <span className="text-2xl text-current/60 font-medium">Cargando...</span>
                     </div>
-                    <h2 className="text-2xl font-bold uppercase">¡Contáctanos!</h2>
+                    <h2 className="text-2xl font-bold uppercase">¡Agenda tu cita!</h2>
                     <div className="space-y-4">
                         <FormField
                             control={form.control}
@@ -126,7 +126,7 @@ export function ConqsQuoteForm() {
                     <div className="">
                         <Button
                             type="submit"
-                            className="w-full bg-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark text-gray-50 shadow active:shadow-sm hover:scale-105 active:scale-95"
+                            className="w-full bg-linear-to-b from-sbr-blue-light to-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark text-gray-50 shadow active:shadow-sm hover:scale-105 active:scale-95"
                             size="lg"
                         >
                             Enviar
