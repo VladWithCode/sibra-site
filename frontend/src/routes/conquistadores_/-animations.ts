@@ -10,8 +10,19 @@ export function animateSection(section: HTMLElement, obsv: IntersectionObserver)
     });
 
     for (const anim of animationParams.animations) {
+        if (anim.animateFromOpts) {
+            tl.fromTo(section.querySelectorAll(anim.selector), anim.animateFromOpts, {
+                ...anim.animateToOpts,
+                onComplete: () => {
+                    obsv.unobserve(section);
+                },
+            });
+
+            continue;
+        }
+
         tl.to(section.querySelectorAll(anim.selector), {
-            ...anim.animateOpts,
+            ...anim.animateToOpts,
             onComplete: () => {
                 obsv.unobserve(section);
             },
@@ -25,14 +36,14 @@ export const InviewAnimations = [
         animations: [
             {
                 selector: "[data-hero-bgimg]",
-                animateOpts: {
+                animateToOpts: {
                     filter: "brightness(75%)",
                     duration: 0.8,
                 },
             },
             {
                 selector: "[data-backdrop]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     duration: 0.8,
                 },
@@ -40,7 +51,7 @@ export const InviewAnimations = [
             },
             {
                 selector: "[data-content]>*",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     y: "0rem",
                     stagger: 0.1,
@@ -55,14 +66,14 @@ export const InviewAnimations = [
         animations: [
             {
                 selector: "[data-avl-img]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     delay: 0.3,
                 },
             },
             {
                 selector: "[data-avl-content]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     y: "0rem",
                     duration: 0.5,
@@ -75,7 +86,7 @@ export const InviewAnimations = [
         animations: [
             {
                 selector: "[data-card-title],[data-card]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     y: "0%",
                     duration: 0.8,
@@ -90,7 +101,7 @@ export const InviewAnimations = [
         animations: [
             {
                 selector: "[data-quote-form]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     y: "0%",
                     duration: 0.8,
@@ -105,14 +116,14 @@ export const InviewAnimations = [
         animations: [
             {
                 selector: "[data-container]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
-                    y: "-2rem",
+                    y: "-3.5rem",
                 },
             },
             {
                 selector: "[data-badge]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     duration: 0.6,
                     x: "0rem",
@@ -120,7 +131,7 @@ export const InviewAnimations = [
             },
             {
                 selector: "[data-oferta-price]",
-                animateOpts: {
+                animateToOpts: {
                     scale: 1,
                     delay: 0.15,
                     duration: 0.6,
@@ -129,7 +140,7 @@ export const InviewAnimations = [
             },
             {
                 selector: "[data-feat-item]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     x: "0rem",
                     stagger: 0.1,
@@ -137,7 +148,7 @@ export const InviewAnimations = [
             },
             {
                 selector: "[data-feat-land]",
-                animateOpts: {
+                animateToOpts: {
                     scale: 1,
                     delay: 0.35,
                 },
@@ -148,7 +159,7 @@ export const InviewAnimations = [
         animations: [
             {
                 selector: "[data-card-wrapper]",
-                animateOpts: {
+                animateToOpts: {
                     opacity: 1,
                     x: "0%",
                     duration: 0.8,

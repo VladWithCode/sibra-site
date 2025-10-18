@@ -53,10 +53,10 @@ export function ConqsQuoteForm() {
     return (
         <Form {...form}>
             <form
-                className="relative z-10 flex flex-col items-center justify-center px-6 py-24"
+                className="relative z-10 flex flex-col items-center justify-center px-6 py-24 sm:py-32"
                 onSubmit={onSubmit}
             >
-                <div className="relative z-0 w-full p-6 bg-sbr-blue-dark/30 backdrop-blur-md rounded space-y-6">
+                <div className="relative z-0 w-full max-w-lg p-6 bg-sbr-blue-dark/30 backdrop-blur-md rounded space-y-6">
                     <div
                         className="absolute z-10 inset-0 flex flex-col items-center justify-center gap-6 bg-accent mb-0 rounded text-gray-800 transition duration-500 opacity-0 data-[state=pending]:opacity-100 scale-0 data-[state=pending]:scale-100 pointer-events-none data-[state=pending]:pointer-events-auto"
                         data-state={conqsQuoteMut.status}
@@ -64,18 +64,18 @@ export function ConqsQuoteForm() {
                         <span className="loader"></span>
                         <span className="text-2xl text-current/60 font-medium">Cargando...</span>
                     </div>
-                    <h2 className="text-2xl font-bold uppercase">¡Agenda tu cita!</h2>
-                    <div className="space-y-4">
+                    <h2 className="text-2xl sm:text-3xl font-bold uppercase">¡Agenda tu cita!</h2>
+                    <div className="space-y-4 sm:space-y-6">
                         <FormField
                             control={form.control}
                             name="name"
                             render={({ field }) => (
-                                <FormItem className="basis-1/2">
-                                    <FormLabel>Nombre</FormLabel>
+                                <FormItem className="basis-1/2 sm:space-y-1">
+                                    <FormLabel className="sm:text-base">Nombre</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="text"
-                                            className="bg-card text-gray-800"
+                                            className="bg-card text-gray-800 sm:text-base"
                                             placeholder="Nombre"
                                             {...field}
                                         />
@@ -88,12 +88,12 @@ export function ConqsQuoteForm() {
                             control={form.control}
                             name="phone"
                             render={({ field }) => (
-                                <FormItem className="basis-1/2">
-                                    <FormLabel>Teléfono</FormLabel>
+                                <FormItem className="basis-1/2 sm:space-y-1">
+                                    <FormLabel className="sm:text-base">Teléfono</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="tel"
-                                            className="bg-card text-gray-800"
+                                            className="bg-card text-gray-800 sm:text-base"
                                             placeholder="Teléfono"
                                             {...field}
                                         />
@@ -116,7 +116,7 @@ export function ConqsQuoteForm() {
                                                 onCheckedChange={field.onChange}
                                             />
                                         </FormControl>
-                                        <FormLabel className="pt-1.5">Acepto que se me contacte a través de Whatsapp o llamada telefónica.</FormLabel>
+                                        <FormLabel className="pt-1.5 sm:text-base">Acepto que se me contacte a través de Whatsapp o llamada telefónica.</FormLabel>
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -126,7 +126,7 @@ export function ConqsQuoteForm() {
                     <div className="">
                         <Button
                             type="submit"
-                            className="w-full bg-linear-to-b from-sbr-blue-light to-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark text-gray-50 shadow active:shadow-sm hover:scale-105 active:scale-95"
+                            className="w-full bg-linear-to-b from-sbr-blue-light to-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark text-gray-50 sm:text-base shadow active:shadow-sm hover:scale-105 active:scale-95"
                             size="lg"
                         >
                             Enviar
@@ -175,7 +175,7 @@ export function ConqsFooterQuoteForm() {
                 className="relative z-0 flex flex-col items-center justify-center"
                 onSubmit={onSubmit}
             >
-                <div className="relative z-0 w-full py-6 rounded space-y-6">
+                <div className="relative z-0 w-full py-6 rounded space-y-6 sm:space-y-8">
                     <div
                         className="absolute z-10 inset-0 flex flex-col items-center justify-center gap-6 bg-accent mb-0 rounded text-gray-800 transition duration-500 opacity-0 data-[state=pending]:opacity-100 scale-0 data-[state=pending]:scale-100 pointer-events-none data-[state=pending]:pointer-events-auto"
                         data-state={conqsQuoteMut.status}
@@ -183,13 +183,13 @@ export function ConqsFooterQuoteForm() {
                         <span className="loader"></span>
                         <span className="text-2xl text-current/60 font-medium">Cargando...</span>
                     </div>
-                    <div className="space-y-4">
+                    <div className="space-y-4 sm:space-y-6">
                         <FormField
                             control={form.control}
                             name="name"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2">
-                                    <FormLabel>Nombre</FormLabel>
+                                    <FormLabel className="sm:text-base">Nombre</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="text"
@@ -207,7 +207,7 @@ export function ConqsFooterQuoteForm() {
                             name="phone"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2">
-                                    <FormLabel>Teléfono</FormLabel>
+                                    <FormLabel className="sm:text-base">Teléfono</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="tel"
@@ -226,7 +226,7 @@ export function ConqsFooterQuoteForm() {
                             render={({ field }) => (
                                 <FormItem>
                                     <Select>
-                                        <FormLabel>Horario de visita</FormLabel>
+                                        <FormLabel className="sm:text-base">Horario de visita</FormLabel>
                                         <FormControl>
                                             <SelectTrigger className="w-full bg-card">
                                                 <SelectValue placeholder="¿Cuándo deseas visitar?" />
@@ -246,16 +246,16 @@ export function ConqsFooterQuoteForm() {
                             name="consent"
                             render={({ field }) => (
                                 <FormItem>
-                                    <div className="flex items-center gap-2 basis-1/2">
+                                    <div className="flex items-center gap-2 sm:gap-4 basis-1/2">
                                         <FormControl>
                                             <Checkbox
-                                                className="bg-card shadow-lg"
+                                                className="bg-card shadow-lg sm:size-6"
                                                 name={field.name}
                                                 defaultChecked={field.value}
                                                 onCheckedChange={field.onChange}
                                             />
                                         </FormControl>
-                                        <FormLabel className="pt-1.5">Acepto que se me contacte a través de Whatsapp o llamada telefónica.</FormLabel>
+                                        <FormLabel className="leading-none sm:pt-1.5 sm:text-base">Acepto que se me contacte a través de Whatsapp o llamada telefónica.</FormLabel>
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -265,7 +265,7 @@ export function ConqsFooterQuoteForm() {
                     <div className="">
                         <Button
                             type="submit"
-                            className="w-full bg-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark text-gray-50 shadow active:shadow-sm hover:scale-105 active:scale-95"
+                            className="w-full bg-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark sm:text-base text-gray-50 shadow active:shadow-sm hover:scale-105 active:scale-95"
                             size="lg"
                         >
                             Enviar

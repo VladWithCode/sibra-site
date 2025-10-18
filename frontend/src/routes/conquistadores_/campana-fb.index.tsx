@@ -63,7 +63,7 @@ function RouteComponent() {
                 <HeroSection />
                 <AvailablitySection />
                 <section id="contacto" className="relative z-0">
-                    <div className="absolute inset-0 z-0 bg-[url('/agent_showcase.png')] bg-center bg-fixed bg-no-repeat brightness-90">
+                    <div className="absolute inset-0 z-0 bg-[url('/agent_showcase.png')] bg-cover bg-center bg-fixed bg-no-repeat brightness-90">
                         {/* <img src="/agent_showcase.png" alt="" className="h-full w-full object-cover object-center brightness-75" /> */}
                     </div>
                     <div className="opacity-0 translate-y-14" data-quote-form>
@@ -72,55 +72,56 @@ function RouteComponent() {
                 </section>
                 <CardsSection />
 
-                <section id="financiamiento" className="relative z-0 text-center space-y-3">
+                <section id="financiamiento" className="relative z-0 text-center space-y-3 sm:space-y-12">
                     <div className="px-8 pt-16 space-y-6">
-                        <h2 className="uppercase tracking-wide text-current/70">Financiamiento</h2>
+                        <h2 className="sm:text-xl uppercase tracking-wide text-current/70">Financiamiento</h2>
                         <p className="text-4xl">Invierte fácil, sin bancos y sin intereses.</p>
                     </div>
-                    <div className="relative z-0 w-full aspect-video">
+                    <div className="relative z-0 w-full aspect-video sm:aspect-[3/2]">
                         <img src="/agent_showcase_2.jpg" alt="Imagen demostrativa de un agente SIBRA explicando a los clientes el plan de pago." className="h-full w-full object-cover object-center brightness-75" />
                     </div>
                 </section>
                 <section id="oferta" className="relative z-0 flex flex-col items-center justify-center bg-secondary pb-12 space-y-8">
                     <div
-                        className="relative z-10 w-4/5 max-w-xs -translate-y-2 translate-x-4 bg-linear-to-b from-sbr-blue to-sbr-blue-dark p-4 pt-24 rounded shadow space-y-4 opacity-0"
+                        className="relative z-10 w-4/5 max-w-md -translate-y-8 translate-x-4 sm:translate-x-24 bg-linear-to-b from-sbr-blue to-sbr-blue-dark p-4 sm:p-8 pt-24 sm:pt-32 rounded shadow space-y-4 opacity-0"
                         data-container
                     >
-                        <div className="absolute top-6 -left-4 p-1 bg-card pl-8 rounded shadow-lg -translate-x-6 opacity-0" data-badge>
-                            <h2 className="text-lg font-bold text-gray-800 uppercase">Oferta</h2>
+                        <div className="absolute top-6 -left-4 p-1 pl-8 sm:p-2 sm:pl-8 bg-card rounded shadow-lg -translate-x-6 opacity-0" data-badge>
+                            <h2 className="text-lg sm:text-2xl font-bold text-gray-800 uppercase">Oferta</h2>
                         </div>
-                        <p className="text-5xl font-bold scale-0" data-oferta-price>
+                        <p className="text-5xl sm:text-6xl font-bold scale-0" data-oferta-price>
                             $36,458<span className="text-2xl font-normal tracking-wide ml-1.5">MES</span>
                         </p>
-                        <ul className="px-4">
+                        <ul className="px-4 sm:py-4 sm:space-y-1">
                             <li className="flex items-center gap-2 -translate-x-6 opacity-0" data-feat-item>
                                 <CheckCircle2 className="size-8 stroke-sbr-blue-light fill-current" />
-                                <span className="text-sm">Agua, luz y drenaje.</span>
+                                <span className="text-sm sm:text-base">Agua, luz y drenaje.</span>
                             </li>
                             <li className="flex items-center gap-2 -translate-x-6 opacity-0" data-feat-item>
                                 <CheckCircle2 className="size-8 stroke-sbr-blue-light fill-current" />
-                                <span className="text-sm">Plusvalía.</span>
+                                <span className="text-sm sm:text-base">Plusvalía.</span>
                             </li>
                             <li className="flex items-center gap-2 -translate-x-6 opacity-0" data-feat-item>
                                 <CheckCircle2 className="size-8 stroke-sbr-blue-light fill-current" />
-                                <span className="text-sm">Áreas verdes.</span>
+                                <span className="text-sm sm:text-base">Áreas verdes.</span>
                             </li>
                             <li className="flex items-center gap-2 -translate-x-6 opacity-0" data-feat-item>
                                 <CheckCircle2 className="size-8 stroke-sbr-blue-light fill-current" />
-                                <span className="text-sm">Privacidad y seguridad.</span>
+                                <span className="text-sm sm:text-base">Privacidad y seguridad.</span>
                             </li>
                             <li className="flex items-center gap-2 -translate-x-6 opacity-0" data-feat-item>
                                 <CheckCircle2 className="size-8 stroke-sbr-blue-light fill-current" />
-                                <span className="text-sm">Pie de Blvd.</span>
+                                <span className="text-sm sm:text-base">Pie de Blvd.</span>
                             </li>
                         </ul>
                         <div className="relative z-0 px-2">
-                            <div className="relative z-10 w-fit px-2.5 py-1 bg-linear-to-b from-sbr-green-dark to-sbr-green rounded-xs">
-                                <p className="text-lg font-semibold" style={{ marginBottom: "0px" }}>Dimensiones</p>
+                            <div className="relative z-10 w-fit px-2.5 sm:px-3.5 py-1 sm:py-2 bg-linear-to-b from-sbr-green-dark to-sbr-green rounded-xs space-y-1">
+                                <p className="text-lg sm:text-xl">Dimensiones</p>
+                                <p className="text-xl sm:text-2xl font-bold">10m x 25m</p>
                             </div>
                             <div className="absolute z-0 flex justify-end bottom-0 right-0">
                                 <img
-                                    className="w-56 aspect-[3/1] translate-y-12 translate-x-10 scale-0"
+                                    className="w-56 sm:w-80 aspect-[3/1] translate-y-12 sm:translate-y-20 translate-x-10 sm:translate-x-16 sm:translate-x-18 scale-0"
                                     src="/land.webp"
                                     alt="Imagen representativa de la fracción de terreno en Conquistadores II."
                                     width="300"
@@ -130,9 +131,9 @@ function RouteComponent() {
                             </div>
                         </div>
                     </div>
-                    <p className="text-xs text-gray-800 text-end px-4">*Enganche desde <strong>$218,750 MXN</strong> · Resto en <strong>18 meses sin intereses</strong>.</p>
+                    <p className="w-full text-xs sm:text-sm text-gray-800 text-end px-4 sm:px-8">*Enganche desde <strong>$218,750 MXN</strong> · Resto en <strong>18 meses sin intereses</strong>.</p>
                 </section>
-                <section id="pasos" className="relative z-0 bg-card px-8 py-16 space-y-12">
+                <section id="pasos" className="relative z-0 bg-card px-8 py-16 sm:py-24 space-y-12">
                     <div className="mx-auto h-1 w-20 bg-sbr-blue-light rounded-full -mt-12"></div>
                     <ol className="space-y-6">
                         {
@@ -145,7 +146,7 @@ function RouteComponent() {
                     </ol>
                 </section>
                 <section className="relative z-0 px-4 py-16 bg-accent space-y-6">
-                    <div className="relative z-0 w-full aspect-[2/1] rounded-xs mb-12" >
+                    <div className="relative z-0 w-full max-w-xl aspect-[2/1] rounded-xs mb-12 sm:mb-16 mx-auto" >
                         <img
                             src="/sample.webp"
                             alt=""
@@ -154,16 +155,16 @@ function RouteComponent() {
                                 clipPath: "polygon(0% 0%, 100% 0%, 100% 85%, 0% 97%)",
                             }}
                         />
-                        <div className="absolute -bottom-2 inset-x-0">
+                        <div className="absolute -bottom-2 sm:bottom-0 inset-x-0">
                             <h2
-                                className="text-5xl font-medium tracking-tighter uppercase"
+                                className="text-5xl sm:text-6xl font-medium tracking-tighter uppercase"
                                 style={{ textShadow: "0px 0px 8px rgba(0,0,0,0.65)" }}
                             >
                                 Ubicación
                             </h2>
                         </div>
                     </div>
-                    <div className="bg-gray-200 aspect-[4/3] rounded-lg">
+                    <div className="max-w-xl aspect-[4/3] bg-gray-200 rounded-lg mx-auto">
                         <iframe
                             className="w-full h-full object-cover border-0 rounded-lg"
                             src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d2249.4186266257207!2d-104.6054537871626!3d23.99755376264779!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjPCsDU5JzUxLjUiTiAxMDTCsDM2JzE2LjkiVw!5e1!3m2!1sen!2smx!4v1760571453942!5m2!1sen!2smx"
@@ -174,44 +175,44 @@ function RouteComponent() {
                             referrerPolicy="no-referrer-when-downgrade">
                         </iframe>
                     </div>
-                    <p className="text-xs text-gray-800 text-center">Unete a +30 familias Clientes que ya aseguraron su terreno y construyeron su patrimonio.</p>
-                    <div className="flex items-center gap-2.5 bg-linear-to-r from-sbr-blue-dark to-sbr-blue-light rounded-xs p-2">
+                    <p className="text-xs sm:text-sm text-gray-800 text-center">Unete a +30 familias Clientes que ya aseguraron su terreno y construyeron su patrimonio.</p>
+                    <div className="flex items-center gap-2.5 lg:gap-4 bg-linear-to-r from-sbr-blue-dark to-sbr-blue-light rounded-xs p-2 sm:p-4 lg:p-6">
                         <div className="basis-1/3 shrink-0 grow-0">
-                            <p className="text-tiny font-semibold text-current">
+                            <p className="text-tiny sm:text-sm lg:text-base font-semibold text-current">
                                 Espaldas de la Feria Nacional de Durango.
                             </p>
                         </div>
-                        <div className="basis-0.5 shrink-0 grow-0 h-7 border-l-2 border-dashed my-auto"></div>
+                        <div className="basis-0.5 shrink-0 grow-0 h-7 lg:h-9 border-l-2 border-dashed my-auto"></div>
                         <div className="basis-1/3 shrink-0 grow-0">
-                            <p className="text-tiny font-semibold text-current">Lunes a domingo. 9:00 a.m. – 6:00 p.m.</p>
+                            <p className="text-tiny sm:text-sm lg:text-base font-semibold text-current">Lunes a domingo. 9:00 a.m. – 6:00 p.m.</p>
                         </div>
-                        <div className="basis-0.5 shrink-0 grow-0 h-7 border-l-2 border-dashed my-auto"></div>
-                        <div className="basis-1/3 shrink-0 grow-0">
-                            <p className="text-tiny font-semibold text-current">Plusvalía.</p>
+                        <div className="basis-0.5 shrink-0 grow-0 h-7 lg:h-9 border-l-2 border-dashed my-auto"></div>
+                        <div className="basis-1/3 shrink-0 grow-0 sm:p-1">
+                            <p className="text-tiny sm:text-sm lg:text-base font-semibold text-current">Plusvalía.</p>
                         </div>
                     </div>
                 </section>
 
                 <div id="contacto-bottom" className="bg-secondary text-gray-800 px-4 py-16 space-y-6">
-                    <div className="space-y-6">
-                        <h2 className="text-lg font-semibold">Agenda tu visita o contáctanos</h2>
-                        <ul className="grid grid-cols-[auto_auto] gap-2">
+                    <div className="max-w-2xl space-y-6 mx-auto">
+                        <h2 className="text-lg sm:text-2xl font-semibold">Agenda tu visita o contáctanos</h2>
+                        <ul className="grid grid-cols-[auto_auto] gap-2 sm:text-lg">
                             <li className="col-span-full grid grid-cols-subgrid gap-2">
-                                <strong className="w-fit flex gap-2">
+                                <strong className="text-current/80 w-fit flex gap-2">
                                     <MapPin className="text-destructive" />
                                     <span>Dirección:</span>
                                 </strong>
                                 <span>Espaldas de la Feria Nacional, Durango</span>
                             </li>
                             <li className="col-span-full grid grid-cols-subgrid justify-between gap-2">
-                                <strong className="w-fit flex gap-2">
+                                <strong className="text-current/80 w-fit flex gap-2">
                                     <Clock className="text-sbr-blue" />
                                     <span>Horario:</span>
                                 </strong>
                                 <span>Lunes a domingo · 9:00 a.m. – 6:00 p.m.</span>
                             </li>
                             <li className="col-span-full grid grid-cols-subgrid justify-between gap-2">
-                                <strong className="w-fit flex gap-2">
+                                <strong className="text-current/80 w-fit flex gap-2">
                                     <Phone className="fill-current" />
                                     <span>Tel / WhatsApp:</span>
                                 </strong>
@@ -219,8 +220,12 @@ function RouteComponent() {
                             </li>
                         </ul>
                     </div>
-                    <ConqsFooterQuoteForm />
-                    <p style={{ marginTop: "20px" }}>Terrenos listos. Escritura lista. Solo faltas tú.</p>
+                    <div className="max-w-2xl mx-auto">
+                        <ConqsFooterQuoteForm />
+                    </div>
+                    <p className="text-center lg:text-2xl">
+                        Terrenos listos. Escritura lista. Solo faltas tú.
+                    </p>
                 </div>
 
                 <div className="text-gray-800">
@@ -289,13 +294,13 @@ function HeroSection() {
                     style={{ filter: "brightness(100%)" }}
                 />
             </div>
-            <div className="relative z-10 bg-sbr-blue-dark/30 pt-40 opacity-0" data-backdrop>
+            <div className="relative z-10 bg-sbr-blue-dark/30 pt-40 sm:pt-60 lg:pt-80 opacity-0" data-backdrop>
                 {/* <a href="#contacto" className="cta">Agendar mi visita</a> */}
                 {/* <p style={{ fontSize: "0.9rem", marginTop: "10px" }}>Desde $875,000 MXN · Escritura inmediata</p> */}
             </div>
             <div className="absolute inset-x-0 -bottom-14 z-20 text-primary-foreground text-end px-5 space-y-1.5" data-content>
-                <h1 className="text-4xl font-semibold tracking-wide opacity-0 translate-y-14" data-inview-animate>Conquistadores II</h1>
-                <p className="text-xs text-current/70 opacity-0 translate-y-14" data-inview-animate>Servicios completos · Acceso controlado · Financiamiento directo sin intereses.</p>
+                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-wide opacity-0 translate-y-14" data-inview-animate>Conquistadores II</h1>
+                <p className="text-xs sm:text-sm lg:text-base text-current/70 opacity-0 translate-y-14" data-inview-animate>Servicios completos · Acceso controlado · Financiamiento directo sin intereses.</p>
             </div>
         </section>
     );
@@ -303,7 +308,7 @@ function HeroSection() {
 
 function AvailablitySection() {
     return (
-        <section id="disponibilidad" className="pt-36 pb-20 px-4 space-y-6">
+        <section id="disponibilidad" className="pt-36 pb-20 px-4 lg:px-12 space-y-6">
             {/* <h2 className="text-2xl font-bold text-current/80">Disponibilidad</h2> */}
             <div
                 className="relative z-0"
@@ -319,7 +324,7 @@ function AvailablitySection() {
                     data-avl-content
                 >
                     <Button
-                        className="absolute -bottom-3 right-4 px-8 text-lg text-primary-foreground font-medium bg-linear-to-b from-sbr-green-light to-sbr-green rounded shadow-lg"
+                        className="absolute -bottom-3 right-4 px-8 sm:py-5 text-lg sm:text-xl text-primary-foreground font-medium bg-linear-to-b from-sbr-green-light to-sbr-green rounded shadow-lg"
                         size="sm"
                     >
                         Ver Plano
@@ -350,12 +355,12 @@ const features = [
 
 function FeatureCard({ data }: { data: typeof features[number] }) {
     return (
-        <div className="col-span-1 space-y-3" data-card-wrapper>
-            <h3 className="text-lg text-current/80 font-light opacity-0 translate-y-14" data-card-title>{data.title}</h3>
-            <Card className="bg-linear-to-br from-sbr-green-light to-sbr-green border-0 p-4 py-10 rounded-md opacity-0 translate-y-14" data-card>
+        <div className="col-span-1 space-y-3 sm:space-y-6" data-card-wrapper>
+            <h3 className="text-lg sm:text-2xl text-current/80 font-light opacity-0 translate-y-14" data-card-title>{data.title}</h3>
+            <Card className="max-w-md bg-linear-to-br from-sbr-green-light to-sbr-green border-0 p-4 sm:px-6 py-10 sm:py-12 mx-auto rounded-md opacity-0 translate-y-14" data-card>
                 <CardContent className="flex flex-col gap-8 text-gray-50 px-2">
                     <img src={data.image} alt="" className="w-full aspect-[4/3] object-cover object-center brightness-75 rounded" />
-                    <p className="text-current/90 font-bold">{data.description}</p>
+                    <p className="sm:text-lg text-current/90 font-bold">{data.description}</p>
                 </CardContent>
             </Card>
         </div>
@@ -364,13 +369,13 @@ function FeatureCard({ data }: { data: typeof features[number] }) {
 
 function CardsSection() {
     return (
-        <section id="detalles" className="relative z-0 grid grid-cols-1 auto-rows-auto gap-12 px-4 py-16 pb-4 text-center">
+        <section id="detalles" className="relative z-0 grid grid-cols-1 auto-rows-auto gap-12 sm:gap-16 px-4 py-16 sm:py-24 pb-4 text-center">
             {
                 features.map((feature) => (
                     <FeatureCard key={feature.title} data={feature} />
                 ))
             }
-            <p className="text-xs text-end">Más que un desarrollo, es un espacio listo para vivir o invertir.</p>
+            <p className="text-xs sm:text-sm text-end">Más que un desarrollo, es un espacio listo para vivir o invertir.</p>
         </section>
     );
 }
@@ -408,21 +413,23 @@ const BuyingSteps = [
 function BuyStepCard({ stepData }: { stepData: typeof BuyingSteps[number] }) {
     return (
         <Card
-            className="bg-sbr-green-dark -translate-x-14 opacity-0"
+            className="max-w-lg bg-sbr-green-dark -translate-x-14 opacity-0 mx-auto"
             style={{
                 boxShadow: "0px 10px 1px -2px var(--color-sbr-green-light)",
             }}
             data-card-wrapper
         >
-            <CardContent className="flex gap-4 text-primary-foreground px-5">
-                <p className="text-5xl text-current/90 font-bold my-auto">{stepData.step}</p>
-                <div className="space-y-1">
-                    <h3 className="text-lg font-bold">{stepData.title}</h3>
-                    {stepData.description.map((description, index) => (
-                        <p key={index} className="text-current/70">
-                            {description}
-                        </p>
-                    ))}
+            <CardContent className="flex gap-4 sm:gap-6 text-primary-foreground px-5 sm:px-8">
+                <p className="text-5xl sm:text-6xl text-current/90 font-bold my-auto">{stepData.step}</p>
+                <div className="space-y-1.5 sm:space-y-2">
+                    <h3 className="text-lg sm:text-2xl font-bold">{stepData.title}</h3>
+                    <div className="space-y-0.5 sm:text-lg">
+                        {stepData.description.map((description, index) => (
+                            <p key={index} className="text-current/70">
+                                {description}
+                            </p>
+                        ))}
+                    </div>
                 </div>
             </CardContent>
         </Card>
