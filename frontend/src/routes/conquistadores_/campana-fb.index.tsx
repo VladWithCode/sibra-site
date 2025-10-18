@@ -22,6 +22,16 @@ export const Route = createFileRoute('/conquistadores_/campana-fb/')({
                 href: "/conquistadores.css",
             }
         ],
+        scripts: [
+            {
+                src: "/meta-pixel.js",
+                async: true,
+                defer: true,
+                onError: (e) => {
+                    console.error(e);
+                },
+            },
+        ],
     }),
 })
 
@@ -59,6 +69,11 @@ function RouteComponent() {
 
     return (
         <PublicLayout>
+            <noscript>
+                <img height="1" width="1" style={{ display: "none" }}
+                    src="https://www.facebook.com/tr?id=24922359400766650&ev=PageView&noscript=1"
+                />
+            </noscript>
             <main className="relative bg-sbr-blue-dark text-primary-foreground" ref={mainContentRef}>
                 <HeroSection />
                 <AvailablitySection />
@@ -121,7 +136,7 @@ function RouteComponent() {
                             </div>
                             <div className="absolute z-0 flex justify-end bottom-0 right-0">
                                 <img
-                                    className="w-56 sm:w-80 aspect-[3/1] translate-y-12 sm:translate-y-20 translate-x-10 sm:translate-x-16 sm:translate-x-18 scale-0"
+                                    className="w-56 sm:w-80 aspect-[3/1] translate-y-12 sm:translate-y-20 translate-x-10 sm:translate-x-18 scale-0"
                                     src="/land.webp"
                                     alt="Imagen representativa de la fracción de terreno en Conquistadores II."
                                     width="300"
