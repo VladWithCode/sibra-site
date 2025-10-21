@@ -14,8 +14,8 @@ export const Route = createFileRoute('/conquistadores_/')({
     component: RouteComponent,
     head: () => ({
         meta: [
-            { title: "Conquistadores II" },
-            { name: "description", content: "Conoce el desarrollo Conquistadores II que SIBRA Inmobiliaria ha hecho en Durango." },
+            { title: "Conquistadores" },
+            { name: "description", content: "Conoce el desarrollo Conquistadores que SIBRA Inmobiliaria ha hecho en Durango." },
         ],
         links: [
             {
@@ -244,56 +244,8 @@ function RouteComponent() {
                     </p>
                 </div>
 
-                <div className="text-gray-800">
-                    {/* <section style={{ background: "#fffaf3" }}> */}
-                    {/*     <h2>Por qué elegir Conquistadores 2</h2> */}
-                    {/*     <div className="cards"> */}
-                    {/*         <div className="card"> */}
-                    {/*             <h3>🏡 Listos para escriturar</h3> */}
-                    {/*             <p>Terrenos reales, propiedad segura. Entrega inmediata con escritura en mano.</p> */}
-                    {/*         </div> */}
-                    {/*         <div className="card"> */}
-                    {/*             <h3>💧 Servicios completos</h3> */}
-                    {/*             <p>Agua, luz, drenaje y pavimento ya instalados.</p> */}
-                    {/*         </div> */}
-                    {/*         <div className="card"> */}
-                    {/*             <h3>🛡️ Privada segura</h3> */}
-                    {/*             <p>Acceso controlado, áreas verdes y juegos infantiles para toda la familia.</p> */}
-                    {/*         </div> */}
-                    {/*     </div> */}
-                    {/*     <p style={{ marginTop: "20px" }}>Más que un desarrollo, es un espacio listo para vivir o invertir.</p> */}
-                    {/*     <a href="#financiamiento" className="cta">Quiero ver los terrenos</a> */}
-                    {/* </section> */}
-                    {/**/}
-                    {/* <section id="financiamiento" style={{ background: "#eef6ff" }}> */}
-                    {/*     <h2>Compra fácil, sin bancos y sin intereses</h2> */}
-                    {/*     <p>Enganche desde <strong>$218,750 MXN</strong> · Resto en <strong>18 meses sin intereses</strong> · Sin trámites bancarios.</p> */}
-                    {/*     <div className="timeline"> */}
-                    {/*         <span>🏁 Aparta tu lote</span> → */}
-                    {/*         <span>📄 Firma escritura</span> → */}
-                    {/*         <span>📆 Paga mes a mes</span> */}
-                    {/*     </div> */}
-                    {/*     <p style={{ marginTop: "20px" }}>Mientras otros esperan permisos, tú ya estás firmando escritura.</p> */}
-                    {/*     <a href="#contacto" className="cta">Solicitar plan de pago</a> */}
-                    {/* </section> */}
-                    {/**/}
-                    {/* <section style={{ background: "#fff", }}> */}
-                    {/*     <h2>Historias reales, decisiones inteligentes</h2> */}
-                    {/*     <p>Clientes que ya aseguraron su terreno y firmaron escritura.</p> */}
-                    {/*     <div className="cards"> */}
-                    {/*         <div className="card"> */}
-                    {/*             <p>“En dos semanas firmamos, sin trámites complicados.” – Familia Ramírez 🏡</p> */}
-                    {/*         </div> */}
-                    {/*         <div className="card"> */}
-                    {/*             <p>“Privada terminada, lista para construir. Todo transparente.” – Luis & Ana</p> */}
-                    {/*         </div> */}
-                    {/*     </div> */}
-                    {/*     <a href="#contacto" className="cta">Agendar recorrido este fin</a> */}
-                    {/* </section> */}
-                </div>
-
                 <a
-                    href="https://wa.me/5216182298042?text=¡Hola! Me gustaría obtener más información de Conquistadores II."
+                    href="https://wa.me/5216182298042?text=¡Hola! Me gustaría obtener más información de Conquistadores."
                     target="_blank"
                     className="whatsapp-fixed">
                     <WhatsappIcon className="text-gray-50 size-8" />
@@ -324,7 +276,7 @@ function HeroSection() {
                 {/* <p style={{ fontSize: "0.9rem", marginTop: "10px" }}>Desde $875,000 MXN · Escritura inmediata</p> */}
             </div>
             <div className="absolute inset-x-0 -bottom-14 z-20 text-primary-foreground text-end px-5 space-y-1.5" data-content>
-                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-wide opacity-0 translate-y-14" data-inview-animate>Conquistadores II</h1>
+                <h1 className="text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-wide opacity-0 translate-y-14" data-inview-animate>Conquistadores</h1>
                 <p className="text-xs sm:text-sm lg:text-base text-current/70 opacity-0 translate-y-14" data-inview-animate>Servicios completos · Acceso controlado · Financiamiento directo sin intereses.</p>
             </div>
         </section>
