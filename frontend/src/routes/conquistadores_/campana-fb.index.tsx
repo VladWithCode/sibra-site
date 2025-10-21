@@ -8,6 +8,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import { Button } from '@/components/ui/button';
 import { animateSection } from './-animations';
+import { WhatsappIcon } from '@/components/icons/whatsapp';
 
 export const Route = createFileRoute('/conquistadores_/campana-fb/')({
     component: RouteComponent,
@@ -217,7 +218,7 @@ function RouteComponent() {
                                     <MapPin className="text-destructive" />
                                     <span>Dirección:</span>
                                 </strong>
-                                <span>Espaldas de la Feria Nacional, Durango</span>
+                                <span>C. Cancer #132. Fracc. Sahop, 34190 Durango. Dgo.</span>
                             </li>
                             <li className="col-span-full grid grid-cols-subgrid justify-between gap-2">
                                 <strong className="text-current/80 w-fit flex gap-2">
@@ -231,7 +232,7 @@ function RouteComponent() {
                                     <Phone className="fill-current" />
                                     <span>Tel / WhatsApp:</span>
                                 </strong>
-                                <span>618 123 4567</span>
+                                <a className="underline underline-offset-2 text-sbr-blue" href="tel:6182298042">618 229 8042</a>
                             </li>
                         </ul>
                     </div>
@@ -291,7 +292,12 @@ function RouteComponent() {
                     {/* </section> */}
                 </div>
 
-                <a href="https://wa.me/5216181234567" target="_blank" className="whatsapp-fixed">💬</a>
+                <a
+                    href="https://wa.me/5216182298042?text=¡Hola! Me gustaría obtener más información de Conquistadores II."
+                    target="_blank"
+                    className="whatsapp-fixed">
+                    <WhatsappIcon className="text-gray-50 size-8" />
+                </a>
             </main>
         </PublicLayout>
     )
@@ -376,7 +382,7 @@ function FeatureCard({ data }: { data: typeof features[number] }) {
     return (
         <div className="col-span-1 space-y-3 sm:space-y-6" data-card-wrapper>
             <h3 className="text-lg sm:text-2xl text-current/80 font-light opacity-0 translate-y-14" data-card-title>{data.title}</h3>
-            <Card className="max-w-md bg-linear-to-br from-sbr-green-dark to-sbr-green-dark border-0 p-4 sm:px-6 py-10 sm:py-12 mx-auto rounded-md opacity-0 translate-y-14" data-card>
+            <Card className="max-w-md bg-linear-to-br from-sbr-green-dark to-sbr-green-dark border-0 p-4 sm:px-6 py-10 sm:py-12 mx-auto rounded-md shadow-2xl opacity-0 translate-y-14" data-card>
                 <CardContent className="flex flex-col gap-8 text-gray-50 px-2">
                     <img src={data.image} alt="" className="w-full aspect-[4/3] object-cover object-center brightness-75 rounded" />
                     <p className="sm:text-lg text-current/90 font-bold">{data.description}</p>
@@ -418,7 +424,7 @@ const BuyingSteps = [
     {
         step: 3,
         title: "Entrega del terreno",
-        description: ["Recibe tu terreno contra-apartado."],
+        description: ["Recibe tu terreno contra-anticipo."],
         icon: Phone,
     },
     {
