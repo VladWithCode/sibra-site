@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useUIStore } from '@/stores/uiStore'
 import { createFileRoute } from '@tanstack/react-router'
 import { CheckCircle2, Clock, MapPin, Phone } from 'lucide-react';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import { Button } from '@/components/ui/button';
 import { animateSection } from './-animations';
@@ -301,13 +301,17 @@ function HeroSection() {
     return (
         <section id="inicio" className="hero relative z-0">
             <div className="absolute inset-0 z-0">
-                <img
-                    className="h-full w-full object-cover object-center"
-                    src="/hero_large.webp"
-                    alt=""
-                    data-hero-bgimg
-                    style={{ filter: "brightness(100%)" }}
-                />
+                <video className="h-full w-full object-cover object-center" muted autoPlay loop>
+                    <source src="/conquistadores_hero.mp4" type="video/mp4" />
+                    <source src="/conquistadores_hero.mov" type="video/mov" />
+                </video>
+                {/* <img */}
+                {/*     className="h-full w-full object-cover object-center" */}
+                {/*     src="/hero_large.webp" */}
+                {/*     alt="" */}
+                {/*     data-hero-bgimg */}
+                {/*     style={{ filter: "brightness(100%)" }} */}
+                {/* /> */}
             </div>
             <div className="relative z-10 bg-sbr-blue-dark/30 pt-40 sm:pt-60 lg:pt-80 opacity-0" data-backdrop>
                 {/* <a href="#contacto" className="cta">Agendar mi visita</a> */}
@@ -354,17 +358,17 @@ const features = [
     {
         title: "Listos para escriturar",
         description: "Terrenos reales, propiedad segura. Entrega inmediata con escritura en mano.",
-        image: "/sample.webp",
+        image: "/listosparaescriturar.jpg",
     },
     {
         title: "Servicios completos",
         description: "Desarrollo de obra en proximos meses. Agua, luz, drenaje y pavimento",
-        image: "/sample.webp",
+        image: "/servicioscompletos.jpg",
     },
     {
         title: "Privada segura",
         description: "Acceso controlado, areas verdes y juegos para toda la familia.",
-        image: "/sample.webp",
+        image: "/psegura.jpg",
     },
 ] as const;
 
