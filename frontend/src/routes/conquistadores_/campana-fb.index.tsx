@@ -357,17 +357,17 @@ function AvailablitySection() {
 const features = [
     {
         title: "Listos para escriturar",
-        description: "Terrenos reales, propiedad segura. Entrega inmediata con escritura en mano.",
+        description: "Tu terreno, con documentos en regla y escritura lista para firmar.",
         image: "/listosparaescriturar.jpg",
     },
     {
         title: "Servicios completos",
-        description: "Desarrollo de obra en proximos meses. Agua, luz, drenaje y pavimento",
+        description: "Servicios en proceso. Inversión segura con obra garantizada en próximos meses.",
         image: "/servicioscompletos.jpg",
     },
     {
         title: "Privada segura",
-        description: "Acceso controlado, areas verdes y juegos para toda la familia.",
+        description: "Acceso controlado, áreas verdes y la tranquilidad de un entorno familiar seguro.",
         image: "/psegura.jpg",
     },
 ] as const;
