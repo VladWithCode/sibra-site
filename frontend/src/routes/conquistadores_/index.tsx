@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { animateSection } from './-animations';
 import { WhatsappIcon } from '@/components/icons/whatsapp';
 
-export const Route = createFileRoute('/conquistadores_/campana-fb/')({
+export const Route = createFileRoute('/conquistadores_/')({
     component: RouteComponent,
     head: () => ({
         meta: [

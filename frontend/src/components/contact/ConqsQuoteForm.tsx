@@ -108,6 +108,27 @@ export function ConqsQuoteForm() {
                         />
                         <FormField
                             control={form.control}
+                            name="schedule"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <Select>
+                                        <FormLabel className="sm:text-base">Horario de visita</FormLabel>
+                                        <FormControl>
+                                            <SelectTrigger className="w-full text-gray-800 bg-card">
+                                                <SelectValue placeholder="¿Cuándo deseas visitar?" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="otro">Otro horario</SelectItem>
+                                            <SelectItem value="fin de semana">Este fin de semana</SelectItem>
+                                            <SelectItem value="entre semana">Entre semana</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
                             name="consent"
                             render={({ field }) => (
                                 <FormItem>

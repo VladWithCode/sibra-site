@@ -71,7 +71,7 @@ func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tplData := wsp.TemplateData{
-		TemplateName: "info_request",
+		TemplateName: "conqs_quote_request",
 		BodyVars: []wsp.TemplateVar{
 			{
 				"type": "text",
