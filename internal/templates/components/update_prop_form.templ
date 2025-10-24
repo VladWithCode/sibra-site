@@ -242,16 +242,16 @@ templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFiel
 					id="propType"
 					class={ "w-full border-current rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-slate-600",
                         templates.SelectClassName(
-                            (*invalidFields)["propType"] != "",
+                            (*invalidFields)["propertyType"] != "",
                             "border-2 text-rose-500 bg-rose-500/15",
                             "border",
                         ) }
 					required
 				>
 					<option value>Elige un tipo de propiedad</option>
-					<option value="casa" selected?={ templates.CmpStr(property.PropType, "casa") }>Casa </option>
-					<option value="apartamento" selected?={ templates.CmpStr(property.PropType, "apartamento") }>Apartamento </option>
-					<option value="terreno" selected?={ templates.CmpStr(property.PropType, "terreno") }>Terreno </option>
+					<option value="casa" selected?={ templates.CmpStr(property.PropertyType, "casa") }>Casa </option>
+					<option value="apartamento" selected?={ templates.CmpStr(property.PropertyType, "apartamento") }>Apartamento </option>
+					<option value="terreno" selected?={ templates.CmpStr(property.PropertyType, "terreno") }>Terreno </option>
 				</select>
 				if (*invalidFields)["propType"] != "" {
 					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["propType"] }</p>
@@ -372,9 +372,9 @@ templ UpdatePropForm(property *db.Property, invalidFields *templates.InvalidFiel
                             "border",
                         ) }
 				>
-					<option value="disponible" selected?={ templates.CmpStr(property.Status, "disponible") }>Disponible</option>
-					<option value="vendida" selected?={ templates.CmpStr(property.Status, "vendida") }>Vendida</option>
-					<option value="no_disponible" selected?={ templates.CmpStr(property.Status, "no_disponible") }>No disponible</option>
+					<option value="disponible" selected?={ templates.CmpStr(string(property.Status), "disponible") }>Disponible</option>
+					<option value="vendida" selected?={ templates.CmpStr(string(property.Status), "vendida") }>Vendida</option>
+					<option value="no_disponible" selected?={ templates.CmpStr(string(property.Status), "no_disponible") }>No disponible</option>
 				</select>
 				if (*invalidFields)["status"] != "" {
 					<p class="text-xs text-rose-500 py-0.5">{ (*invalidFields)["status"] }</p>

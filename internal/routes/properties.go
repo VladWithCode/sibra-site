@@ -68,7 +68,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 	lat, err := strconv.ParseFloat(strLat, 64)
 	if err != nil {
-		invalidFields.Lat = true
+		invalidFields["lat"] = true
 		isFormInvalid = true
 	}
 	strLon := r.Form.Get("lon")
@@ -77,7 +77,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 	lon, err := strconv.ParseFloat(strLon, 64)
 	if err != nil {
-		invalidFields.Lon = true
+		invalidFields["lon"] = true
 		isFormInvalid = true
 	}
 
@@ -99,7 +99,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 	price, err := strconv.ParseFloat(strPrice, 64)
 	if err != nil {
-		invalidFields.Price = true
+		invalidFields["price"] = true
 		isFormInvalid = true
 	}
 
@@ -109,7 +109,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 	beds, err := strconv.Atoi(r.Form.Get("beds"))
 	if err != nil {
-		invalidFields.Beds = true
+		invalidFields["beds"] = true
 		isFormInvalid = true
 	}
 
@@ -119,7 +119,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 	baths, err := strconv.Atoi(strBaths)
 	if err != nil {
-		invalidFields.Baths = true
+		invalidFields["baths"] = true
 		isFormInvalid = true
 	}
 
@@ -129,7 +129,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 	sqMt, err := strconv.ParseFloat(strSqMt, 64)
 	if err != nil {
-		invalidFields.SqMt = true
+		invalidFields["sqMt"] = true
 		isFormInvalid = true
 	}
 
@@ -139,7 +139,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 	lotSize, err := strconv.ParseFloat(strLotSize, 64)
 	if err != nil {
-		invalidFields.LotSize = true
+		invalidFields["lotSize"] = true
 		isFormInvalid = true
 	}
 
@@ -149,7 +149,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 	yearBuilt, err := strconv.Atoi(strYearBuilt)
 	if err != nil {
-		invalidFields.YearBuilt = true
+		invalidFields["yearBuilt"] = true
 		isFormInvalid = true
 	}
 
@@ -190,33 +190,32 @@ func CreateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	}
 
 	property := db.Property{
-		Id:          id.String(),
-		Address:     r.Form.Get("address"),
-		NbHood:      r.Form.Get("nbHood"),
-		Description: r.Form.Get("description"),
-		City:        r.Form.Get("city"),
-		State:       r.Form.Get("state"),
-		Zip:         r.Form.Get("zip"),
-		Country:     r.Form.Get("country"),
-		Status:      r.Form.Get("status"),
-		PropType:    r.Form.Get("propType"),
-		Contract:    r.Form.Get("contract"),
-		Price:       price,
-		Beds:        beds,
-		Baths:       baths,
-		SqMt:        sqMt,
-		LotSize:     lotSize,
-		YearBuilt:   yearBuilt,
-		ListingDate: listingDate,
-		Lat:         lat,
-		Lon:         lon,
-		Features:    feats,
-		Agent:       a.Id,
+		Id:           id.String(),
+		Address:      r.Form.Get("address"),
+		NbHood:       r.Form.Get("nbHood"),
+		Description:  r.Form.Get("description"),
+		City:         r.Form.Get("city"),
+		State:        r.Form.Get("state"),
+		Zip:          r.Form.Get("zip"),
+		Country:      r.Form.Get("country"),
+		Status:       db.PropertyStatus(r.Form.Get("status")),
+		PropertyType: r.Form.Get("propType"),
+		Contract:     r.Form.Get("contract"),
+		Price:        price,
+		Beds:         beds,
+		Baths:        baths,
+		SqMt:         sqMt,
+		LotSize:      lotSize,
+		YearBuilt:    yearBuilt,
+		ListingDate:  listingDate,
+		Lat:          lat,
+		Lon:          lon,
+		Features:     feats,
+		Agent:        a.Id,
 	}
 
-	property.SetCoordPoint()
 	property.SetSlug()
-
+	property.SyncLatLon()
 	err = db.CreateProperty(&property)
 
 	if err != nil {
@@ -286,6 +285,7 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id := r.PathValue("id")
+	ctx := r.Context()
 
 	err := r.ParseMultipartForm(90 << 20)
 	if err != nil {
@@ -295,7 +295,7 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 		return
 	}
 
-	property, err := db.FindPropertyById(id)
+	property, err := db.FindPropertyById(ctx, id)
 
 	if err != nil {
 		fmt.Printf("Find err: %v\n", err)
@@ -393,7 +393,7 @@ func UploadPropertyPictures(w http.ResponseWriter, r *http.Request, a *auth.Auth
 		property.Images = newPics[:i]
 	}
 
-	err = db.UpdatePropertyImages(property.Id, property.Images)
+	err = db.UpdatePropertyImages(property)
 	err = db.UpdatePropertyMainImg(property.Id, property.MainImg)
 
 	if err != nil {
@@ -431,8 +431,8 @@ func DeletePropertyById(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 func FindSingleProperty(w http.ResponseWriter, r *http.Request) {
 	propId := r.PathValue("id")
-
-	prop, err := db.FindPropertyById(propId)
+	ctx := r.Context()
+	prop, err := db.FindPropertyById(ctx, propId)
 
 	if err != nil {
 		fmt.Printf("Find err: %v\n", err)
@@ -468,12 +468,13 @@ func FindSingleProperty(w http.ResponseWriter, r *http.Request) {
 
 func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
+	ctx := r.Context()
 	nearbyDistance, _ := strconv.Atoi(r.URL.Query().Get("d"))
 	if nearbyDistance == 0 {
 		nearbyDistance = db.NearbyDistanceNormal // Default distance is 1km
 	}
 
-	prop, err := db.FindPropertyById(id)
+	prop, err := db.FindPropertyById(ctx, id)
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows") {
 			respondWithError(w, 404, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
@@ -521,6 +522,7 @@ func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 }
 
 func FindProperties(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	contract := r.PathValue("contract")
 	minPrice := r.URL.Query().Get("minPrice")
 	maxPrice := r.URL.Query().Get("maxPrice")
@@ -571,7 +573,7 @@ func FindProperties(w http.ResponseWriter, r *http.Request) {
 		filter.Baths = &intBaths
 	}
 
-	props, err := db.GetProperties(&filter, db.DefaultPageSize, page)
+	props, err := db.GetProperties(ctx, &filter, db.DefaultPageSize, page)
 
 	if err != nil {
 		fmt.Printf("Query props err: %v\n", err)

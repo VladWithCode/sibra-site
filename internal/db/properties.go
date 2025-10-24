@@ -3,29 +3,96 @@ package db
 import (
 	"context"
 	"database/sql"
+	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"math"
+	"log"
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/paulmach/orb"
-	"github.com/paulmach/orb/encoding/wkb"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vladwithcode/sibra-site/internal"
 )
 
-const OrderDirectionASC string = "ASC"
-const OrderDirectionDESC string = "DESC"
-const OrderByListingDate string = "listing_date"
-const OrderByPrice string = "price"
-const OrderBySqMt string = "square_mt"
-const OrderByLotSize string = "lot_size"
-const NearbyDistanceClose int = 1000
-const NearbyDistanceNormal int = 2000
-const NearbyDistanceFar int = 5000
-const DefaultPageSize int = 10
+var (
+	ErrInvalidPointValue = errors.New("invalid point value")
+)
+
+const (
+	OrderDirectionASC    string = "ASC"
+	OrderDirectionDESC   string = "DESC"
+	OrderByListingDate   string = "listing_date"
+	OrderByPrice         string = "price"
+	OrderBySqMt          string = "square_mt"
+	OrderByLotSize       string = "lot_size"
+	NearbyDistanceClose  int    = 1000
+	NearbyDistanceNormal int    = 2000
+	NearbyDistanceFar    int    = 5000
+	DefaultPageSize      int    = 10
+)
+
+type PropertyStatus string
+
+const (
+	PropertyStatusDraft         PropertyStatus = "borrador"
+	PropertyStatusArchived      PropertyStatus = "archivada"
+	PropertyStatusPublished     PropertyStatus = "publicada"
+	PropertyStatusPendingReview PropertyStatus = "en revisión"
+	PropertyStatusSold          PropertyStatus = "vendida"
+	PropertyStatusInactive      PropertyStatus = "inactiva"
+)
+
+// Point represents a geographic point with latitude and longitude
+type Point struct {
+	Lat float64 `json:"lat"`
+	Lon float64 `json:"lon"`
+}
+
+// Scan implements the sql.Scanner interface for Point
+func (p *Point) Scan(value any) error {
+	if value == nil {
+		return nil
+	}
+
+	switch v := value.(type) {
+	case string:
+		// PostgreSQL point format: "(lon,lat)"
+		v = strings.Trim(v, "()")
+		coords := strings.Split(v, ",")
+		if len(coords) != 2 {
+			return fmt.Errorf("invalid point format: %s", v)
+		}
+
+		lon, err := strconv.ParseFloat(coords[0], 64)
+		if err != nil {
+			return err
+		}
+
+		lat, err := strconv.ParseFloat(coords[1], 64)
+		if err != nil {
+			return err
+		}
+
+		p.Lon = lon
+		p.Lat = lat
+		return nil
+	default:
+		return fmt.Errorf("%w: cannot scan %T into Point", ErrInvalidPointValue, value)
+	}
+}
+
+// Value implements the driver.Valuer interface for Point
+func (p Point) Value() (driver.Value, error) {
+	if p.Lat == 0 && p.Lon == 0 {
+		return nil, nil
+	}
+	return fmt.Sprintf("(%f,%f)", p.Lon, p.Lat), nil
+}
 
 type Property struct {
 	Id                string         `json:"id" db:"id"`
@@ -37,21 +104,21 @@ type Property struct {
 	NbHood            string         `json:"nbHood" db:"nb_hood"`
 	Country           string         `json:"country" db:"country"`
 	Price             float64        `json:"price" db:"price"`
-	PropType          string         `json:"propType" db:"property_type"`
+	PropertyType      string         `json:"propertyType" db:"property_type"`
 	Contract          string         `json:"contract" db:"contract"`
 	Beds              int            `json:"beds" db:"beds"`
 	Baths             int            `json:"baths" db:"baths"`
 	SqMt              float64        `json:"sqMt" db:"square_mt"`
 	LotSize           float64        `json:"lotSize" db:"lot_size"`
-	ListingDate       time.Time      `json:"listingDate" db:"listing_date"`
+	ListingDate       time.Time      `json:"listingDate,omitzero" db:"listing_date"`
 	YearBuilt         int            `json:"yearBuilt" db:"year_built"`
-	Status            string         `json:"status" db:"status"`
-	Coords            *orb.Point     `json:"coords" db:"coords"`
+	Status            PropertyStatus `json:"status" db:"status"`
+	Coords            *Point         `json:"coords" db:"earth_coords"`
 	Features          map[string]any `json:"features" db:"features"`
 	Lat               float64        `json:"lat" db:"lat"`
 	Lon               float64        `json:"lon" db:"lon"`
 	Featured          bool           `json:"featured" db:"featured"`
-	FeaturedExpiresAt time.Time      `json:"featuredExpiresAt" db:"featured_expires_at"`
+	FeaturedExpiresAt time.Time      `json:"featuredExpiresAt,omitzero" db:"featured_expires_at"`
 	MainImg           string         `json:"mainImg" db:"main_img"`
 	Images            []string       `json:"imgs" db:"imgs"`
 	Agent             string         `json:"agent" db:"agent"`
@@ -69,43 +136,18 @@ func (p *Property) SetSlug() {
 	p.Slug = internal.Slugify(p.Contract + " " + p.Address + " " + p.NbHood + " " + p.Zip + " " + p.City + " " + p.State + " " + fmt.Sprint(p.YearBuilt))
 }
 
-func (p *Property) SetCoordPoint() {
-	p.Coords = &orb.Point{p.Lon, p.Lat}
+func (p *Property) SetCoords() {
+	p.Coords = &Point{
+		Lat: p.Lat,
+		Lon: p.Lon,
+	}
 }
 
-func (p *Property) GetWKBCoords() (wkbCoords []byte, err error) {
+func (p *Property) SyncLatLon() {
 	if p.Coords != nil {
-		wkbCoords, err = wkb.Marshal(*p.Coords)
-		if err != nil {
-			return
-		}
+		p.Lat = p.Coords.Lat
+		p.Lon = p.Coords.Lon
 	}
-
-	return
-}
-
-func (p *Property) ParseCoords(wkbCoords sql.NullString) error {
-	if wkbCoords.Valid {
-		bCoords := []byte(wkbCoords.String)
-		geo, err := wkb.Unmarshal(bCoords)
-
-		if err != nil {
-			p.Coords = nil
-			return nil
-		}
-
-		point, ok := geo.(orb.Point)
-
-		if !ok {
-			return fmt.Errorf("Unexpected %T for coords", geo)
-		}
-
-		p.Coords = &point
-	} else {
-		p.Coords = nil
-	}
-
-	return nil
 }
 
 func (p *Property) CreateStaticDir() error {
@@ -134,32 +176,100 @@ type PropertyWithNearby struct {
 }
 
 type PropertyFilter struct {
-	Beds           *int     `json:"beds"`
-	Baths          *int     `json:"baths"`
-	MinPrice       *float64 `json:"minPrice"`
-	MaxPrice       *float64 `json:"maxPrice"`
-	City           *string  `json:"city"`
-	State          *string  `json:"state"`
-	Contract       *string  `json:"contract"`
-	PropType       *string  `json:"propType"`
-	Zip            *string  `json:"zip"`
-	NbHood         *string  `json:"nbHood"`
-	Featured       *bool    `json:"featured"`
-	OrderBy        *string  `json:"orderBy"`
-	OrderDirection *string  `json:"orderDirection"`
-	TextSearch     *string  `json:"textSearch"`
+	Ids            *[]string       `json:"ids"`
+	Beds           *int            `json:"beds"`
+	Baths          *int            `json:"baths"`
+	MinPrice       *float64        `json:"minPrice"`
+	MaxPrice       *float64        `json:"maxPrice"`
+	MinSqMt        *float64        `json:"minSqMt"`
+	MaxSqMt        *float64        `json:"maxSqMt"`
+	MinLotSize     *float64        `json:"minLotSize"`
+	MaxLotSize     *float64        `json:"maxLotSize"`
+	MinYearBuilt   *int            `json:"minYearBuilt"`
+	MaxYearBuilt   *int            `json:"maxYearBuilt"`
+	City           *string         `json:"city"`
+	State          *string         `json:"state"`
+	Contract       *string         `json:"contract"`
+	PropType       *string         `json:"propType"`
+	Zip            *string         `json:"zip"`
+	NbHood         *string         `json:"nbHood"`
+	Status         *PropertyStatus `json:"status"`
+	Featured       *bool           `json:"featured"`
+	OrderBy        *string         `json:"orderBy"`
+	OrderDirection *string         `json:"orderDirection"`
+	TextSearch     *string         `json:"textSearch"`
+	// New fields for location-based searches
+	NearLat      *float64 `json:"nearLat"`
+	NearLon      *float64 `json:"nearLon"`
+	WithinMeters *int     `json:"withinMeters"`
 }
 
-type InvalidPropertyFields struct {
-	Price     bool
-	LotSize   bool
-	Beds      bool
-	Baths     bool
-	SqMt      bool
-	YearBuilt bool
-	Lat       bool
-	Lon       bool
+func NewPropertyFilter() *PropertyFilter {
+	return &PropertyFilter{}
 }
+
+func NewPropertyFilterFromQuery(query *url.Values) *PropertyFilter {
+	filter := NewPropertyFilter()
+	if query == nil {
+		return filter
+	}
+	if ids := (*query)["ids"]; len(ids) > 0 {
+		filter.Ids = &ids
+	}
+	if contract := query.Get("contract"); contract != "" {
+		filter.Contract = &contract
+	}
+	if city := query.Get("city"); city != "" {
+		filter.City = &city
+	}
+	if state := query.Get("state"); state != "" {
+		filter.State = &state
+	}
+	if beds := query.Get("beds"); beds != "" {
+		b, _ := strconv.Atoi(beds)
+		filter.Beds = &b
+	}
+	if baths := query.Get("baths"); baths != "" {
+		b, _ := strconv.Atoi(baths)
+		filter.Baths = &b
+	}
+	if maxPrice := query.Get("maxPrice"); maxPrice != "" {
+		maxPriceFloat, _ := strconv.ParseFloat(maxPrice, 64)
+		filter.MaxPrice = &maxPriceFloat
+	}
+	if minSqMt := query.Get("minSqMt"); minSqMt != "" {
+		minSqMtFloat, _ := strconv.ParseFloat(minSqMt, 64)
+		filter.MinSqMt = &minSqMtFloat
+	}
+	if maxSqMt := query.Get("maxSqMt"); maxSqMt != "" {
+		maxSqMtFloat, _ := strconv.ParseFloat(maxSqMt, 64)
+		filter.MaxSqMt = &maxSqMtFloat
+	}
+	if minLotSize := query.Get("minLotSize"); minLotSize != "" {
+		minLotSizeFloat, _ := strconv.ParseFloat(minLotSize, 64)
+		filter.MinLotSize = &minLotSizeFloat
+	}
+	if maxLotSize := query.Get("maxLotSize"); maxLotSize != "" {
+		maxLotSizeFloat, _ := strconv.ParseFloat(maxLotSize, 64)
+		filter.MaxLotSize = &maxLotSizeFloat
+	}
+	if minYearBuilt := query.Get("minYearBuilt"); minYearBuilt != "" {
+		minYearBuiltInt, _ := strconv.Atoi(minYearBuilt)
+		filter.MinYearBuilt = &minYearBuiltInt
+	}
+	if maxYearBuilt := query.Get("maxYearBuilt"); maxYearBuilt != "" {
+		maxYearBuiltInt, _ := strconv.Atoi(maxYearBuilt)
+		filter.MaxYearBuilt = &maxYearBuiltInt
+	}
+	return filter
+}
+
+type PropertyListingResult struct {
+	Properties []*Property
+	Pagination *Pagination
+}
+
+type InvalidPropertyFields map[string]bool
 
 func CreateProperty(prop *Property) error {
 	conn, err := GetPool()
@@ -171,39 +281,52 @@ func CreateProperty(prop *Property) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	wkbCoords, err := prop.GetWKBCoords()
+	// Ensure coords are set from lat/lon
+	prop.SetCoords()
 
-	if err != nil {
-		return err
+	args := pgx.NamedArgs{
+		"id":            prop.Id,
+		"address":       prop.Address,
+		"description":   prop.Description,
+		"city":          prop.City,
+		"state":         prop.State,
+		"zip":           prop.Zip,
+		"country":       prop.Country,
+		"price":         prop.Price,
+		"property_type": prop.PropertyType,
+		"contract":      prop.Contract,
+		"beds":          prop.Beds,
+		"baths":         prop.Baths,
+		"square_mt":     prop.SqMt,
+		"lot_size":      prop.LotSize,
+		"year_built":    prop.YearBuilt,
+		"listing_date": sql.NullTime{
+			Time:  prop.ListingDate,
+			Valid: prop.ListingDate.IsZero() == false,
+		},
+		"status":       prop.Status,
+		"earth_coords": prop.Coords,
+		"features":     prop.Features,
+		"lat":          prop.Lat,
+		"lon":          prop.Lon,
+		"nb_hood":      prop.NbHood,
+		"agent":        prop.Agent,
+		"slug":         prop.Slug,
+		"main_img":     prop.MainImg,
+		"imgs":         prop.Images,
 	}
-
 	_, err = conn.Exec(
 		ctx,
-		"INSERT INTO properties (id, address, description, city, state, zip, country, price, property_type, contract, beds, baths, square_mt, lot_size, year_built, listing_date, status, coords, features, lat, lon, nb_hood, agent, slug) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, CASE WHEN $18::bytea IS NULL THEN NULL ELSE ST_SetSRID(ST_GeomFromWKB($18), 4326) END, $19, $20, $21, $22, $23, $24)",
-		prop.Id,
-		prop.Address,
-		prop.Description,
-		prop.City,
-		prop.State,
-		prop.Zip,
-		prop.Country,
-		prop.Price,
-		prop.PropType,
-		prop.Contract,
-		prop.Beds,
-		prop.Baths,
-		prop.SqMt,
-		prop.LotSize,
-		prop.YearBuilt,
-		prop.ListingDate,
-		prop.Status,
-		wkbCoords,
-		prop.Features,
-		prop.Lat,
-		prop.Lon,
-		prop.NbHood,
-		prop.Agent,
-		prop.Slug,
+		`INSERT INTO properties (
+			id, address, description, city, state, zip, country, price, property_type,
+			contract, beds, baths, square_mt, lot_size, year_built, listing_date,
+			status, earth_coords, features, lat, lon, nb_hood, agent, slug, main_img, imgs
+		) VALUES (
+            @id, @address, @description, @city, @state, @zip, @country, @price, @property_type,
+            @contract, @beds, @baths, @square_mt, @lot_size, @year_built, @listing_date,
+            @status, @earth_coords, @features, @lat, @lon, @nb_hood, @agent, @slug, @main_img, @imgs
+        )`,
+		args,
 	)
 
 	if err != nil {
@@ -223,67 +346,67 @@ func UpdateProperty(property *Property) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	wkbCoords, err := property.GetWKBCoords()
-
-	if err != nil {
-		return err
-	}
+	// Ensure coords are set from lat/lon
+	property.SetCoords()
 
 	args := pgx.NamedArgs{
-		"id":                  property.Id,
-		"address":             property.Address,
-		"description":         property.Description,
-		"city":                property.City,
-		"state":               property.State,
-		"zip":                 property.Zip,
-		"nb_hood":             property.NbHood,
-		"country":             property.Country,
-		"price":               property.Price,
-		"property_type":       property.PropType,
-		"contract":            property.Contract,
-		"beds":                property.Beds,
-		"baths":               property.Baths,
-		"square_mt":           property.SqMt,
-		"lot_size":            property.LotSize,
-		"listing_date":        property.ListingDate,
-		"year_built":          property.YearBuilt,
-		"status":              property.Status,
-		"features":            wkbCoords,
-		"lat":                 property.Lat,
-		"lon":                 property.Lon,
-		"featured":            property.Featured,
-		"featured_expires_at": property.FeaturedExpiresAt,
-		"agent":               property.Agent,
-		"slug":                property.Slug,
+		"id":            property.Id,
+		"address":       property.Address,
+		"description":   property.Description,
+		"city":          property.City,
+		"state":         property.State,
+		"zip":           property.Zip,
+		"country":       property.Country,
+		"price":         property.Price,
+		"property_type": property.PropertyType,
+		"contract":      property.Contract,
+		"beds":          property.Beds,
+		"baths":         property.Baths,
+		"square_mt":     property.SqMt,
+		"lot_size":      property.LotSize,
+		"year_built":    property.YearBuilt,
+		"listing_date": sql.NullTime{
+			Time:  property.ListingDate,
+			Valid: property.ListingDate.IsZero() == false,
+		},
+		"status":       property.Status,
+		"earth_coords": property.Coords,
+		"features":     property.Features,
+		"lat":          property.Lat,
+		"lon":          property.Lon,
+		"nb_hood":      property.NbHood,
+		"slug":         property.Slug,
+		"main_img":     property.MainImg,
+		"imgs":         property.Images,
 	}
 	_, err = conn.Exec(
 		ctx,
-		`UPDATE properties SET 
-			address = @address,
-			description = @description,
-			city = @city,
-			state = @state,
-			zip = @zip,
-			nb_hood = @nb_hood,
-			country = @country,
-			price = @price,
-			property_type = @property_type,
-			contract = @contract,
-			beds = @beds,
-			baths = @baths,
-			square_mt = @square_mt,
-			lot_size = @lot_size,
-			listing_date = @listing_date,
-			year_built = @year_built,
-			status = @status,
-			features = @features,
-			lat = @lat,
-			lon = @lon,
-			featured = @featured,
-			featured_expires_at = @featured_expires_at,
-			agent = @agent,
-			slug = @slug
-		WHERE id = @id`,
+		`UPDATE properties SET
+            address = @address,
+            description = @description,
+            city = @city,
+            state = @state,
+            zip = @zip,
+            country = @country,
+            price = @price,
+            property_type = @property_type,
+            contract = @contract,
+            beds = @beds,
+            baths = @baths,
+            square_mt = @square_mt,
+            lot_size = @lot_size,
+            year_built = @year_built,
+            listing_date = @listing_date,
+            status = @status,
+            earth_coords = @earth_coords,
+            features = @features,
+            lat = @lat,
+            lon = @lon,
+            nb_hood = @nb_hood,
+            slug = @slug,
+            main_img = @main_img,
+            imgs = @imgs
+        WHERE id = @id`,
 		args,
 	)
 
@@ -292,6 +415,147 @@ func UpdateProperty(property *Property) error {
 	}
 
 	return nil
+}
+
+func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
+	var queryConditions []string
+	var queryParams []any
+	nextParamIdx := 1
+
+	if filter.Ids != nil && len(*filter.Ids) > 0 {
+		queryConditions = append(queryConditions, fmt.Sprintf(`id = ANY($%d)`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Ids)
+		nextParamIdx++
+	}
+
+	if filter.Contract != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`contract = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Contract)
+		nextParamIdx++
+	}
+
+	if filter.MinPrice != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`price >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MinPrice)
+		nextParamIdx++
+	}
+
+	if filter.MaxPrice != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`price <= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MaxPrice)
+		nextParamIdx++
+	}
+
+	if filter.MinSqMt != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`square_mt >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MinSqMt)
+		nextParamIdx++
+	}
+
+	if filter.MaxSqMt != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`square_mt <= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MaxSqMt)
+		nextParamIdx++
+	}
+
+	if filter.MinLotSize != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`lot_size >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MinLotSize)
+		nextParamIdx++
+	}
+
+	if filter.MaxLotSize != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`lot_size <= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MaxLotSize)
+		nextParamIdx++
+	}
+
+	if filter.MinYearBuilt != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`year_built >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MinYearBuilt)
+		nextParamIdx++
+	}
+
+	if filter.MaxYearBuilt != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`year_built <= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.MaxYearBuilt)
+		nextParamIdx++
+	}
+
+	if filter.Beds != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`beds >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Beds)
+		nextParamIdx++
+	}
+
+	if filter.Baths != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`baths >= $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Baths)
+		nextParamIdx++
+	}
+
+	if filter.State != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`state = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.State)
+		nextParamIdx++
+	}
+
+	if filter.City != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`city = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.City)
+		nextParamIdx++
+	}
+
+	if filter.PropType != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`property_type = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.PropType)
+		nextParamIdx++
+	}
+
+	if filter.Zip != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`zip = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Zip)
+		nextParamIdx++
+	}
+
+	if filter.NbHood != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`nb_hood = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.NbHood)
+		nextParamIdx++
+	}
+
+	if filter.Status != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`status = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Status)
+		nextParamIdx++
+	}
+
+	if filter.Featured != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`featured = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Featured)
+		nextParamIdx++
+	}
+
+	// Location-based filtering using earthdistance
+	if filter.NearLat != nil && filter.NearLon != nil && filter.WithinMeters != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`earth_coords <@> point($%d, $%d) <= $%d`, nextParamIdx, nextParamIdx+1, nextParamIdx+2))
+		queryParams = append(queryParams, *filter.NearLon, *filter.NearLat, *filter.WithinMeters)
+		nextParamIdx += 3
+	}
+
+	// Full-text search
+	if filter.TextSearch != nil && *filter.TextSearch != "" {
+		queryConditions = append(queryConditions, fmt.Sprintf(`
+			to_tsvector('spanish',
+				address || ' ' || description || ' ' || city || ' ' || state || ' ' ||
+				zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood || ' ' ||
+				CAST(year_built AS TEXT) || ' ' || CAST(beds AS TEXT) || ' ' || CAST(baths AS TEXT)
+			) @@ plainto_tsquery('spanish', $%d)`, nextParamIdx))
+		queryParams = append(queryParams, *filter.TextSearch)
+		nextParamIdx++
+	}
+
+	return queryConditions, queryParams, nextParamIdx
 }
 
 func GetPaginationData(filter *PropertyFilter, limit, page int) (paginationData *Pagination, err error) {
@@ -305,101 +569,35 @@ func GetPaginationData(filter *PropertyFilter, limit, page int) (paginationData 
 	defer cancel()
 
 	baseQuery := "SELECT count(*) FROM properties WHERE 1=1"
-	var queryParams []interface{}
-	var queryConditions []string
-	var nextParamIdx int = 1
+	queryConditions, queryParams, _ := buildFilterConditions(filter)
 
-	if filter.Contract != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`contract = $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Contract)
-		nextParamIdx++
+	var query string
+	if len(queryConditions) > 0 {
+		query = baseQuery + " AND " + strings.Join(queryConditions, " AND ")
+	} else {
+		query = baseQuery
 	}
 
-	if filter.MinPrice != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`price >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.MinPrice)
-		nextParamIdx++
-	}
-
-	if filter.MaxPrice != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`price <= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.MaxPrice)
-		nextParamIdx++
-	}
-
-	if filter.Beds != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`beds >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Beds)
-		nextParamIdx++
-	}
-
-	if filter.Baths != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`baths >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Baths)
-		nextParamIdx++
-	}
-
-	if filter.State != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`state >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.State)
-		nextParamIdx++
-	}
-
-	if filter.City != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`city >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.City)
-		nextParamIdx++
-	}
-
-	if filter.Featured != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`featured >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Featured)
-		nextParamIdx++
-	}
-
-	query := baseQuery + " AND " + strings.Join(queryConditions, " AND ")
-
-	rows, err := conn.Query(
-		ctx,
-		query,
-		queryParams...,
-	)
+	rows, err := conn.Query(ctx, query, queryParams...)
 	if err != nil {
 		return
 	}
 	defer rows.Close()
 
-	var propCount float64
+	var propCount int
 	for rows.Next() {
 		err = rows.Scan(&propCount)
-
 		if err != nil {
 			return
 		}
 	}
 
-	paginationData = &Pagination{}
-	paginationData.Current = page
-	paginationData.Count = int(math.Ceil(propCount / float64(limit)))
-	paginationData.First = 1
-	paginationData.Last = paginationData.Count
-
-	if nextPage := page + 1; nextPage > paginationData.Count {
-		paginationData.Next = paginationData.Count
-	} else {
-		paginationData.Next = nextPage
-	}
-
-	if prevPage := page - 1; prevPage <= 0 {
-		paginationData.Prev = 1
-	} else {
-		paginationData.Prev = prevPage
-	}
+	paginationData = NewPagination(propCount, limit, page)
 
 	return
 }
 
-func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Property, err error) {
+func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int) (properties []*Property, err error) {
 	conn, err := GetPool()
 	if err != nil {
 		return
@@ -411,93 +609,14 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 
 	baseQuery := `
 		SELECT
-			id,
-			address,
-			description,
-			city,
-			state,
-			zip,
-			country,
-			price,
-			property_type,
-			beds,
-			baths,
-			square_mt,
-			lot_size,
-			year_built,
-			listing_date,
-			status,
-			features,
-			lat,
-			lon,
-			contract,
-			nb_hood,
-			main_img,
-			imgs,
-			agent,
-			slug
+			id, address, description, city, state, zip, country, price, property_type,
+			beds, baths, square_mt, lot_size, year_built, listing_date, status,
+			features, lat, lon, contract, nb_hood, main_img, imgs, agent, slug,
+			earth_coords
 		FROM properties WHERE 1=1
-		`
-	var queryParams []interface{}
-	var queryConditions []string
-	var nextParamIdx int = 1
+	`
 
-	if filter.Contract != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`contract = $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Contract)
-		nextParamIdx++
-	}
-
-	if filter.MinPrice != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`price >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.MinPrice)
-		nextParamIdx++
-	}
-
-	if filter.MaxPrice != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`price <= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.MaxPrice)
-		nextParamIdx++
-	}
-
-	if filter.Beds != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`beds >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Beds)
-		nextParamIdx++
-	}
-
-	if filter.Baths != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`baths >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Baths)
-		nextParamIdx++
-	}
-
-	if filter.State != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`state >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.State)
-		nextParamIdx++
-	}
-
-	if filter.City != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`city >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.City)
-		nextParamIdx++
-	}
-
-	if filter.Featured != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`featured >= $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Featured)
-		nextParamIdx++
-	}
-
-	var paginateOpts string
-	if limit > 0 {
-		paginateOpts = fmt.Sprintf(" LIMIT %d", limit)
-
-		if page > 0 {
-			paginateOpts = fmt.Sprintf(" OFFSET %d", limit*(page-1))
-		}
-	}
+	queryConditions, queryParams, _ := buildFilterConditions(filter)
 
 	var orderOpts string
 	if filter.OrderBy != nil {
@@ -505,21 +624,25 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 			dir := OrderDirectionDESC
 			filter.OrderDirection = &dir
 		}
-
-		orderOpts = fmt.Sprintf(" ORDER BY %v %v", *filter.OrderBy, *filter.OrderDirection)
+		orderOpts = fmt.Sprintf(" ORDER BY %s %s", *filter.OrderBy, *filter.OrderDirection)
 	}
+
+	var paginateOpts string
+	if limit > 0 {
+		paginateOpts = fmt.Sprintf(" LIMIT %d", limit)
+		if page > 0 {
+			paginateOpts += fmt.Sprintf(" OFFSET %d", limit*(page-1))
+		}
+	}
+
 	var query string
-	if len(queryParams) > 0 {
+	if len(queryConditions) > 0 {
 		query = baseQuery + " AND " + strings.Join(queryConditions, " AND ") + orderOpts + paginateOpts
 	} else {
 		query = baseQuery + orderOpts + paginateOpts
 	}
 
-	rows, err := conn.Query(
-		ctx,
-		query,
-		queryParams...,
-	)
+	rows, err := conn.Query(ctx, query, queryParams...)
 	if err != nil {
 		return
 	}
@@ -527,8 +650,11 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 
 	for rows.Next() {
 		var prop Property
-		var featsJSON []byte
-		var listingDate sql.NullTime
+		var (
+			featsJSON   []byte
+			listingDate sql.NullTime
+			imgs        pgtype.Array[pgtype.Text]
+		)
 		err = rows.Scan(
 			&prop.Id,
 			&prop.Address,
@@ -538,7 +664,7 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 			&prop.Zip,
 			&prop.Country,
 			&prop.Price,
-			&prop.PropType,
+			&prop.PropertyType,
 			&prop.Beds,
 			&prop.Baths,
 			&prop.SqMt,
@@ -552,10 +678,15 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 			&prop.Contract,
 			&prop.NbHood,
 			&prop.MainImg,
-			&prop.Images,
+			&imgs,
 			&prop.Agent,
 			&prop.Slug,
+			&prop.Coords,
 		)
+
+		if err != nil {
+			return
+		}
 
 		if featsJSON != nil {
 			err = json.Unmarshal(featsJSON, &prop.Features)
@@ -568,13 +699,24 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 			prop.ListingDate = listingDate.Time
 		}
 
+		if imgs.Valid {
+			for _, img := range imgs.Elements {
+				if img.Valid {
+					prop.Images = append(prop.Images, img.String)
+				}
+			}
+		}
+
+		// Sync lat/lon from coords if needed
+		prop.SyncLatLon()
+
 		properties = append(properties, &prop)
 	}
 
 	return
 }
 
-func GetPropertiesForSearch(filter *PropertyFilter, limit, page int) ([]*Property, error) {
+func FindFeaturedProperties() ([]*Property, error) {
 	conn, err := GetPool()
 	if err != nil {
 		return nil, err
@@ -584,65 +726,69 @@ func GetPropertiesForSearch(filter *PropertyFilter, limit, page int) ([]*Propert
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	baseQuery := `
-	SELECT
-		id,
-		address,
-		city,
-		state,
-		zip,
-		price,
-		beds,
-		baths,
-		square_mt,
-		contract,
-		nb_hood,
-		main_img,
-		slug,
-		to_tsvector(
-			'spanish',
-			address || ' ' || description || ' ' || city || ' ' || state || ' ' || zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood
-		) @@ to_tsquery('spanish', 'venta') AS rank
-	FROM properties
-	WHERE to_tsvector(
-			'spanish',
-			address || ' ' || description || ' ' || city || ' ' || state || ' ' || zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood
-		) @@ to_tsquery('spanish', 'venta')
-	ORDER BY rank DESC`
+	var properties []*Property
 
 	rows, err := conn.Query(
 		ctx,
-		baseQuery,
-		nil,
+		`SELECT
+            id, address, city, state, zip, nb_hood, price, property_type, contract,
+            beds, baths, square_mt, lot_size, listing_date, main_img, imgs, slug,
+            lat, lon
+        FROM properties
+        WHERE featured = true
+        ORDER BY listing_date DESC
+        LIMIT 10`,
 	)
-
 	if err != nil {
 		return nil, err
 	}
 
-	var props = []*Property{}
-
 	for rows.Next() {
-		var prop Property
+		var property Property
+		var listingDate sql.NullTime
+		var imgs pgtype.Array[pgtype.Text]
 		err = rows.Scan(
-			&prop.Id,
-			&prop.Address,
-			&prop.City,
-			&prop.State,
-			&prop.Zip,
-			&prop.Price,
-			&prop.Beds,
-			&prop.Baths,
-			&prop.SqMt,
-			&prop.Contract,
-			&prop.NbHood,
-			&prop.MainImg,
-			&prop.Slug,
+			&property.Id,
+			&property.Address,
+			&property.City,
+			&property.State,
+			&property.Zip,
+			&property.NbHood,
+			&property.Price,
+			&property.PropertyType,
+			&property.Contract,
+			&property.Beds,
+			&property.Baths,
+			&property.SqMt,
+			&property.LotSize,
+			&listingDate,
+			&property.MainImg,
+			&imgs,
+			&property.Slug,
+			&property.Lat,
+			&property.Lon,
 		)
-
+		if err != nil {
+			return nil, err
+		}
+		if listingDate.Valid {
+			property.ListingDate = listingDate.Time
+		}
+		if imgs.Valid {
+			for _, img := range imgs.Elements {
+				if img.Valid {
+					property.Images = append(property.Images, img.String)
+				}
+			}
+		}
+		properties = append(properties, &property)
 	}
 
-	return props, nil
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return properties, nil
 }
 
 func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
@@ -657,7 +803,20 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 
 	rows, err := conn.Query(
 		ctx,
-		"SELECT id, address, city, state, zip, price, beds, baths, square_mt, main_img, contract, nb_hood FROM properties WHERE ST_DWithin(coords, (SELECT coords FROM properties WHERE id = $1 AND contract = properties.contract), $2) AND id != $1 AND contract = (SELECT contract FROM properties WHERE id = $1)",
+		`SELECT
+			p2.id, p2.address, p2.city, p2.state, p2.zip, p2.price,
+			p2.beds, p2.baths, p2.square_mt, p2.main_img, p2.contract, p2.nb_hood,
+			(p1.earth_coords <@> p2.earth_coords) as distance
+		FROM properties p1
+		CROSS JOIN properties p2
+		WHERE p1.id = $1
+		    AND p2.id != $1
+		    AND p2.contract = p1.contract
+            AND p1.earth_coords IS NOT NULL
+		    AND p2.earth_coords IS NOT NULL
+            AND (p1.earth_coords <@> p2.earth_coords) <= $2
+		ORDER BY distance
+        LIMIT 10`,
 		id,
 		nearbyDistance,
 	)
@@ -669,6 +828,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 	var props []*Property
 	for rows.Next() {
 		var prop Property
+		var distance float64
 
 		err := rows.Scan(
 			&prop.Id,
@@ -683,6 +843,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 			&prop.MainImg,
 			&prop.Contract,
 			&prop.NbHood,
+			&distance,
 		)
 
 		if err != nil {
@@ -695,7 +856,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 	return props, nil
 }
 
-func FindPropertyById(propId string) (property *Property, err error) {
+func FindPropertyById(ctx context.Context, propId string) (property *Property, err error) {
 	conn, err := GetPool()
 	if err != nil {
 		return nil, err
@@ -706,25 +867,28 @@ func FindPropertyById(propId string) (property *Property, err error) {
 	defer cancel()
 
 	row := conn.QueryRow(ctx, `
-		SELECT 
-			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
-			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
-			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
+		SELECT
+			p.id, p.address, p.description, p.city, p.state, p.zip, p.country,
+            p.price, p.property_type, p.beds, p.baths, p.square_mt, p.lot_size,
+            p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
+			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at,
+            p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
 			u.fullname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
-		FROM properties p  
-		LEFT JOIN users u ON p.agent = u.id 
+		FROM properties p
+		LEFT JOIN users u ON p.agent = u.id
 		WHERE p.id = $1
 	`, propId)
 
-	var wkbCoords sql.NullString
-	var featsJSON sql.NullString
+	var featsJSON []byte
 	var phone sql.NullString
 	var img sql.NullString
-	var d sql.NullTime
+	var featuredExpiresAt sql.NullTime
+	var listingDate sql.NullTime
 	property = &Property{}
 	property.AgentData = &AgentData{}
+
 	err = row.Scan(
 		&property.Id,
 		&property.Address,
@@ -734,21 +898,21 @@ func FindPropertyById(propId string) (property *Property, err error) {
 		&property.Zip,
 		&property.Country,
 		&property.Price,
-		&property.PropType,
+		&property.PropertyType,
 		&property.Beds,
 		&property.Baths,
 		&property.SqMt,
 		&property.LotSize,
 		&property.YearBuilt,
-		&property.ListingDate,
+		&listingDate,
 		&property.Status,
-		&wkbCoords,
+		&property.Coords,
 		&featsJSON,
 		&property.Lat,
 		&property.Lon,
 		&property.Contract,
 		&property.Featured,
-		&d,
+		&featuredExpiresAt,
 		&property.NbHood,
 		&property.MainImg,
 		&property.Images,
@@ -758,6 +922,100 @@ func FindPropertyById(propId string) (property *Property, err error) {
 		&phone,
 		&img,
 	)
+
+	property.AgentData.Phone = phone.String
+	property.AgentData.Img = img.String
+
+	if err != nil {
+		return nil, err
+	}
+
+	if featsJSON != nil {
+		err = json.Unmarshal(featsJSON, &property.Features)
+		if err != nil {
+			log.Printf("failed to unmarshal features for property with id %s: %v\n", propId, err)
+		}
+	}
+
+	if listingDate.Valid {
+		property.ListingDate = listingDate.Time
+	}
+
+	if featuredExpiresAt.Valid {
+		property.FeaturedExpiresAt = featuredExpiresAt.Time
+	}
+
+	// Sync lat/lon from coords
+	property.SyncLatLon()
+
+	return
+}
+
+func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, err error) {
+	conn, err := GetPoolWithCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	row := conn.QueryRow(ctx, `
+		SELECT
+			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
+			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.earth_coords, p.features,
+			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
+			u.fullname AS agent_name,
+			u.phone AS agent_number,
+			u.img AS agent_img
+		FROM properties p
+		LEFT JOIN users u ON p.agent = u.id
+		WHERE p.slug = $1
+	`, slug)
+
+	var featsJSON sql.NullString
+	var phone sql.NullString
+	var img sql.NullString
+	var featuredExpiresAt sql.NullTime
+	var listingDate sql.NullTime
+	property = &Property{}
+	property.AgentData = &AgentData{}
+
+	err = row.Scan(
+		&property.Id,
+		&property.Address,
+		&property.Description,
+		&property.City,
+		&property.State,
+		&property.Zip,
+		&property.Country,
+		&property.Price,
+		&property.PropertyType,
+		&property.Beds,
+		&property.Baths,
+		&property.SqMt,
+		&property.LotSize,
+		&property.YearBuilt,
+		&listingDate,
+		&property.Status,
+		&property.Coords,
+		&featsJSON,
+		&property.Lat,
+		&property.Lon,
+		&property.Contract,
+		&property.Featured,
+		&featuredExpiresAt,
+		&property.NbHood,
+		&property.MainImg,
+		&property.Images,
+		&property.Agent,
+		&property.Slug,
+		&property.AgentData.Name,
+		&phone,
+		&img,
+	)
+
 	property.AgentData.Phone = phone.String
 	property.AgentData.Img = img.String
 
@@ -769,20 +1027,53 @@ func FindPropertyById(propId string) (property *Property, err error) {
 		_ = json.Unmarshal([]byte(featsJSON.String), &property.Features)
 	}
 
-	err = property.ParseCoords(wkbCoords)
-
-	if err != nil {
-		return nil, err
+	if listingDate.Valid {
+		property.ListingDate = listingDate.Time
 	}
 
-	if d.Valid {
-		property.FeaturedExpiresAt = d.Time
+	if featuredExpiresAt.Valid {
+		property.FeaturedExpiresAt = featuredExpiresAt.Time
 	}
+
+	// Sync lat/lon from coords
+	property.SyncLatLon()
 
 	return
 }
 
-func UpdatePropertyImages(id string, images []string) error {
+func UpdatePropertyImages(property *Property) error {
+	conn, err := GetPool()
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	tx, err := conn.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	args := pgx.NamedArgs{
+		"images":   property.Images,
+		"main_img": property.MainImg,
+		"id":       property.Id,
+	}
+
+	_, err = tx.Exec(
+		ctx,
+		"UPDATE properties SET imgs = @images, main_img = @main_img WHERE id = @id",
+		args,
+	)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit(ctx)
+}
+
+func UpdatePropertyImgs(id string, images []string) error {
 	conn, err := GetPool()
 	if err != nil {
 		return err

@@ -49,7 +49,8 @@ func RenderDashboard(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 }
 
 func RenderAdminProperties(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
-	properties, findErr := db.GetProperties(&db.PropertyFilter{}, 900, 1)
+	ctx := r.Context()
+	properties, findErr := db.GetProperties(ctx, &db.PropertyFilter{}, 900, 1)
 
 	if findErr != nil {
 		fmt.Printf("findErr: %v\n", findErr)
@@ -110,8 +111,8 @@ func RenderNewProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 
 func RenderUpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id := r.PathValue("id")
-
-	property, err := db.FindPropertyById(id)
+	ctx := r.Context()
+	property, err := db.FindPropertyById(ctx, id)
 
 	if err != nil {
 		fmt.Printf("Find prop err: %v\n", err)
@@ -132,7 +133,8 @@ func RenderUpdateProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) 
 
 func RenderDeleteProperty(w http.ResponseWriter, r *http.Request, a *auth.Auth) {
 	id := r.PathValue("id")
-	prop, err := db.FindPropertyById(id)
+	ctx := r.Context()
+	prop, err := db.FindPropertyById(ctx, id)
 	if err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
 			respondWithError(w, 404, ErrorParams{ErrorMessage: "No se encontró la propiedad"})

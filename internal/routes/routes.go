@@ -42,6 +42,7 @@ func NewRouter() http.Handler {
 }
 
 func RenderIndex(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	getFeatured := true
 	orderBy := db.OrderByListingDate
 	orderDir := db.OrderDirectionDESC
@@ -50,7 +51,7 @@ func RenderIndex(w http.ResponseWriter, r *http.Request) {
 		OrderBy:        &orderBy,
 		OrderDirection: &orderDir,
 	}
-	featProps, err := db.GetProperties(&propFilter, 15, 1)
+	featProps, err := db.GetProperties(ctx, &propFilter, 15, 1)
 	if err != nil {
 		fmt.Printf("Find feat err: %v\n", err)
 		featProps = []*db.Property{}
@@ -58,7 +59,7 @@ func RenderIndex(w http.ResponseWriter, r *http.Request) {
 
 	getFeatured = false
 	propFilter.Featured = &getFeatured
-	newProps, err := db.GetProperties(&propFilter, 15, 1)
+	newProps, err := db.GetProperties(ctx, &propFilter, 15, 1)
 
 	if err != nil {
 		fmt.Printf("Find new err: %v\n", err)

@@ -1,14 +1,17 @@
 package routes
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"text/template"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/vladwithcode/sibra-site/internal/db"
+	"github.com/vladwithcode/sibra-site/internal/wsp"
 )
 
 func RegisterRequestsRouter(r *customServeMux) {
@@ -16,6 +19,7 @@ func RegisterRequestsRouter(r *customServeMux) {
 }
 
 func CreateRequest(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	templ, err := template.ParseFiles("web/templates/request-form.html")
 	if err != nil {
 		fmt.Printf("Parse templ err: %v\n", err)
@@ -36,16 +40,6 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 	formIsInvalid := false
 
 	propId := r.FormValue("property")
-
-	scheduledDate := r.FormValue("scheduled_date")
-	var schTime time.Time
-	if scheduledDate != "" {
-		schTime, err = time.Parse("2006-01-02", scheduledDate)
-		if err != nil {
-			invalidFields["scheduledDate"] = true
-			formIsInvalid = true
-		}
-	}
 	phone := r.FormValue("phone")
 	if phone == "" {
 		invalidFields["phone"] = true
@@ -64,7 +58,7 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 	date := time.Now()
 	dateStr := r.FormValue("date")
 	if dateStr != "" {
-		date, err = time.Parse("2006-01-02", dateStr)
+		date, err = time.Parse("2006-01-02 15:04", dateStr)
 
 		if err != nil {
 			invalidFields["date"] = true
@@ -88,31 +82,30 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 
 	reqType := r.FormValue("type")
 	if reqType == "" {
-		reqType = db.RequestTypeQuote
+		reqType = string(db.RequestTypeQuote)
 	}
 	status := r.FormValue("status")
 	if status == "" {
-		status = db.RequestStatusPending
+		status = string(db.RequestStatusPending)
 	}
 
 	id, _ := uuid.NewV7()
 	req := db.Request{
 		Id:            id.String(),
-		Type:          reqType,
+		Type:          db.RequestType(reqType),
 		Phone:         phone,
 		Name:          name,
-		Date:          date,
-		Status:        status,
+		ScheduledDate: date,
+		Status:        db.RequestStatus(status),
 		Agent:         agent,
-		Property:      sql.NullString{String: propId, Valid: propId != ""},
-		ScheduledDate: sql.NullTime{Time: schTime, Valid: scheduledDate != ""},
+		Property:      propId,
 	}
 
-	if req.ScheduledDate.Valid {
-		req.Status = db.RequestStatusScheduled
+	if req.ScheduledDate.IsZero() == false {
+		req.Status = db.RequestStatusPending
 	}
 
-	err = db.CreateRequest(&req)
+	err = db.CreateRequest(ctx, &req)
 
 	if err != nil {
 		fmt.Printf("Create req err: %v\n", err)
@@ -128,4 +121,45 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		"Data":    data,
 		"Success": true,
 	})
+
+	go func() {
+		wspData := wsp.TemplateData{
+			TemplateName: "info_request",
+			BodyVars: []wsp.TemplateVar{
+				{
+					"type": "text",
+					"text": req.Name,
+				},
+				{
+					"type": "text",
+					"text": req.ScheduledDate.Format("02/01/2006 15:04"),
+				},
+				{
+					"type": "text",
+					"text": req.Phone,
+				},
+			},
+		}
+		notifPhone := os.Getenv(wsp.EnvVarNotificationPhone)
+		if notifPhone == "" {
+			log.Printf("Could not send whatsapp message. Notification phone envvar is not set %v", notifPhone)
+			return
+		}
+
+		err = wsp.SendTemplateMessage(notifPhone, wspData)
+		if err != nil {
+			log.Printf("Could not send whatsapp message: %v", err)
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		req.WspSent = true
+		err = db.UpdateRequest(ctx, &req)
+		if err != nil {
+			log.Printf("Failed to mark request (%s) as sent: %v", req.Id, err)
+			return
+		}
+	}()
 }

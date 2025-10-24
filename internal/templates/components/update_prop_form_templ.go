@@ -605,7 +605,7 @@ func UpdatePropForm(property *db.Property, invalidFields *templates.InvalidField
 		}
 		var templ_7745c5c3_Var37 = []any{"w-full border-current rounded px-2 py-1.5 outline-none focus:ring-2 focus:ring-slate-600",
 			templates.SelectClassName(
-				(*invalidFields)["propType"] != "",
+				(*invalidFields)["propertyType"] != "",
 				"border-2 text-rose-500 bg-rose-500/15",
 				"border",
 			)}
@@ -630,7 +630,7 @@ func UpdatePropForm(property *db.Property, invalidFields *templates.InvalidField
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if templates.CmpStr(property.PropType, "casa") {
+		if templates.CmpStr(property.PropertyType, "casa") {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 57, " selected")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -640,7 +640,7 @@ func UpdatePropForm(property *db.Property, invalidFields *templates.InvalidField
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if templates.CmpStr(property.PropType, "apartamento") {
+		if templates.CmpStr(property.PropertyType, "apartamento") {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, " selected")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -650,7 +650,7 @@ func UpdatePropForm(property *db.Property, invalidFields *templates.InvalidField
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if templates.CmpStr(property.PropType, "terreno") {
+		if templates.CmpStr(property.PropertyType, "terreno") {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, " selected")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -1025,7 +1025,7 @@ func UpdatePropForm(property *db.Property, invalidFields *templates.InvalidField
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if templates.CmpStr(property.Status, "disponible") {
+		if templates.CmpStr(string(property.Status), "disponible") {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, " selected")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -1035,7 +1035,7 @@ func UpdatePropForm(property *db.Property, invalidFields *templates.InvalidField
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if templates.CmpStr(property.Status, "vendida") {
+		if templates.CmpStr(string(property.Status), "vendida") {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 100, " selected")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -1045,7 +1045,7 @@ func UpdatePropForm(property *db.Property, invalidFields *templates.InvalidField
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if templates.CmpStr(property.Status, "no_disponible") {
+		if templates.CmpStr(string(property.Status), "no_disponible") {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 102, " selected")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
