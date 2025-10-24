@@ -528,6 +528,7 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 	for rows.Next() {
 		var prop Property
 		var featsJSON []byte
+		var listingDate sql.NullTime
 		err = rows.Scan(
 			&prop.Id,
 			&prop.Address,
@@ -543,7 +544,7 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 			&prop.SqMt,
 			&prop.LotSize,
 			&prop.YearBuilt,
-			&prop.ListingDate,
+			&listingDate,
 			&prop.Status,
 			&featsJSON,
 			&prop.Lat,
@@ -561,6 +562,10 @@ func GetProperties(filter *PropertyFilter, limit, page int) (properties []*Prope
 			if err != nil {
 				return
 			}
+		}
+
+		if listingDate.Valid {
+			prop.ListingDate = listingDate.Time
 		}
 
 		properties = append(properties, &prop)
