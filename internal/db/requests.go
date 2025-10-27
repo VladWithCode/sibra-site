@@ -368,15 +368,13 @@ func UpdateRequest(ctx context.Context, req *Request) error {
 	_, err = conn.Exec(
 		ctx,
 		`UPDATE requests SET
-            type = $1,
-            phone = $2,
-            name = $3,
-            scheduled_date = $4,
-            status = $5,
-            agent = $6,
-            property = $7,
-            wsp_sent = $8
-        WHERE id = $9`,
+			type = @type,
+			scheduled_date = @scheduled_date,
+			status = @status,
+			agent = @agent,
+			property = @property,
+			wsp_sent = @wsp_sent
+        WHERE id = @id`,
 		args,
 	)
 
