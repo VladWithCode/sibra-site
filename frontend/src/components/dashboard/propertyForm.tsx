@@ -447,7 +447,8 @@ export function CreatePropertyForm({ }: {}) {
                 <div className="flex gap-3 justify-end">
                     <Button
                         type="button"
-                        className="bg-gray-200 text-primary" size="lg" type="button"
+                        className="bg-gray-200 text-primary"
+                        size="lg"
                         onClick={() => {
                             router.history.push("/panel/propiedades");
                         }}

@@ -3,6 +3,7 @@ export function HeroSection() {
         <section id="inicio" className="hero relative z-0">
             <div className="absolute inset-0 z-0">
                 <video className="h-full w-full object-cover object-center" muted autoPlay loop>
+                    <source src="/conquistadores_hero.webm" type="video/mp4" />
                     <source src="/conquistadores_hero.mp4" type="video/mp4" />
                     <source src="/conquistadores_hero.mov" type="video/mov" />
                 </video>

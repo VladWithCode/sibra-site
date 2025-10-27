@@ -44,7 +44,7 @@ function RouteComponent() {
                     </div>
                     <div className="flex-1 w-full aspect-[3/2] bg-gray-200 rounded-lg">
                         <img
-                            src="/agent_showcase.png"
+                            src="/agent_showcase.webp"
                             alt=""
                             className="w-full h-full object-cover object-center rounded-lg"
                         />

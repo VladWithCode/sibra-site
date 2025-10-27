@@ -8,7 +8,7 @@ export function AvailablitySection() {
                 className="relative z-0"
             >
                 <img
-                    src="/disp1.png"
+                    src="/disp1.webp"
                     alt="Imagen del plano de disponibilidad del desarrollo Conquistadores II"
                     className="h-full w-full object-cover object-center rounded shadow-lg opacity-0"
                     data-avl-img

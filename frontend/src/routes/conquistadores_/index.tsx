@@ -6,13 +6,13 @@ import { useLayoutEffect, useRef } from 'react';
 import { useGSAP } from '@gsap/react';
 import { animateSection } from './-animations';
 import { WhatsappIcon } from '@/components/icons/whatsapp';
-import { HeroSection } from './HeroSection';
-import { AvailablitySection } from './AvailabilitySection';
-import { CardsSection } from './CardsSection';
-import { LocationSection } from './LocationSection';
-import { ContactSection } from './ContactSection';
-import { PseudoFooter } from './PseudoFooter';
-import { StepsSection } from './StepsSection';
+import { HeroSection } from './-HeroSection';
+import { AvailablitySection } from './-AvailabilitySection';
+import { CardsSection } from './-CardsSection';
+import { ContactSection } from './-ContactSection';
+import { StepsSection } from './-StepsSection';
+import { LocationSection } from './-LocationSection';
+import { PseudoFooter } from './-PseudoFooter';
 
 export const Route = createFileRoute('/conquistadores_/')({
     component: RouteComponent,
@@ -90,7 +90,7 @@ function RouteComponent() {
                         <p className="text-4xl">Invierte fácil, sin bancos y sin intereses.</p>
                     </div>
                     <div className="relative z-0 w-full aspect-video sm:aspect-[3/2]">
-                        <img src="/agent_showcase_2.jpg" alt="Imagen demostrativa de un agente SIBRA explicando a los clientes el plan de pago." className="h-full w-full object-cover object-center brightness-75" />
+                        <img src="/agent_showcase_2.webp" alt="Imagen demostrativa de un agente SIBRA explicando a los clientes el plan de pago." className="h-full w-full object-cover object-center brightness-75" />
                     </div>
                 </section>
                 <section id="oferta" className="relative z-0 flex flex-col items-center justify-center bg-secondary pb-12 space-y-8">

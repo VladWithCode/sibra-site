@@ -4,17 +4,17 @@ const features = [
     {
         title: "Listos para escriturar",
         description: "Tu terreno, con documentos en regla y escritura lista para firmar.",
-        image: "/listosparaescriturar.jpg",
+        image: "/listosparaescriturar.webp",
     },
     {
         title: "Servicios completos",
         description: "Servicios en proceso. Inversión segura con obra garantizada en próximos meses.",
-        image: "/servicioscompletos.jpg",
+        image: "/servicioscompletos.webp",
     },
     {
         title: "Privada segura",
         description: "Acceso controlado, áreas verdes y la tranquilidad de un entorno familiar seguro.",
-        image: "/psegura.jpg",
+        image: "/psegura.webp",
     },
 ] as const;
 

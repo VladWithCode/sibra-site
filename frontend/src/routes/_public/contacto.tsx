@@ -27,7 +27,7 @@ function RouteComponent() {
                 <div className="absolute z-0 inset-0">
                     <img
                         className="h-full max-w-full xl:w-full object-cover object-center brightness-80"
-                        src="/agent_showcase_2.jpg"
+                        src="/agent_showcase_2.webp"
                         alt=""
                     />
                 </div>
