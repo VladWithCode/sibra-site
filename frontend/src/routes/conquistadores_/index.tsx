@@ -75,8 +75,11 @@ function RouteComponent() {
     return (
         <PublicLayout>
             <noscript>
-                <img height="1" width="1" style={{ display: "none" }}
-                    src="https://www.facebook.com/tr?id=24922359400766650&ev=PageView&noscript=1"
+                <img
+                    height="1"
+                    width="1"
+                    style={{ display: "none" }}
+                    src="https://www.facebook.com/tr?id=1585549779476712&ev=PageView&noscript=1"
                 />
             </noscript>
             <main className="relative bg-sbr-blue-dark text-primary-foreground" ref={mainContentRef}>
