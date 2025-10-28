@@ -16,7 +16,7 @@
     <div class="py-1"></div>
     <div class="space-y-1">
         <label for="{{with .idPrefix}}{{.}}{{end}}name" class="block text-sm text-slate-400">Nombre</label>
-        <input class="w-full border {{with .Invalid.name}}border-rose-700 text-rose-700 bg-rose-200 placeholder:text-rose-600{{else}}border-slate-300{{end}} rounded px-2 py-1 focus:outline-slate-700" type="tel" name="name" id="{{with .idPrefix}}{{.}}{{end}}name" placeholder="Juan Perez" required {{with .Data.name}}value="{{.}}"{{end}}>
+        <input class="w-full border {{with .Invalid.name}}border-rose-700 text-rose-700 bg-rose-200 placeholder:text-rose-600{{else}}border-slate-300{{end}} rounded px-2 py-1 focus:outline-slate-700" type="text" name="name" id="{{with .idPrefix}}{{.}}{{end}}name" placeholder="Juan Perez" required {{with .Data.name}}value="{{.}}"{{end}}>
     </div>
     <div class="py-1"></div>
     <div class="space-y-1">
