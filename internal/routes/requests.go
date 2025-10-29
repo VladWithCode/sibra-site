@@ -1,11 +1,13 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/google/uuid"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
 	"github.com/vladwithcode/sibra-site/internal/wsp"
@@ -118,6 +120,21 @@ func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, map[string]any{
 		"success": true,
 	})
+
+	go func() {
+		ctx := context.Background()
+		err := db.CreateRequest(ctx, &db.Request{
+			Id:    uuid.Must(uuid.NewV7()).String(),
+			Type:  db.RequestTypeQuote,
+			Phone: req.Phone,
+			Name:  req.Name,
+		})
+
+		if err != nil {
+			log.Printf("Error creating request: %v\n", err)
+			return
+		}
+	}()
 }
 
 func CreateDemoQuote(w http.ResponseWriter, r *http.Request) {
@@ -202,4 +219,19 @@ func CreateDemoQuote(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, map[string]any{
 		"success": true,
 	})
+
+	go func() {
+		ctx := context.Background()
+		err := db.CreateRequest(ctx, &db.Request{
+			Id:    uuid.Must(uuid.NewV7()).String(),
+			Type:  db.RequestTypeQuote,
+			Phone: req.Phone,
+			Name:  req.Name,
+		})
+
+		if err != nil {
+			log.Printf("Error creating request: %v\n", err)
+			return
+		}
+	}()
 }
