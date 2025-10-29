@@ -25,18 +25,23 @@ export const Route = createFileRoute('/conquistadores_/')({
             {
                 rel: "stylesheet",
                 href: "/conquistadores.css",
-            }
-        ],
-        scripts: [
+            },
             {
-                src: "/meta-pixel.js",
-                async: true,
-                defer: true,
-                onError: (e) => {
-                    console.error(e);
-                },
+                rel: "preload",
+                as: "image",
+                href: "/conq_video_poster.webp",
             },
         ],
+        // scripts: [
+        //     {
+        //         src: "/meta-pixel.js",
+        //         async: true,
+        //         defer: true,
+        //         onError: (e) => {
+        //             console.error(e);
+        //         },
+        //     },
+        // ],
     }),
 })
 
