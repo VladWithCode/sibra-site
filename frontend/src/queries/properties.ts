@@ -8,7 +8,6 @@ import type {
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { objectToQueryString } from "./util";
 import { queryClient } from "./queryClient";
-import type z from "zod";
 
 export type TPropertyQueryFilters = TPropertyFilters;
 
