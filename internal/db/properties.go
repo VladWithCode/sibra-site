@@ -401,7 +401,7 @@ func UpdateProperty(property *Property) error {
             lat = @lat,
             lon = @lon,
             nb_hood = @nb_hood,
-            slug = @slug,
+            slug = @slug
         WHERE id = @id`,
 		args,
 	)
