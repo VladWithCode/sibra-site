@@ -113,9 +113,7 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request) {
 	property.Agent = foundProp.Agent
 	property.Images = foundProp.Images
 	property.MainImg = foundProp.MainImg
-	if foundProp.Slug != "" {
-		property.Slug = foundProp.Slug
-	} else {
+	if foundProp.Slug == "" {
 		property.SetSlug()
 	}
 

@@ -376,8 +376,6 @@ func UpdateProperty(property *Property) error {
 		"lon":          property.Lon,
 		"nb_hood":      property.NbHood,
 		"slug":         property.Slug,
-		"main_img":     property.MainImg,
-		"imgs":         property.Images,
 	}
 	_, err = conn.Exec(
 		ctx,
@@ -404,8 +402,6 @@ func UpdateProperty(property *Property) error {
             lon = @lon,
             nb_hood = @nb_hood,
             slug = @slug,
-            main_img = @main_img,
-            imgs = @imgs
         WHERE id = @id`,
 		args,
 	)
