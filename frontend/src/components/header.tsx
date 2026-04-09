@@ -109,7 +109,7 @@ export function Header() {
             ></div>
             <header
                 className={cn(
-                    "col-start-1 col-span-1 top-0 inset-x-0 -translate-y-24 z-10 bg-sbr-blue-dark/0 px-2 lg:px-8 py-1.5 lg:py-2 data-[inView=false]:sticky",
+                    "col-start-1 col-span-1 top-0 inset-x-0 -translate-y-24 z-50 bg-sbr-blue-dark/0 px-2 lg:px-8 py-1.5 lg:py-2 data-[inView=false]:sticky",
                     !headerFloating
                         ? "relative bg-top-normal data-[in-view=false]:bg-top-normal shadow-sm"
                         : "absolute data-[inView=false]:bg-top-floating",
