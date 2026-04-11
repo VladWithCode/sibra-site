@@ -2,7 +2,6 @@ import type { TProperty } from "@/queries/type";
 import {
     AdvancedMarker,
     APIProvider,
-    ControlPosition,
     Map,
     Pin,
     type MapProps,
