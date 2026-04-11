@@ -67,7 +67,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
 export function PropertyCardHeader({ property }: { property: TProperty }) {
     return (
         <CardHeader className="p-0">
-            <div className="relative z-0">
+            <div className="relative z-0 w-full h-full overflow-hidden">
                 <Link to={`/propiedades/${property.contract}/${property.slug}`} className="relative z-10 w-full aspect-[2/1] bg-gray-200 rounded-t-lg">
                     <img
                         src={
