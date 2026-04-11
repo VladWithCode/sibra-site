@@ -1,13 +1,17 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { ShareIcon, SqMtIcon } from "../icons/icons";
-import { FormatMoney } from "@/lib/format";
+import { FormatMetric, FormatMoney } from "@/lib/format";
 import { Button } from "../ui/button";
-import { Image, Map } from "lucide-react";
+import { Bath, Bed, Heart, Image, Map, MapPin } from "lucide-react";
 import { PropertyLocationMap } from "@/maps/component";
 import { useState } from "react";
 import type { TProperty } from "@/queries/type";
 import { Link } from "@tanstack/react-router";
 import { LikeButton } from "./likeButton";
+import { motion } from "motion/react";
+import { PropertyImage } from "../Image";
+import { getPropertyAddress } from "@/lib/utils";
+import { Badge } from "../ui/badge";
 
 export type TPropertyCardProps = {
     propData: TProperty;
@@ -129,5 +133,79 @@ export function PropertyCardHeaderWithMap({ property }: { property: TProperty })
                 </div>
             </div>
         </CardHeader>
+    );
+}
+
+export function NewPropertyCard({ property }: { property: TProperty }) {
+    return (
+        <motion.article
+            key={property.id}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6 }}
+            className="group"
+        >
+            <div className="relative aspect-[4/3] grid grid-cols-2 grid-rows-2 gap-3 overflow-hidden rounded-2xl mb-4 bg-surface-container-low shadow-sm">
+                <PropertyImage
+                    className="col-span-full row-span-full"
+                    propId={property.id}
+                    propName={property.address}
+                    src={property.mainImg}
+                />
+                <div className="col-start-1 row-start-1 p-3">
+                    <div className="flex flex-wrap items-start gap-2 capitalize">
+                        <Badge>{property.contract}</Badge>
+                        <Badge className="h-auto bg-sbr-blue text-on-primary" variant="ghost">{property.propertyType}</Badge>
+                        <Badge variant="secondary">Oferta</Badge>
+                    </div>
+                </div>
+                <div className="col-start-2 row-start-1 justify-self-end pt-3 pr-3">
+                    <div className="glass px-3 py-1.5 rounded-lg text-primary font-medium">
+                        <div className="flex items-center gap-1.5 text-on-surface-variant/80 text-sm">
+                            <MapPin className="w-4.5 h-4.5 text-sbr-blue-light -mt-px" />
+                            {property.state}, {property.city}
+                        </div>
+                    </div>
+                </div>
+                <div className="col-start-2 row-start-2 p-3">
+                </div>
+            </div>
+            <div className="px-2">
+                <div className="flex justify-between items-center mb-5">
+                    <div className="space-y-1">
+                        <h3 className="font-headline text font-medium text-on-surface/80 tracking-tight">
+                            {getPropertyAddress(property, { includeCity: false, includeState: false })}
+                        </h3>
+                        <p className="text-3xl font-bold">{FormatMoney(property.price)}</p>
+                    </div>
+                    <LikeButton propData={property} />
+                </div>
+                <div className="border-t border-outline-variant/30">
+                    <div className="w-fit min-w-xs grid grid-cols-3 gap-4 text-on-surface-variant py-3 mx-auto">
+                        <div className="space-y-1 placese">
+                            <span className="text-[10px] uppercase tracking-widest text-current/80">Beds</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-lg">{property.beds}</span>
+                                <Bed className="size-5" />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-[10px] uppercase tracking-widest text-current/80">Baths</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">{property.baths}</span>
+                                <Bath className="size-5" />
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <span className="text-[10px] uppercase tracking-widest text-current/80">Area</span>
+                            <div className="flex items-baseline">
+                                <span className="font-bold text-lg">{FormatMetric(property.sqMt)}<sup>2</sup></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </motion.article>
     );
 }

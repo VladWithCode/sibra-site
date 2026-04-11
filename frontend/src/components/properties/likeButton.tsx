@@ -25,13 +25,13 @@ export function LikeButton({ className, propData }: { className?: string, propDa
     return (
         <Button
             className={cn("", className)}
-            variant="secondary"
+            variant="ghost"
             size="icon"
             onClick={handleLike}
         >
             <Heart className={cn(
-                "lg:size-5 transition-[color,_fill,_scale] duration-500 stroke-[2.5]",
-                liked ? "text-sbr-green! fill-current scale-125" : ""
+                "lg:size-5 transition-[color,_fill,_scale] duration-500 stroke-2",
+                liked ? "text-sbr-green! fill-current scale-110" : ""
             )} />
         </Button>
     );
