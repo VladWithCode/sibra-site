@@ -35,7 +35,7 @@ export type TProperty = {
     yearBuilt: number;
     status: TPropertyStatus;
     coords: string;
-    features: string;
+    features: Record<string, any>;
     lat: number;
     lon: number;
     featured: boolean;
