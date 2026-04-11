@@ -344,3 +344,39 @@ func FindRequestById(id string) (*Request, error) {
 
 	return &req, nil
 }
+
+type InfoRequest struct {
+	Id       string        `json:"id" db:"id"`
+	Name     string        `json:"name" db:"name"`
+	Phone    string        `json:"phone" db:"phone"`
+	Property string        `json:"property" db:"property"`
+	Status   RequestStatus `json:"status" db:"status"`
+
+	CreatedAt time.Time `json:"date" db:"date"`
+	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
+}
+
+func (req *InfoRequest) ToRequest() *Request {
+	return &Request{
+		Id:        req.Id,
+		Type:      RequestTypeInfo,
+		Phone:     req.Phone,
+		Name:      req.Name,
+		Status:    req.Status,
+		Property:  req.Property,
+		CreatedAt: req.CreatedAt,
+		UpdatedAt: req.UpdatedAt,
+	}
+}
+
+func NewInfoRequest(name, phone, property string) *InfoRequest {
+	return &InfoRequest{
+		Id:        uuid.Must(uuid.NewV7()).String(),
+		Name:      name,
+		Phone:     phone,
+		Property:  property,
+		Status:    RequestStatusPending,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+}

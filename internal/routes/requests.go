@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -15,6 +16,7 @@ import (
 
 func RegisterRequestsRouter(r *customServeMux) {
 	r.HandleFunc("POST /api/citas", CreateRequest)
+	r.HandleFunc("POST /api/contacto/info-propiedad", CreatePropInfoRequest)
 
 	r.HandleFunc("POST /api/citas/conquistadores", CreateConquistadoresRequest)
 	r.HandleFunc("POST /api/citas/demo", auth.ValidateAuthMiddleware(CreateDemoQuote))
@@ -59,6 +61,92 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"request": req,
 	})
+}
+
+func CreatePropInfoRequest(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	req := db.InfoRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Invalid request body",
+		})
+		return
+	}
+
+	var prop *db.Property
+	if req.Property != "" {
+		prop, err = db.FindPropertyById(ctx, req.Property)
+		if err != nil {
+			respondWithError(w, http.StatusBadRequest, ErrorParams{
+				ErrorMessage: "Ocurrió un error al buscar la propiedad",
+			})
+			log.Printf("Error finding property: %v\n", err)
+			return
+		}
+
+		req.Property = prop.Id
+	}
+
+	err = db.CreateRequest(ctx, req.ToRequest())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al crear la solicitud",
+		})
+		log.Printf("Failed to create request: %v\n", err)
+		return
+	}
+
+	tplData := wsp.TemplateData{
+		TemplateName: "sbr_prop_info_req",
+		BodyVars: []wsp.TemplateVar{
+			{
+				"type": "text",
+				"text": req.Name,
+			},
+			{
+				"type": "text",
+				"text": req.Phone,
+			},
+			{
+				"type": "text",
+				"text": prop.GetFullAddress(),
+			},
+			{
+				"type": "text",
+				"text": req.CreatedAt.Format("2006-01-02"),
+			},
+			{
+				"type": "text",
+				"text": fmt.Sprintf("https://sibra.mx/propiedades/%s/%s", prop.Contract, prop.Slug),
+			},
+		},
+		Language: "es",
+	}
+
+	phone := os.Getenv(wsp.EnvVarNotificationPhone)
+	if phone == "" {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "No es posible procesar tu solicitud por el momento. Por favor, intenta de nuevo más tarde.",
+		})
+		log.Printf("Notification phone not set.\n")
+		return
+	}
+
+	err = wsp.SendTemplateMessage(phone, tplData)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al enviar la solicitud. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error sending prop info request: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, map[string]any{
+		"success": true,
+		"request": req,
+	})
+
 }
 
 func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {

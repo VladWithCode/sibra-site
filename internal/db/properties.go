@@ -132,6 +132,10 @@ type AgentData struct {
 	Img   string `json:"img" db:"img"`
 }
 
+func (p *Property) GetFullAddress() string {
+	return fmt.Sprintf("%s %s, %s, %s, %s", p.Address, p.NbHood, p.City, p.State, p.Zip)
+}
+
 func (p *Property) SetSlug() {
 	p.Slug = internal.Slugify(p.Contract + " " + p.Address + " " + p.NbHood + " " + p.Zip + " " + p.City + " " + p.State + " " + fmt.Sprint(p.YearBuilt))
 }

@@ -123,6 +123,20 @@ type TQuoteCreateSuccess = {
     quote: TQuote;
 };
 
+export type TPropInfoRequest = {
+    id: string;
+    name: string;
+    phone: string;
+    property: string;
+    status: string;
+    date: string;
+    updatedAt: string;
+};
+
+export type TPropInfoRequestCreateResult =
+    | { success: true; request: TPropInfoRequest }
+    | { error: string; etc?: Record<string, any> };
+
 export type TProjectDetailResult = {
     project: TProject;
 };
