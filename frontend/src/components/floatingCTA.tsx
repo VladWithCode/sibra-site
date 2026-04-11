@@ -8,12 +8,8 @@ export function FloatingCTA() {
             animate={{ opacity: 1, y: 0 }}
             className="fixed bottom-0 inset-x-0 flex items-center gap-3 px-4 py-3 glass z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]"
         >
-            <Button className="flex-1 bg-surface" variant="outline">
-                Precalificarme
-            </Button>
-            <Button className="flex-1 bg-sbr-green">
-                Buscar Propiedades
-            </Button>
+            <Button className="flex-1 bg-surface" variant="outline">Solicitar Precalificación</Button>
+            <Button className="flex-1 bg-sbr-green">Agendar Cita</Button>
         </motion.div>
     );
 }

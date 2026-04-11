@@ -51,8 +51,8 @@
     --font-sans: "Roboto", sans-serif;
     --font-headline: var(--font-sans);
 
-    --color-primary: #005bbf;
-    --color-primary-container: #1a73e8;
+    --color-primary: #1A73E8;
+    --color-primary-container: #4285F4;
     --color-on-primary: #ffffff;
 
     --color-surface: #f9f9f9;

@@ -1,7 +1,17 @@
 import { FloatingCTA } from "@/components/floatingCTA";
 import { SqMtIcon } from "@/components/icons/icons";
+import { PropertyImage } from "@/components/Image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+    type CarouselApi,
+} from "@/components/ui/carousel";
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { FormatMetric, FormatMoney } from "@/lib/format";
 import { MapsAPIProvider, PropertyLocationMap } from "@/maps";
@@ -10,9 +20,9 @@ import type { TProperty } from "@/queries/type";
 import { useUIStore } from "@/stores/uiStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Bath, Bed, Home, ZoomIn } from "lucide-react";
+import { Bath, Bed, Home, XIcon, ZoomIn } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export const Route = createFileRoute("/_public/propiedades/_detail/$contract/$slug")({
     component: RouteComponent,
@@ -24,46 +34,104 @@ export const Route = createFileRoute("/_public/propiedades/_detail/$contract/$sl
 });
 
 function HeroSection({ property }: { property: TProperty }) {
+    const [open, setOpen] = useState(false);
+    const [api, setApi] = useState<CarouselApi>();
+    const [current, setCurrent] = useState(1);
+
+    useEffect(() => {
+        if (!api) return;
+        setCurrent(api.selectedScrollSnap() + 1);
+        api.on("select", () => setCurrent(api.selectedScrollSnap() + 1));
+    }, [api]);
+
     return (
-        <section className="relative w-full aspect-[4/5] overflow-hidden bg-surface-container">
-            <motion.img
-                alt="Primary Property Image"
-                className="w-full h-full object-cover"
-                src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&q=80&w=1200"
-                referrerPolicy="no-referrer"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-            />
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 1 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="absolute bottom-6 right-6 glass backdrop-blur px-4 py-2 rounded-lg shadow-lg"
+        <Dialog open={open} onOpenChange={setOpen}>
+            <section className="relative w-full aspect-[4/5] overflow-hidden bg-surface-container">
+                <motion.div
+                    className="w-full h-full"
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <DialogTrigger className="w-full h-full p-0" asChild>
+                        <PropertyImage
+                            className="w-full h-full object-cover hover:scale-105 active:scale-95"
+                            propId={property.id}
+                            propName={property.address}
+                            src={property.mainImg}
+                        />
+                    </DialogTrigger>
+                </motion.div>
+                <DialogTrigger asChild>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                        className="absolute z-10 bottom-4 right-4 glass border-none px-4 py-2 rounded-lg shadow-lg active:scale-95 active:shadow-sm"
+                    >
+                        <span className="text-[10px] font-sans font-bold tracking-widest text-primary uppercase">1 / {property.imgs.length} Fotos</span>
+                    </motion.p>
+                </DialogTrigger>
+                <div className="absolute top-4 left-4 flex gap-2">
+                    <motion.span
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                    >
+                        <Badge className="bg-primary-container">Oferta</Badge>
+                    </motion.span>
+                    <motion.span
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6, delay: 0.25 }}
+                    >
+                        <Badge className="bg-surface-container-lowest text-primary-container capitalize" variant="secondary">{property.contract}</Badge>
+                    </motion.span>
+                </div>
+            </section>
+            <DialogContent
+                showCloseButton={false}
+                className="w-screen max-w-screen flex flex-col bg-transparent border-none p-0 shadow-none"
             >
-                <p className="text-[10px] font-sans font-bold tracking-widest text-primary uppercase">1 / 12 Photos</p>
-            </motion.div>
-            <div className="absolute top-6 left-6 flex gap-2">
-                <motion.span
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 1 }}
-                    transition={{ duration: 0.6, delay: 0.1 }}
-                >
-                    <Badge className="bg-primary-container">Oferta</Badge>
-                </motion.span>
-                <motion.span
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 1 }}
-                    transition={{ duration: 0.6, delay: 0.25 }}
-                >
-                    <Badge className="bg-surface-container-lowest text-primary-container capitalize" variant="secondary">{property.contract}</Badge>
-                </motion.span>
-            </div>
-        </section>
+                <DialogClose className="fixed top-4 right-2">
+                    <XIcon className="text-primary-foreground stroke-3" />
+                </DialogClose>
+                <DialogTitle className="sr-only">Galería de fotos: {property.address}</DialogTitle>
+                <Carousel setApi={setApi} className="w-full mt-auto" opts={{ loop: true }}>
+                    <CarouselContent>
+                        {property.imgs.map((img, i) => (
+                            <CarouselItem key={`${img}-${i}`}>
+                                <div className="flex items-center justify-center w-full aspect-[4/5] sm:aspect-video">
+                                    <PropertyImage
+                                        className="max-w-full max-h-full object-contain"
+                                        propId={property.id}
+                                        propName={property.address}
+                                        src={img}
+                                    />
+                                </div>
+                            </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-2 sm:-left-12 bg-white/90" />
+                    <CarouselNext className="right-2 sm:-right-12 bg-white/90" />
+                </Carousel>
+                <p className="text-center text-sm font-sans font-bold tracking-widest text-white/80 uppercase">
+                    {current} / {property.imgs.length} Fotos
+                </p>
+                <div className="flex justify-between gap-3 text-on-primary mt-auto p-4">
+                    <Button variant="outline" className="flex-1 bg-surface-container-low/30 backdrop-blur-md">
+                        Solicitar Precalificación
+                    </Button>
+                    <Button className="flex-1">
+                        Agendar Cita
+                    </Button>
+                </div>
+            </DialogContent>
+        </Dialog>
     )
 }
 
