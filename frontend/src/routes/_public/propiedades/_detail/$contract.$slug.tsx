@@ -1,3 +1,4 @@
+import { ContactForm } from "@/components/contact/ContactForm";
 import { FloatingCTA } from "@/components/floatingCTA";
 import { SqMtIcon } from "@/components/icons/icons";
 import { PropertyImage } from "@/components/Image";
@@ -23,7 +24,7 @@ import { useUIStore } from "@/stores/uiStore";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { Bath, Bed, Home, XIcon, ZoomIn } from "lucide-react";
+import { Bath, Bed, Home, XIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -110,7 +111,7 @@ function HeroSection({ property }: { property: TProperty }) {
                 showCloseButton={false}
                 className="w-screen max-w-screen flex flex-col bg-transparent border-none p-0 shadow-none"
             >
-                <DialogClose className="fixed top-4 right-2">
+                <DialogClose className="fixed z-10 top-4 right-2">
                     <XIcon className="text-primary-foreground stroke-3" />
                 </DialogClose>
                 <DialogTitle className="sr-only">Galería de fotos: {property.address}</DialogTitle>
@@ -150,63 +151,65 @@ function HeroSection({ property }: { property: TProperty }) {
 
 function TitlePriceBlock({ property }: { property: TProperty }) {
     return (
-        <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="px-6 py-8 bg-surface"
-        >
-            <div className="flex flex-col gap-2">
-                <span className="text-primary font-sans text-[11px] uppercase tracking-[0.2em] font-bold">{property.state}, {property.city}</span>
-                <h1 className="text-3xl font-sans font-extrabold text-on-surface tracking-tight leading-tight">
-                    {property.address} {property.nbHood}, {property.zip}
-                </h1>
-                <p className="text-2xl font-sans font-bold text-primary-container mt-2">{FormatMoney(property.price)}</p>
-            </div>
-            <div className="grid grid-cols-4 gap-3 py-6 mt-8 border-y border-outline-variant/15 text-on-surface/60">
-                <motion.div
-                    whileTap={{ scale: 0.95 }}
-                    className="flex flex-col justify-center items-center gap-2.5"
-                >
-                    <Bed className="size-5" />
-                    <span className="text-sm font-sans font-bold">{property.beds} Hab.</span>
-                </motion.div>
-                <motion.div
-                    whileTap={{ scale: 0.95 }}
-                    className="flex flex-col justify-center items-center gap-2.5"
-                >
-                    <Bath className="size-5" />
-                    <span className="text-sm font-sans font-bold">{property.baths} Baños</span>
-                </motion.div>
-                <motion.div
-                    whileTap={{ scale: 0.95 }}
-                    className="flex flex-col justify-center items-center gap-2.5"
-                >
-                    <SqMtIcon className="size-5" />
-                    <span className="text-sm font-sans font-bold">{FormatMetric(property.sqMt)}²</span>
-                </motion.div>
-                <motion.div
-                    whileTap={{ scale: 0.95 }}
-                    className="flex flex-col items-center gap-1"
-                >
-                    <Home className="size-6" />
-                    <span className="text-sm font-sans font-bold capitalize">{property.propertyType}</span>
-                </motion.div>
-            </div>
-        </motion.section>
+        <section className="p-3 md:py-12 bg-surface-container-low">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                className="bg-surface-container-lowest rounded-lg border-2 border-sbr-green/40"
+            >
+                <div className="flex flex-col gap-2 p-6">
+                    <span className="text-primary font-sans text-[11px] uppercase tracking-[0.2em] font-bold">{property.state}, {property.city}</span>
+                    <h1 className="text-3xl font-sans font-extrabold text-on-surface tracking-tight leading-tight">
+                        {property.address} {property.nbHood}, {property.zip}
+                    </h1>
+                    <p className="text-2xl font-sans font-bold text-primary-container mt-2">{FormatMoney(property.price)}</p>
+                </div>
+                <div className="grid grid-cols-4 gap-3 p-6 mt-3 mb-6 border-y border-outline-variant/15 text-on-surface/60">
+                    <motion.div
+                        whileTap={{ scale: 0.95 }}
+                        className="flex flex-col justify-center items-center gap-2.5"
+                    >
+                        <Bed className="size-5" />
+                        <span className="text-sm font-sans font-bold">{property.beds} Hab.</span>
+                    </motion.div>
+                    <motion.div
+                        whileTap={{ scale: 0.95 }}
+                        className="flex flex-col justify-center items-center gap-2.5"
+                    >
+                        <Bath className="size-5" />
+                        <span className="text-sm font-sans font-bold">{property.baths} Baños</span>
+                    </motion.div>
+                    <motion.div
+                        whileTap={{ scale: 0.95 }}
+                        className="flex flex-col justify-center items-center gap-2.5"
+                    >
+                        <SqMtIcon className="size-5" />
+                        <span className="text-sm font-sans font-bold">{FormatMetric(property.sqMt)}²</span>
+                    </motion.div>
+                    <motion.div
+                        whileTap={{ scale: 0.95 }}
+                        className="flex flex-col items-center gap-1"
+                    >
+                        <Home className="size-6" />
+                        <span className="text-sm font-sans font-bold capitalize">{property.propertyType}</span>
+                    </motion.div>
+                </div>
+            </motion.div>
+        </section>
     )
 }
 
 function ArchitecturalVision({ property }: { property: TProperty }) {
     return (
-        <motion.section
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="px-6 py-10 bg-surface-container-low"
-        >
-            <div className="space-y-6">
+        <section className="p-3 md:py-12 bg-surface-container-low">
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+                className="bg-surface-container-lowest border-2 border-sbr-green/40 rounded-lg p-6 space-y-6"
+            >
                 <h2 className="text-xl font-sans font-bold text-on-surface flex items-center gap-3">
                     Vision Arquitectónica
                     <div className="h-px flex-1 bg-outline-variant/20" />
@@ -216,8 +219,8 @@ function ArchitecturalVision({ property }: { property: TProperty }) {
                         {property.description}
                     </p>
                 </div>
-            </div>
-        </motion.section>
+            </motion.div>
+        </section>
     )
 }
 
@@ -225,61 +228,32 @@ function AmenitiesGrid({ property }: { property: TProperty }) {
     const feats = Object.entries(property.features);
 
     return (
-        <motion.section
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="px-6 py-10 bg-surface"
-        >
-            <h2 className="text-xl font-sans font-bold text-on-surface mb-8">Características y Amenidades</h2>
-            <div className="grid grid-cols-2 gap-4">
-                {feats.map((feat, i) => (
-                    <motion.div
-                        key={feat[0]}
-                        whileTap={{ scale: 0.95 }}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5, delay: i * 0.1 }}
-                        className="flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest shadow-sm border border-outline-variant/10"
-                    >
-                        {/* <amenity.icon className="text-primary size-5" /> */}
-                        <span className="text-sm font-semibold">{feat[0]}</span>
-                    </motion.div>
-                ))}
-            </div>
-        </motion.section>
-    )
-}
-
-function SpaceOrchestration() {
-    return (
-        <motion.section
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="px-6 py-10 bg-surface-container-low"
-        >
-            <h2 className="text-xl font-sans font-bold text-on-surface mb-6">Space Orchestration</h2>
+        <section className="p-3 md:py-12">
             <motion.div
-                whileTap={{ scale: 1.05 }}
-                transition={{ duration: 0.5 }}
-                className="relative group rounded-2xl overflow-hidden bg-white p-4 shadow-sm border border-outline-variant/10"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
             >
-                <img
-                    alt="Property Blueprint"
-                    className="w-full h-auto"
-                    src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&q=80&w=800"
-                    referrerPolicy="no-referrer"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/5 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity">
-                    <ZoomIn className="text-white size-10" />
+                <h2 className="text-xl font-sans font-bold text-on-surface mb-8">Características y Amenidades</h2>
+                <div className="grid grid-cols-2 gap-4">
+                    {feats.map((feat, i) => (
+                        <motion.div
+                            key={feat[0]}
+                            whileTap={{ scale: 0.95 }}
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: i * 0.1 }}
+                            className="flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest shadow-sm border border-outline-variant/10"
+                        >
+                            {/* <amenity.icon className="text-primary size-5" /> */}
+                            <span className="text-sm font-semibold">{feat[0]}</span>
+                        </motion.div>
+                    ))}
                 </div>
             </motion.div>
-            <p className="text-center text-[10px] text-on-surface-variant font-sans mt-4 uppercase tracking-widest">Tap to expand technical floorplan</p>
-        </motion.section>
+        </section>
     )
 }
 
@@ -316,14 +290,15 @@ function InquiryForm({ property }: { property: TProperty }) {
     });
 
     return (
-        <motion.section
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="px-6 py-12 bg-surface"
-        >
-            <div className="bg-surface-container-lowest rounded-lg p-8 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-outline-variant/15 transition-shadow hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)]">
+        <section className="p-3 md:py-12" >
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+            >
+            </motion.div>
+            <div className="bg-surface-container-lowest rounded-lg p-6 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border-2 border-sbr-green/40 transition-shadow hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)]">
                 <div className="mb-8">
                     <h2 className="text-2xl font-sans font-extrabold text-on-surface">Contactanos</h2>
                     <p className="text-sm text-on-surface-variant mt-2">Si deseas conocer la propiedad o recibir asesoria de un agente SIBRA, mandanos tus datos.</p>
@@ -423,40 +398,41 @@ function InquiryForm({ property }: { property: TProperty }) {
                     />
                 </form>
             </div>
-        </motion.section>
+        </section>
     )
+}
+
+function QuoteFormSection({ property }: { property: TProperty }) {
+    return (
+        <section className="p-3 md:py-12">
+            <div className="bg-surface-container-lowest p-6 rounded-lg  shadow-[0_20px_50px_rgba(0,0,0,0.04)] border-2 border-sbr-green/40">
+                <h2 className="text-2xl font-semibold mb-8">Agenda tu cita</h2>
+                <ContactForm viewDetail="simple" forPropertyID={property.id} />
+            </div>
+        </section>
+    );
 }
 
 function LocationContext({ property }: { property: TProperty }) {
     return (
-        <motion.section
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="px-6 py-10 bg-surface-container-low mb-12"
-        >
-            <h2 className="text-xl font-sans font-bold text-on-surface mb-6">Ubicación</h2>
-            <div className="w-full aspect-video rounded-2xl overflow-hidden bg-slate-200 relative group">
-                <MapsAPIProvider>
-                    <PropertyLocationMap property={property} />
-                </MapsAPIProvider>
-            </div>
-            {/* <div className="mt-6 flex flex-col gap-4"> */}
-            {/*     <div className="flex items-start gap-4"> */}
-            {/*         <motion.div */}
-            {/*             animate={{ y: [0, -5, 0] }} */}
-            {/*             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} */}
-            {/*         > */}
-            {/*             <MapPin className="text-primary size-5 mt-1" /> */}
-            {/*         </motion.div> */}
-            {/*         <div> */}
-            {/*             <p className="font-bold text-on-surface">Paseo de la Reforma, CDMX</p> */}
-            {/*             <p className="text-sm text-on-surface-variant">Exclusive Residential Sector</p> */}
-            {/*         </div> */}
-            {/*     </div> */}
-            {/* </div> */}
-        </motion.section>
+        <section className="p-3 md:py-12">
+            <motion.div
+                className="bg-surface-container-lowest rounded-lg border-2 border-sbr-green/40"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+            >
+                <h2 className="text-2xl font-sans font-bold text-on-surface p-6">Ubicación</h2>
+                <div className="p-2">
+                    <div className="w-full aspect-video rounded-2xl overflow-hidden bg-slate-200 relative group">
+                        <MapsAPIProvider>
+                            <PropertyLocationMap property={property} />
+                        </MapsAPIProvider>
+                    </div>
+                </div>
+            </motion.div>
+        </section>
     )
 }
 
@@ -472,7 +448,7 @@ function RouteComponent() {
     }, []);
 
     return (
-        <main>
+        <main className="pb-12">
             <HeroSection property={property} />
             <TitlePriceBlock property={property} />
             <ArchitecturalVision property={property} />
@@ -481,6 +457,7 @@ function RouteComponent() {
 
             {/* <SpaceOrchestration /> */}
             <InquiryForm property={property} />
+            <QuoteFormSection property={property} />
             <LocationContext property={property} />
             <FloatingCTA />
         </main>

@@ -1,16 +1,15 @@
 import { createQuote } from "@/queries/quotes";
 import type { TQuote, TQuoteCreateResult, TQuotePropType, TQuoteType } from "@/queries/type";
-import { useGSAP } from "@gsap/react";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
+import { useForm } from "@tanstack/react-form";
 import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from "react";
-import { useForm } from "react-hook-form";
 import z from "zod";
 import { ContactFormDatePicker, QuoteTypeSelector, type TDatePickerItem } from "../properties/quote-ui";
 import { format, set } from "date-fns";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import { AnimatePresence, motion } from "motion/react";
+import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
@@ -19,9 +18,11 @@ export const ContactFormSchema = z.object({
     quoteDate: z
         .date({ error: "La fecha de la cita no es válida" })
         .min(new Date(), "La fecha de la cita no puede ser anterior a hoy"),
-    quoteType: z.enum(["presencial", "whatsapp"], {
-        error: "Debes elegir una cita presencial o atención por whatsapp/llamada teléfonica",
-    }).default("presencial"),
+    quoteType: z
+        .enum(["presencial", "whatsapp"], {
+            error: "Debes elegir una cita presencial o atención por whatsapp/llamada teléfonica",
+        })
+        .default("presencial"),
     propType: z
         .enum(["proyecto", "propiedad", "general"])
         .default("propiedad"),
@@ -50,226 +51,190 @@ export function ContactForm({
     propType?: "proyecto" | "propiedad" | "general";
     onSuccess?: (result: TQuoteCreateResult) => void;
 }) {
-    const quoteMutation = useMutation({
-        mutationFn: createQuote,
-    });
+    const quoteMutation = useMutation({ mutationFn: createQuote });
     const isViewComplete = viewDetail === "complete";
-    const formRef = useRef<HTMLFormElement>(undefined);
-    const form = useForm<contactFormSchemaType>({
-        resolver: zodResolver(ContactFormSchema),
+    const [showSuccess, setShowSuccess] = useState(false);
+
+    const form = useForm({
         defaultValues: {
             quoteDate: new Date(),
-            quoteType: "presencial",
-            propType: propType || "propiedad",
+            quoteType: "presencial" as TQuoteType,
+            propType: (propType || "propiedad") as "proyecto" | "propiedad" | "general",
             phone: "",
             name: isViewComplete ? "" : undefined,
-        },
-    });
-    const [generalError, setGeneralError] = useState("");
-    const { contextSafe } = useGSAP({ scope: formRef.current });
-    const animateSuccess = contextSafe(() => {
-        gsap.to("#quote-form-success", {
-            opacity: 1,
-            scale: 1,
-            duration: 0.3,
-            ease: "power1.inOut",
-            onComplete: () => {
-                gsap.delayedCall(2, () => {
-                    gsap.to("#quote-form-success", {
-                        opacity: 0,
-                        scale: 0,
-                        duration: 0.3,
-                        ease: "power1.inOut",
-                    });
-                });
-            },
-        });
-    });
-    const onDateChange = useCallback(
-        (item: TDatePickerItem) => {
-            const nextDate = set(form.getValues("quoteDate"), {
-                year: item.value.getFullYear(),
-                month: item.value.getMonth(),
-                date: item.value.getDate(),
-            });
-            form.setValue("quoteDate", nextDate);
-            return nextDate;
-        },
-        [form],
-    );
-    const onTimeChange = useCallback(
-        (time: Date) => {
-            const nextTime = set(form.getValues("quoteDate"), {
-                hours: time.getHours(),
-                minutes: time.getMinutes(),
-                seconds: 0,
-            });
-            form.setValue("quoteDate", nextTime);
-            return nextTime;
-        },
-        [form],
-    );
-    const onQuoteTypeChange = useCallback(
-        (type: TQuoteType) => {
-            form.setValue("quoteType", type);
-        },
-        [form],
-    );
-    const onQuoteSubmit = async (values: contactFormSchemaType) => {
-        const quoteData: TQuote = {
-            name: values.name || "",
-            phone: values.phone,
-            type: values.quoteType,
-            scheduledDate: values.quoteDate.toISOString(),
-            property: forPropertyID || "",
-            propType: propType || "propiedad",
-        } as TQuote;
+        } satisfies contactFormSchemaType,
+        validators: { onChange: ContactFormSchema },
+        onSubmit: async ({ value }) => {
+            const quoteData: TQuote = {
+                name: value.name || "",
+                phone: value.phone,
+                type: value.quoteType,
+                scheduledDate: value.quoteDate.toISOString(),
+                property: forPropertyID || "",
+                propType: propType || "propiedad",
+            } as TQuote;
 
-        try {
-            const res = await quoteMutation.mutateAsync(quoteData);
-            animateSuccess();
-            toast.success("Se ha creado la cita", { closeButton: true });
-            if (typeof onSuccess === "function") {
-                onSuccess(res);
+            try {
+                const res = await quoteMutation.mutateAsync(quoteData);
+                setShowSuccess(true);
+                window.setTimeout(() => setShowSuccess(false), 2300);
+                toast.success("Se ha creado la cita", { closeButton: true });
+                onSuccess?.(res);
+            } catch (e: any) {
+                toast.error(e.message || "Ocurrió un error al crear la cita", {
+                    closeButton: true,
+                });
+                console.error(e);
             }
-        } catch (e: any) {
-            toast.error(e.message || "Ocurrió un error al crear la cita", {
-                closeButton: true,
-            });
-            setGeneralError(e.message || "Ocurrió un error al crear la cita");
-            console.error(e);
-        }
-    };
-    const onInvalidSubmit = (errors: any) => {
-        console.log(errors);
-        toast.error("El formulario no es válido", { closeButton: true });
-    };
+        },
+    });
 
     return (
-        <Form {...form}>
-            <form
-                className="w-full space-y-6 overflow-hidden px-1"
-                onSubmit={form.handleSubmit(onQuoteSubmit, onInvalidSubmit)}
-                ref={formRef as unknown as React.RefObject<HTMLFormElement>}
-            >
-                <div
-                    id="quote-form-success"
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-white z-10 rounded-lg p-6 opacity-0 scale-0"
-                >
-                    <CheckCircle2 className="text-sbr-green size-32" />
-                    <p className="text-xl font-bold text-center text-sbr-green">
-                        Se ha generado tu solicitud con éxito
-                    </p>
-                </div>
-                <FormField
-                    control={form.control}
+        <form
+            className="relative w-full space-y-6 overflow-hidden px-1"
+            onSubmit={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                form.handleSubmit();
+            }}
+        >
+            <AnimatePresence>
+                {showSuccess && (
+                    <motion.div
+                        key="quote-form-success"
+                        initial={{ opacity: 0, scale: 0 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0 }}
+                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 rounded-lg bg-white p-6"
+                    >
+                        <CheckCircle2 className="text-sbr-green size-32" />
+                        <p className="text-xl font-bold text-center text-sbr-green">
+                            Se ha generado tu solicitud con éxito
+                        </p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <form.Field
+                name="quoteDate"
+                children={(field) => (
+                    <Field>
+                        <FieldLabel htmlFor="quoteDate-date">Elige la fecha</FieldLabel>
+                        <ContactFormDatePicker
+                            onChange={(item: TDatePickerItem) => {
+                                const next = set(field.state.value, {
+                                    year: item.value.getFullYear(),
+                                    month: item.value.getMonth(),
+                                    date: item.value.getDate(),
+                                });
+                                field.handleChange(next);
+                            }}
+                        />
+                        <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                    </Field>
+                )}
+            />
+
+            {isViewComplete && (
+                <form.Field
                     name="quoteDate"
-                    render={({ field }) => (
-                        <FormItem className="grid-cols-1 grid-rows-[auto_1fr] gap-4 w-full">
-                            <FormLabel>Elige la fecha</FormLabel>
-                            <FormControl>
-                                <Input
-                                    type="hidden"
-                                    {...field}
-                                    value={field.value.toISOString()}
-                                />
-                            </FormControl>
-                            <ContactFormDatePicker onChange={onDateChange} />
-                            <FormMessage className="px-0.5" />
-                        </FormItem>
+                    children={(field) => (
+                        <Field>
+                            <FieldLabel htmlFor="quoteDate-time">Hora</FieldLabel>
+                            <Input
+                                className="w-fit"
+                                type="time"
+                                id="quoteDate-time"
+                                name="quoteDate-time"
+                                min="06:00"
+                                max="23:00"
+                                value={format(field.state.value, "HH:mm")}
+                                onChange={(e) => {
+                                    const t = new Date(`2020-01-02T${e.target.value}`);
+                                    const next = set(field.state.value, {
+                                        hours: t.getHours(),
+                                        minutes: t.getMinutes(),
+                                        seconds: 0,
+                                    });
+                                    field.handleChange(next);
+                                }}
+                            />
+                            <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                        </Field>
                     )}
                 />
-                {isViewComplete && (
-                    <FormField
-                        control={form.control}
-                        name="quoteDate"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Hora</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        className="w-fit"
-                                        type="time"
-                                        id="quoteDate-time"
-                                        name="quoteDate-time"
-                                        min="06:00"
-                                        max="23:00"
-                                        onChange={(e) => {
-                                            const dateValue = new Date(
-                                                `2020-01-02T${e.target.value}`,
-                                            );
-                                            onTimeChange(dateValue);
-                                        }}
-                                        value={format(field.value, "HH:mm")}
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+            )}
+
+            <form.Field
+                name="quoteType"
+                children={(field) => (
+                    <Field>
+                        <FieldLabel>Tipo de cita</FieldLabel>
+                        <QuoteTypeSelector onChange={(t) => field.handleChange(t)} />
+                        <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                    </Field>
                 )}
-                <FormField
-                    control={form.control}
-                    name="quoteType"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Tipo de cita</FormLabel>
-                            <FormControl>
-                                <Input type="hidden" {...field} value={field.value} />
-                            </FormControl>
-                            <QuoteTypeSelector onChange={onQuoteTypeChange} />
-                            <FormMessage className="px-0.5" />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="phone"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Teléfono</FormLabel>
-                            <FormControl>
-                                <Input
-                                    type="tel"
-                                    className="bg-gray-50"
-                                    placeholder="Número de teléfono"
-                                    {...field}
-                                />
-                            </FormControl>
-                            <FormMessage className="px-0.5" />
-                        </FormItem>
-                    )}
-                />
-                {isViewComplete && (
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Nombre</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="text"
-                                        className="bg-gray-50"
-                                        placeholder="Nombre"
-                                        {...field}
-                                    />
-                                </FormControl>
-                                <FormMessage className="px-0.5" />
-                            </FormItem>
-                        )}
-                    />
+            />
+
+            <form.Field
+                name="phone"
+                children={(field) => (
+                    <Field>
+                        <FieldLabel htmlFor={field.name}>Teléfono</FieldLabel>
+                        <Input
+                            id={field.name}
+                            name={field.name}
+                            type="tel"
+                            className="bg-gray-50"
+                            placeholder="Número de teléfono"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                        <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                    </Field>
                 )}
-                <FormMessage className="text-base font-semibold px-1">
-                    {generalError}
-                </FormMessage>
-                <div className="flex items-center justify-end">
-                    <Button className="text-base" size="lg" type="submit">
-                        Enviar
-                    </Button>
-                </div>
-            </form>
-        </Form>
+            />
+
+            {isViewComplete && (
+                <form.Field
+                    name="name"
+                    children={(field) => (
+                        <Field>
+                            <FieldLabel htmlFor={field.name}>Nombre</FieldLabel>
+                            <Input
+                                id={field.name}
+                                name={field.name}
+                                type="text"
+                                className="bg-gray-50"
+                                placeholder="Nombre"
+                                value={field.state.value ?? ""}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                            />
+                            <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                        </Field>
+                    )}
+                />
+            )}
+
+            <div className="flex items-center justify-end">
+                <form.Subscribe
+                    selector={(state) => [state.canSubmit, state.isSubmitting]}
+                    children={([canSubmit, isSubmitting]) => (
+                        <Button
+                            className="text-base"
+                            size="lg"
+                            type="submit"
+                            disabled={!canSubmit || isSubmitting}
+                        >
+                            Enviar
+                        </Button>
+                    )}
+                />
+            </div>
+        </form>
     );
 }
 
@@ -287,28 +252,22 @@ export function ContactFormDialog({
     const [requestSuccess, setRequestSuccess] = useState(false);
     const onSuccessCb = useCallback(
         (result: TQuoteCreateResult) => {
-            if (typeof onSuccess === "function") {
-                onSuccess(result);
-            }
+            onSuccess?.(result);
             setRequestSuccess(true);
         },
         [onSuccess],
     );
 
     useEffect(() => {
-        let timerId: NodeJS.Timeout;
+        let timerId: ReturnType<typeof setTimeout>;
         if (requestSuccess) {
             timerId = setTimeout(() => {
                 if (!triggerRef.current) return;
-
                 triggerRef.current.click();
             }, 2000);
         }
-
         return () => {
-            if (timerId) {
-                clearTimeout(timerId);
-            }
+            if (timerId) clearTimeout(timerId);
         };
     }, [requestSuccess]);
 
