@@ -60,7 +60,7 @@ function HeroSection({ property }: { property: TProperty }) {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <section className="relative w-full aspect-[4/5] overflow-hidden bg-surface-container">
+            <section className="relative w-full aspect-[4/5] md:aspect-[4/3] lg:aspect-video overflow-hidden bg-surface-container md:rounded-xl">
                 <motion.div
                     className="w-full h-full"
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -151,7 +151,7 @@ function HeroSection({ property }: { property: TProperty }) {
 
 function TitlePriceBlock({ property }: { property: TProperty }) {
     return (
-        <section className="p-3 md:py-12 bg-surface-container-low">
+        <section className="p-3 md:p-0 bg-surface-container-low md:bg-transparent">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -202,7 +202,7 @@ function TitlePriceBlock({ property }: { property: TProperty }) {
 
 function ArchitecturalVision({ property }: { property: TProperty }) {
     return (
-        <section className="p-3 md:py-12 bg-surface-container-low">
+        <section className="p-3 md:p-0 bg-surface-container-low md:bg-transparent">
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -228,7 +228,7 @@ function AmenitiesGrid({ property }: { property: TProperty }) {
     const feats = Object.entries(property.features);
 
     return (
-        <section className="p-3 md:py-12">
+        <section className="p-3 md:p-0">
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -290,7 +290,7 @@ function InquiryForm({ property }: { property: TProperty }) {
     });
 
     return (
-        <section className="p-3 md:py-12" >
+        <section className="p-3 md:p-0">
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -404,7 +404,7 @@ function InquiryForm({ property }: { property: TProperty }) {
 
 function QuoteFormSection({ property }: { property: TProperty }) {
     return (
-        <section className="p-3 md:py-12">
+        <section className="p-3 md:p-0">
             <div className="bg-surface-container-lowest p-6 rounded-lg  shadow-[0_20px_50px_rgba(0,0,0,0.04)] border-2 border-sbr-green/40">
                 <h2 className="text-2xl font-semibold mb-8">Agenda tu cita</h2>
                 <ContactForm viewDetail="simple" forPropertyID={property.id} />
@@ -415,7 +415,7 @@ function QuoteFormSection({ property }: { property: TProperty }) {
 
 function LocationContext({ property }: { property: TProperty }) {
     return (
-        <section className="p-3 md:py-12">
+        <section className="p-3 md:p-0">
             <motion.div
                 className="bg-surface-container-lowest rounded-lg border-2 border-sbr-green/40"
                 initial={{ opacity: 0, y: 30 }}
@@ -449,16 +449,26 @@ function RouteComponent() {
 
     return (
         <main className="pb-12">
-            <HeroSection property={property} />
-            <TitlePriceBlock property={property} />
-            <ArchitecturalVision property={property} />
+            {/* Mobile: single column stack. md+: two-column side-by-side layout */}
+            <div className="md:max-w-screen-xl md:mx-auto md:px-6 lg:px-10 md:pt-6">
+                <div className="md:grid md:grid-cols-[1fr_360px] lg:grid-cols-[1fr_400px] md:gap-6 lg:gap-8 md:items-start">
 
-            {property.features?.length > 0 && <AmenitiesGrid property={property} />}
+                    {/* Left column: hero image, description, amenities, map */}
+                    <div className="md:space-y-6">
+                        <HeroSection property={property} />
+                        <ArchitecturalVision property={property} />
+                        {property.features?.length > 0 && <AmenitiesGrid property={property} />}
+                        <LocationContext property={property} />
+                    </div>
 
-            {/* <SpaceOrchestration /> */}
-            <InquiryForm property={property} />
-            <QuoteFormSection property={property} />
-            <LocationContext property={property} />
+                    {/* Right column: price block + contact forms, sticky on desktop */}
+                    <div className="md:sticky md:top-4 md:self-start md:space-y-4">
+                        <TitlePriceBlock property={property} />
+                        <InquiryForm property={property} />
+                        <QuoteFormSection property={property} />
+                    </div>
+                </div>
+            </div>
             <FloatingCTA />
         </main>
     )
