@@ -153,12 +153,13 @@ export function NewPropertyCard({ property, disableMap }: {
             className="h-full group flex flex-col"
         >
             <div className="relative aspect-[4/3] grid grid-cols-2 grid-rows-2 gap-3 overflow-hidden rounded-2xl mb-4 bg-surface-container-low shadow-sm">
-                <PropertyImage
-                    className="col-span-full row-span-full"
-                    propId={property.id}
-                    propName={property.address}
-                    src={property.mainImg}
-                />
+                <Link to={"/propiedades/" + property.contract + "/" + property.slug} className="col-span-full row-span-full">
+                    <PropertyImage
+                        propId={property.id}
+                        propName={property.address}
+                        src={property.mainImg}
+                    />
+                </Link>
                 <div className="col-start-1 row-start-1 p-3">
                     <div className="flex flex-wrap items-start gap-2 capitalize">
                         <Badge>{property.contract}</Badge>
@@ -180,12 +181,12 @@ export function NewPropertyCard({ property, disableMap }: {
             </div>
             <div className="flex-1 px-2 xl:p-0 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-5">
-                    <div className="space-y-1">
+                    <Link to={"/propiedades/" + property.contract + "/" + property.slug} className="flex flex-col gap-1">
                         <h3 className="font-headline text font-medium text-on-surface/80 tracking-tight">
                             {getPropertyAddress(property, { includeCity: false, includeState: false })}
                         </h3>
                         <p className="text-3xl font-bold">{FormatMoney(property.price)}</p>
-                    </div>
+                    </Link>
                     <LikeButton propData={property} />
                 </div>
                 <div className="border-t border-outline-variant/30">
