@@ -150,7 +150,7 @@ export function NewPropertyCard({ property, disableMap }: {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.6 }}
-            className="group"
+            className="h-full group flex flex-col"
         >
             <div className="relative aspect-[4/3] grid grid-cols-2 grid-rows-2 gap-3 overflow-hidden rounded-2xl mb-4 bg-surface-container-low shadow-sm">
                 <PropertyImage
@@ -166,12 +166,10 @@ export function NewPropertyCard({ property, disableMap }: {
                         <Badge variant="secondary">Oferta</Badge>
                     </div>
                 </div>
-                <div className="col-start-2 row-start-1 justify-self-end pt-3 pr-3">
-                    <div className="glass px-3 py-1.5 rounded-lg text-primary font-medium">
-                        <div className="flex items-center gap-1.5 text-on-surface-variant/80 text-sm">
-                            <MapPin className="w-4.5 h-4.5 text-sbr-blue-light -mt-px" />
-                            {property.state}, {property.city}
-                        </div>
+                <div className="col-start-2 row-start-1 pt-3 pr-3 min-w-0 justify-self-stretch self-start flex">
+                    <div className="w-max max-w-full flex items-center gap-1.5 text-on-surface-variant/80 text-sm break-words glass px-3 py-1.5 ml-auto rounded-lg font-medium tracking-tight">
+                        <MapPin className="shrink-0 w-4.5 h-4.5 text-sbr-blue-light -mt-px" />
+                        <span className="text-balance">{property.state}, {property.city}</span>
                     </div>
                 </div>
                 {
@@ -180,7 +178,7 @@ export function NewPropertyCard({ property, disableMap }: {
                     ) : null
                 }
             </div>
-            <div className="px-2">
+            <div className="flex-1 px-2 xl:p-0 flex flex-col justify-between">
                 <div className="flex justify-between items-center mb-5">
                     <div className="space-y-1">
                         <h3 className="font-headline text font-medium text-on-surface/80 tracking-tight">
@@ -191,7 +189,7 @@ export function NewPropertyCard({ property, disableMap }: {
                     <LikeButton propData={property} />
                 </div>
                 <div className="border-t border-outline-variant/30">
-                    <div className="w-fit min-w-xs grid grid-cols-3 gap-4 text-on-surface-variant py-3 mx-auto">
+                    <div className="w-fit min-w-xs grid grid-cols-3 gap-4 xl:gap-2 text-on-surface-variant py-3 mx-auto">
                         <div className="space-y-1 placese">
                             <span className="text-[10px] uppercase tracking-widest text-current/80">Beds</span>
                             <div className="flex items-center gap-3">
