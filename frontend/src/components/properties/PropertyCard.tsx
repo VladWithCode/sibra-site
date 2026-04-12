@@ -4,14 +4,15 @@ import { FormatMetric, FormatMoney } from "@/lib/format";
 import { Button } from "../ui/button";
 import { Bath, Bed, Heart, Image, Map, MapPin } from "lucide-react";
 import { PropertyLocationMap } from "@/maps/component";
-import { useState } from "react";
+import { useEffect, useId, useState } from "react";
 import type { TProperty } from "@/queries/type";
 import { Link } from "@tanstack/react-router";
 import { LikeButton } from "./likeButton";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { PropertyImage } from "../Image";
 import { getPropertyAddress } from "@/lib/utils";
 import { Badge } from "../ui/badge";
+import { property } from "zod";
 
 export type TPropertyCardProps = {
     propData: TProperty;
@@ -136,7 +137,12 @@ export function PropertyCardHeaderWithMap({ property }: { property: TProperty })
     );
 }
 
-export function NewPropertyCard({ property }: { property: TProperty }) {
+export function NewPropertyCard({ property, disableMap }: {
+    property: TProperty;
+    disableMap?: boolean;
+}) {
+    const hasLocation = property.lat && property.lon;
+
     return (
         <motion.article
             key={property.id}
@@ -168,8 +174,11 @@ export function NewPropertyCard({ property }: { property: TProperty }) {
                         </div>
                     </div>
                 </div>
-                <div className="col-start-2 row-start-2 p-3">
-                </div>
+                {
+                    !disableMap && hasLocation ? (
+                        <NewPropertyCardMap lat={property.lat} lon={property.lon} />
+                    ) : null
+                }
             </div>
             <div className="px-2">
                 <div className="flex justify-between items-center mb-5">
@@ -207,5 +216,38 @@ export function NewPropertyCard({ property }: { property: TProperty }) {
                 </div>
             </div>
         </motion.article>
+    );
+}
+
+function NewPropertyCardMap({ lat, lon }: { lat: number, lon: number }) {
+    const [isMapActive, setIsMapActive] = useState(false);
+    const id = useId()
+
+    return (
+        <>
+            <div className="relative z-20 col-start-2 row-start-2 self-end justify-self-end p-3" key={id + "-map-toggle"}>
+                <Button
+                    className="grid size-auto p-2 glass"
+                    onClick={() => setIsMapActive(state => !state)}
+                    variant="ghost"
+                    size="icon"
+                >
+                    <Map
+                        className="col-start-1 row-start-1 size-6 opacity-100 transition-[height,_width,_opacity] data-[active=true]:size-0 data-[active=true]:opacity-0"
+                        data-active={isMapActive}
+                    />
+                    <Image
+                        className="col-start-1 row-start-1 size-0 opacity-0 transition-[height,_width,_opacity] data-[active=false]:size-6 data-[active=false]:opacity-100"
+                        data-active={!isMapActive}
+                    />
+                </Button>
+            </div>
+            <div
+                className="col-span-full row-span-full rounded-lg opacity-0 scale-85 pointer-events-none duration-300 transition-[opacity,transform,scale] data-[active=true]:opacity-100 data-[active=true]:scale-100 data-[active=true]:pointer-events-auto"
+                data-active={isMapActive}
+            >
+                <PropertyLocationMap property={{ lat: lat, lon: lon } as TProperty} />
+            </div>
+        </>
     );
 }

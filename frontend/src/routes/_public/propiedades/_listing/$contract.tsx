@@ -1,4 +1,4 @@
-import { PropertyCard } from "@/components/properties/PropertyCard";
+import { NewPropertyCard, PropertyCard } from "@/components/properties/PropertyCard";
 import { Button } from "@/components/ui/button";
 import {
     Select,
@@ -47,11 +47,13 @@ function RouteComponent() {
     return (
         <main>
             <div className="flex p-3 sm:px-6 lg:px-8 border-b border-gray-200">
-                <h1 className="w-full max-w-6xl text-sm md:text-base font-medium text-muted-foreground mx-auto">Propiedades en {contract}</h1>
+                <h1 className="w-full max-w-6xl text-sm md:text-base font-medium text-muted-foreground mx-auto">
+                    Propiedades en {contract}
+                </h1>
             </div>
             <div className="w-full max-w-6xl flex items-center px-3 sm:px-6 lg:px-8 xl:px-0 py-1.5 sm:py-2 font-medium mx-auto">
                 <p className="whitespace-nowrap text-current/80 text-sm sm:text-base">
-                    <span className="text-2xl sm:text-4xl">{data.pagination.total} </span>
+                    <span className="text-2xl sm:text-4xl">{data.pagination.total}&nbsp;</span>
                     resultados
                 </p>
                 <Select defaultValue="listing_date-desc">
@@ -76,10 +78,11 @@ function RouteComponent() {
                 </div>
             </div>
             <div className="p-3 sm:p-6 lg:px-8 lg:py-12 xl:py-16 bg-gray-200">
-                <div className="max-w-6xl grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-auto gap-4 sm:gap-y-6 mx-auto">
+                <div className="max-w-6xl grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-auto gap-12 sm:gap-y-6 mx-auto">
                     {data.properties.map((prop) => (
-                        <div className="w-full max-w-lg">
-                            <PropertyCard key={prop.id} propData={prop} withMap={!!prop.lat && !!prop.lon} />
+                        <div className="w-full max-w-lg" key={prop.id}>
+                            {/* <PropertyCard key={prop.id} propData={prop} withMap={!!prop.lat && !!prop.lon} /> */}
+                            <NewPropertyCard property={prop} />
                         </div>
                     ))}
                 </div>
