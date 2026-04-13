@@ -26,7 +26,6 @@ const DefaultPropertyAddressOpts: TPropertyAddressOpts = {
 
 export function getPropertyAddress(property: TProperty, opts: TPropertyAddressOpts) {
     opts = Object.assign({}, DefaultPropertyAddressOpts, opts);
-    console.log(opts);
     let result = "";
     let streetAndNbHood = "";
 
