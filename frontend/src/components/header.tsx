@@ -41,7 +41,7 @@ import {
 } from "./ui/dialog";
 
 export function Header() {
-    const { headerFloating, headerComplementProps } = useUIStore();
+    const { headerFloating, headerComplementProps, headerQuickStick } = useUIStore();
     const header = useRef<HTMLDivElement>(null);
     const pageTop = useRef<HTMLDivElement>(null);
     const { contextSafe } = useGSAP({ scope: header, dependencies: [pageTop.current] });
@@ -100,12 +100,25 @@ export function Header() {
         };
     }, []);
 
+    useEffect(() => {
+        if (!header.current) return;
+        const ro = new ResizeObserver(([entry]) => {
+            const h = entry.borderBoxSize[0].blockSize;
+            document.documentElement.style.setProperty('--header-height', `${h}px`);
+        });
+        ro.observe(header.current);
+        return () => ro.disconnect();
+    }, []);
+
     return (
         <>
             <div
-                className="col-start-1 col-span-1 absolute top-[60%] inset-x-0 z-0 h-0"
+                className="col-start-1 col-span-1 absolute top-(--sentinel-offset) inset-x-0 z-0 h-0"
                 ref={pageTop}
                 data-page-top
+                style={{
+                    "--sentinel-offset": headerQuickStick ? "25vh" : "0",
+                } as React.CSSProperties}
             ></div>
             <header
                 className={cn(
