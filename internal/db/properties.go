@@ -237,9 +237,16 @@ func NewPropertyFilterFromQuery(query *url.Values) *PropertyFilter {
 		b, _ := strconv.Atoi(baths)
 		filter.Baths = &b
 	}
+	if minPrice := query.Get("minPrice"); minPrice != "" {
+		minPriceFloat, _ := strconv.ParseFloat(minPrice, 64)
+		filter.MinPrice = &minPriceFloat
+	}
 	if maxPrice := query.Get("maxPrice"); maxPrice != "" {
 		maxPriceFloat, _ := strconv.ParseFloat(maxPrice, 64)
 		filter.MaxPrice = &maxPriceFloat
+	}
+	if propType := query.Get("propType"); propType != "" {
+		filter.PropType = &propType
 	}
 	if minSqMt := query.Get("minSqMt"); minSqMt != "" {
 		minSqMtFloat, _ := strconv.ParseFloat(minSqMt, 64)

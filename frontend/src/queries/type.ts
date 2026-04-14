@@ -55,6 +55,15 @@ export type TPropertyFilters = Partial<TProperty> & {
     ids?: string[];
     contract: string;
     textSearch?: string;
+    propType?: TPropertyType;
+    minPrice?: number;
+    maxPrice?: number;
+    minSqMt?: number;
+    maxSqMt?: number;
+    minLotSize?: number;
+    maxLotSize?: number;
+    minYearBuilt?: number;
+    maxYearBuilt?: number;
 
     page?: TPagination["page"];
     perPage?: TPagination["perPage"];
