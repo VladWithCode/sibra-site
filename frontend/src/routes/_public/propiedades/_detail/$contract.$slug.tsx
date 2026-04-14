@@ -449,28 +449,48 @@ function RouteComponent() {
 
     return (
         <main className="pb-12">
-            {/* Mobile: single column stack. md+: two-column side-by-side layout */}
-            <div className="md:max-w-screen-xl md:mx-auto md:px-6 lg:px-10 md:pt-6">
-                <div className="md:grid md:grid-cols-[1fr_360px] lg:grid-cols-[1fr_400px] md:gap-6 lg:gap-8 md:items-start">
-
-                    {/* Left column: hero image, description, amenities, map */}
-                    <div className="md:space-y-6">
-                        <HeroSection property={property} />
-                        <ArchitecturalVision property={property} />
-                        {property.features?.length > 0 && <AmenitiesGrid property={property} />}
-                        <LocationContext property={property} />
-                    </div>
-
-                    {/* Right column: price block + contact forms, sticky on desktop */}
-                    <div className="md:sticky md:top-4 md:self-start md:space-y-4">
-                        <TitlePriceBlock property={property} />
-                        <InquiryForm property={property} />
-                        <QuoteFormSection property={property} />
-                    </div>
-                </div>
-            </div>
+            <MobileLayout property={property} />
+            <BigScreenLayout property={property} />
             <FloatingCTA />
         </main>
+    )
+}
+
+function MobileLayout({ property }: { property: TProperty }) {
+    return (
+        <div className="md:hidden">
+            <HeroSection property={property} />
+            <TitlePriceBlock property={property} />
+            <ArchitecturalVision property={property} />
+            {property.features?.length > 0 && <AmenitiesGrid property={property} />}
+            <InquiryForm property={property} />
+            <QuoteFormSection property={property} />
+            <LocationContext property={property} />
+        </div>
+    )
+}
+
+function BigScreenLayout({ property }: { property: TProperty }) {
+    return (
+        <div className="hidden md:block md:max-w-screen-xl md:mx-auto md:px-6 lg:px-10 md:pt-6">
+            <div className="md:grid md:grid-cols-[1fr_360px] lg:grid-cols-[1fr_400px] md:gap-6 lg:gap-8 md:items-start">
+
+                {/* Left column: hero image, description, amenities, map */}
+                <div className="md:space-y-6">
+                    <HeroSection property={property} />
+                    <ArchitecturalVision property={property} />
+                    {property.features?.length > 0 && <AmenitiesGrid property={property} />}
+                    <LocationContext property={property} />
+                </div>
+
+                {/* Right column: price block + contact forms, sticky on desktop */}
+                <div className="md:sticky md:top-4 md:self-start md:space-y-4">
+                    <TitlePriceBlock property={property} />
+                    <InquiryForm property={property} />
+                    <QuoteFormSection property={property} />
+                </div>
+            </div>
+        </div>
     )
 }
 
