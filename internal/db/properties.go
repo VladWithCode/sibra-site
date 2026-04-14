@@ -421,7 +421,7 @@ func UpdateProperty(property *Property) error {
             lat = @lat,
             lon = @lon,
             nb_hood = @nb_hood,
-            slug = @slug,
+            slug = @slug
         WHERE id = @id`,
 		args,
 	)
@@ -437,6 +437,10 @@ func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
 	var queryConditions []string
 	var queryParams []any
 	nextParamIdx := 1
+
+	if filter == nil {
+		return queryConditions, queryParams, nextParamIdx
+	}
 
 	if filter.Ids != nil && len(*filter.Ids) > 0 {
 		queryConditions = append(queryConditions, fmt.Sprintf(`id = ANY($%d)`, nextParamIdx))
