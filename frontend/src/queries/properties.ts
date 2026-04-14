@@ -203,19 +203,33 @@ export async function getPropertiesByContract({
         url += "?" + queryParams;
     }
 
-    try {
-        const response = await fetch(url, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-        });
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
 
-        return await response.json();
-    } catch (e) {
-        console.error(e);
-        throw new Error("Error al obtener las propiedades");
+    if (response.status === 404) {
+        return {
+            properties: [],
+            pagination: {
+                total: 0,
+                page: 1,
+                perPage: 10,
+                hasNext: false,
+                hasPrev: false,
+            },
+        };
     }
+
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.error || "Error al obtener las propiedades");
+    }
+
+    return data;
 }
 
 export async function getPropertyById({
