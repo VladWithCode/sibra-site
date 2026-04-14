@@ -21,12 +21,12 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { getPropertyListingOpts } from "@/queries/properties";
-import type { TProperty, TPropertyFilters } from "@/queries/type";
+import type { TPagination, TProperty, TPropertyFilters } from "@/queries/type";
 import { useUIStore } from "@/stores/uiStore";
 import { useForm } from "@tanstack/react-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { List, MapIcon, Search, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, List, MapIcon, Search, SlidersHorizontal } from "lucide-react";
 import { useInView } from "motion/react";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import z from "zod";
@@ -43,6 +43,8 @@ const searchSchema = z.object({
     maxLotSize: z.coerce.number().positive().optional().catch(undefined),
     minYearBuilt: z.coerce.number().int().positive().optional().catch(undefined),
     propType: z.enum(["casa", "apartamento", "terreno"]).optional().catch(undefined),
+    page: z.coerce.number().int().positive().optional().catch(undefined),
+    perPage: z.coerce.number().int().positive().optional().catch(undefined),
 });
 
 type TListingSearch = z.infer<typeof searchSchema>;
@@ -60,6 +62,8 @@ function searchToFilters(search: TListingSearch): Partial<TPropertyFilters> {
         maxLotSize: search.maxLotSize,
         minYearBuilt: search.minYearBuilt,
         propType: search.propType,
+        page: search.page,
+        perPage: search.perPage,
     };
 }
 
@@ -122,7 +126,7 @@ function FilterSection() {
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
             navigate({
-                search: { q: value || undefined },
+                search: (prev) => ({ ...prev, q: value || undefined, page: undefined }),
                 replace: true,
             });
         }, 400);
@@ -214,7 +218,7 @@ function FiltersDialog() {
                 propType: (value.propType || undefined) as TListingSearch["propType"],
             };
             navigate({
-                search: (prev) => ({ ...prev, ...next }),
+                search: (prev) => ({ ...prev, ...next, page: undefined }),
                 replace: true,
             });
             setOpen(false);
@@ -506,7 +510,7 @@ function PropertyListing({ contract, filters }: { contract: string, filters: Par
     );
 
     return (
-        <>
+        <div className="p-3 sm:p-6 lg:px-8 lg:py-12 xl:py-16 bg-surface-container">
             <div className="max-w-7xl grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-rows-auto gap-12 sm:gap-y-6 mx-auto">
                 {
                     data.properties?.length === 0 ?
@@ -520,7 +524,95 @@ function PropertyListing({ contract, filters }: { contract: string, filters: Par
                         ))
                 }
             </div>
-        </>
+            <Pagination pagination={data.pagination} />
+        </div>
+    );
+}
+
+function buildPageItems(current: number, totalPages: number): (number | "ellipsis-left" | "ellipsis-right")[] {
+    const pages = new Set<number>([1, totalPages, current - 1, current, current + 1]);
+    const sorted = [...pages].filter((n) => n >= 1 && n <= totalPages).sort((a, b) => a - b);
+    const items: (number | "ellipsis-left" | "ellipsis-right")[] = [];
+    for (let i = 0; i < sorted.length; i++) {
+        const n = sorted[i];
+        items.push(n);
+        const next = sorted[i + 1];
+        if (next !== undefined && next - n > 1) {
+            items.push(n < current ? "ellipsis-left" : "ellipsis-right");
+        }
+    }
+    return items;
+}
+
+function Pagination({ pagination }: { pagination: TPagination }) {
+    const navigate = useNavigate();
+    const totalPages = Math.max(1, Math.ceil(pagination.total / pagination.perPage));
+    if (totalPages <= 1) return null;
+
+    const current = pagination.page;
+    const items = buildPageItems(current, totalPages);
+
+    const goTo = (n: number) => {
+        navigate({
+            search: (prev) => ({ ...prev, page: n === 1 ? undefined : n }),
+            replace: true,
+        });
+    };
+
+    const baseBtn = "h-10 min-w-10 px-3 inline-flex items-center justify-center rounded-xl border border-outline-variant bg-white text-sm font-semibold text-on-surface transition-all hover:bg-surface-container disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white";
+    const activeBtn = "h-10 min-w-10 px-3 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-sbr-blue to-primary-container text-primary-foreground text-sm font-bold shadow-md shadow-primary/20 cursor-default";
+
+    return (
+        <nav
+            aria-label="Paginación de propiedades"
+            className="max-w-full xl:max-w-7xl mx-auto mt-10 flex items-center justify-center gap-2 px-3"
+        >
+            <button
+                type="button"
+                aria-label="Página anterior"
+                disabled={!pagination.hasPrev}
+                onClick={() => goTo(current - 1)}
+                className={baseBtn}
+            >
+                <ChevronLeft className="size-4" />
+            </button>
+            {items.map((item, idx) => {
+                if (item === "ellipsis-left" || item === "ellipsis-right") {
+                    return (
+                        <span
+                            key={`${item}-${idx}`}
+                            aria-hidden
+                            className="size-8 inline-flex items-center justify-center text-on-surface-variant text-sm"
+                        >
+                            …
+                        </span>
+                    );
+                }
+                const isCurrent = item === current;
+                return (
+                    <button
+                        key={item}
+                        type="button"
+                        aria-label={`Ir a la página ${item}`}
+                        aria-current={isCurrent ? "page" : undefined}
+                        disabled={isCurrent}
+                        onClick={() => goTo(item)}
+                        className={isCurrent ? activeBtn : baseBtn}
+                    >
+                        {item}
+                    </button>
+                );
+            })}
+            <button
+                type="button"
+                aria-label="Página siguiente"
+                disabled={!pagination.hasNext}
+                onClick={() => goTo(current + 1)}
+                className={baseBtn}
+            >
+                <ChevronRight className="size-4" />
+            </button>
+        </nav>
     );
 }
 
@@ -555,11 +647,9 @@ function RouteComponent() {
                 </p>
             </section>
             <FilterSection />
-            <div className="p-3 sm:p-6 lg:px-8 lg:py-12 xl:py-16 bg-surface-container">
-                <Suspense fallback={<PropertyListingLoading />}>
-                    <PropertyListing contract={contract} filters={searchToFilters(search)} />
-                </Suspense>
-            </div>
+            <Suspense fallback={<PropertyListingLoading />}>
+                <PropertyListing contract={contract} filters={searchToFilters(search)} />
+            </Suspense>
         </main>
     );
 }
