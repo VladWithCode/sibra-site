@@ -350,33 +350,8 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
     );
 }
 
-function ResultCount({ contract, filters }: { contract: string, filters: Partial<TPropertyFilters> }) {
-    const { data } = useSuspenseQuery(getPropertyListingOpts({
-        // @ts-ignore
-        contract,
-        ...propertyListingSearchToFilters(filters),
-    }));
-    const propertyCount = data?.pagination?.total ?? 0;
-    return (
-        <span className="text-[10px] uppercase tracking-widest text-outline font-bold">{propertyCount} Propiedades</span>
-    );
-}
-
-function ResultCountLoading() {
-    return (
-        <div>
-            <span className="sr-only">Cargando...</span>
-            <LoadingCircles className="text-primary-container" />
-        </div>
-    );
-}
-
-export function FilterSection({ contract, filters }: { contract: string, filters: Partial<TPropertyFilters> }) {
+export function FilterSection({ filters }: { filters: Partial<TPropertyFilters> }) {
     const navigate = useNavigate();
-    const sentinelRef = useRef<HTMLDivElement>(null);
-    const isSentinelInView = useInView(sentinelRef, {
-        margin: "0px 0px 0px 0px",
-    });
 
     const [search, setSearch] = useState(filters.textSearch ?? "");
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -401,44 +376,21 @@ export function FilterSection({ contract, filters }: { contract: string, filters
 
     return (
         <>
-            <div ref={sentinelRef} className="relative h-0 overflow-hidden pointer-events-none" aria-hidden />
-            <section
-                className="sticky top-0 inset-x-0 z-30 translate-y-0 data-[stuck=true]:translate-y-(--header-height) bg-surface-container-high/0 data-[stuck=true]:bg-surface-container-high transition-[transform,translate,background] group data-[stuck=true]:shadow-md"
-                data-stuck={!isSentinelInView}
-            >
-                <div className="max-w-7xl mx-auto bg-surface-container/0 group-data-[sticky=true]:bg-surface-container px-6 py-3 space-y-4">
-                    <div className="grid grid-cols-[auto_1fr_auto] grid-rows-1 gap-3">
-                        <Label htmlFor="main-property-search" className="relative z-10 inline-block col-start-1 row-start-1 my-auto px-3">
-                            <Search className="size-4.5 stroke-3" style={{ color: "var(--color-outline-variant)" }} />
-                        </Label>
-                        <Input
-                            className="col-start-1 row-start-1 col-span-2 w-full h-12 pl-10 pr-4 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
-                            placeholder="Colonia, Codigo Postal, etc."
-                            type="text"
-                            id="main-property-search"
-                            name="search"
-                            value={search}
-                            onChange={(e) => onInputChange(e.target.value)}
-                        />
-                        <FiltersDialog filters={filters} />
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 p-1 bg-surface-container-high group-data-[stuck=true]:bg-surface-container-highest border border-surface-container-high group-data-[stuck=true]:border-outline-variant rounded-xl">
-                            <button className="px-4 py-1.5 bg-white text-primary text-xs font-bold rounded-lg shadow-sm flex items-center gap-2 transition-all">
-                                <List />
-                                List
-                            </button>
-                            <button className="px-4 py-1.5 text-on-surface-variant text-xs font-semibold rounded-lg hover:bg-white/50 transition-all flex items-center gap-2">
-                                <MapIcon />
-                                Map
-                            </button>
-                        </div>
-                        <Suspense fallback={<ResultCountLoading />}>
-                            <ResultCount contract={contract} filters={filters} />
-                        </Suspense>
-                    </div>
-                </div>
-            </section>
+            <div className="grid grid-cols-[auto_1fr_auto] grid-rows-1 gap-3">
+                <Label htmlFor="main-property-search" className="relative z-10 inline-block col-start-1 row-start-1 my-auto px-3">
+                    <Search className="size-4.5 stroke-3" style={{ color: "var(--color-outline-variant)" }} />
+                </Label>
+                <Input
+                    className="col-start-1 row-start-1 col-span-2 w-full h-12 pl-10 pr-4 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                    placeholder="Colonia, Codigo Postal, etc."
+                    type="text"
+                    id="main-property-search"
+                    name="search"
+                    value={search}
+                    onChange={(e) => onInputChange(e.target.value)}
+                />
+                <FiltersDialog filters={filters} />
+            </div>
         </>
     );
 }
