@@ -24,8 +24,8 @@ const DefaultPropertyAddressOpts: TPropertyAddressOpts = {
     includeZip: true,
 };
 
-export function getPropertyAddress(property: TProperty, opts: TPropertyAddressOpts) {
-    opts = Object.assign({}, DefaultPropertyAddressOpts, opts);
+export function getPropertyAddress(property: TProperty, opts?: TPropertyAddressOpts) {
+    opts = Object.assign({}, DefaultPropertyAddressOpts, opts || {});
     let result = "";
     let streetAndNbHood = "";
 

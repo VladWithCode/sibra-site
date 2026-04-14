@@ -1,6 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { List, MapIcon, Search, SlidersHorizontal } from "lucide-react";
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import z from "zod";
 import { useForm } from "@tanstack/react-form";
 import { Input } from "../ui/input";
@@ -10,10 +10,6 @@ import { Separator } from "../ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { Button } from "../ui/button";
 import type { TPropertyFilters } from "@/queries/type";
-import { getPropertyListingOpts } from "@/queries/properties";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { LoadingCircles } from "../icons/loadingCircles";
-import { useInView } from "motion/react";
 
 export const PropertyListingSearchSchema = z.object({
     q: z.string().optional().catch(""),
@@ -29,6 +25,7 @@ export const PropertyListingSearchSchema = z.object({
     propType: z.enum(["casa", "apartamento", "terreno"]).optional().catch(undefined),
     page: z.coerce.number().int().positive().optional().catch(undefined),
     perPage: z.coerce.number().int().positive().optional().catch(undefined),
+    view: z.enum(["list", "map"]).optional().catch("list"),
 });
 
 type TListingSearch = z.infer<typeof PropertyListingSearchSchema>;
