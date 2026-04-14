@@ -490,58 +490,39 @@ func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 
 func FindProperties(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
 	contract := r.PathValue("contract")
-	minPrice := r.URL.Query().Get("minPrice")
-	maxPrice := r.URL.Query().Get("maxPrice")
-	city := r.URL.Query().Get("city")
-	state := r.URL.Query().Get("state")
-	beds := r.URL.Query().Get("beds")
-	baths := r.URL.Query().Get("baths")
+
+	params := r.URL.Query()
+	filter := db.NewPropertyFilterFromQuery(&params)
+
+	// Contract comes from path param, override whatever query might say
+	if contract != "" {
+		filter.Contract = &contract
+	}
+
+	// Default ordering if not provided
+	if filter.OrderBy == nil {
+		orderBy := db.OrderByListingDate
+		filter.OrderBy = &orderBy
+	}
+	if filter.OrderDirection == nil {
+		orderDir := db.OrderDirectionDESC
+		filter.OrderDirection = &orderDir
+	}
+
 	pageStr := r.URL.Query().Get("page")
-	orderBy := r.URL.Query().Get("orderBy")
-	orderDir := r.URL.Query().Get("orderDir")
-
 	page, err := strconv.Atoi(pageStr)
-
 	if err != nil || page <= 0 {
 		page = 1
 	}
 
-	if orderBy == "" {
-		orderBy = db.OrderByListingDate
-	}
-	if orderDir == "" {
-		orderDir = db.OrderDirectionDESC
-	}
-
-	filter := db.PropertyFilter{
-		OrderBy: &orderBy,
+	perPageStr := r.URL.Query().Get("perPage")
+	perPage, err := strconv.Atoi(perPageStr)
+	if err != nil || perPage <= 0 {
+		perPage = db.DefaultPageSize
 	}
 
-	if contract != "" {
-		filter.Contract = &contract
-	}
-	if city != "" {
-		filter.City = &city
-	}
-	if state != "" {
-		filter.State = &state
-	}
-	if floatMin, err := strconv.ParseFloat(minPrice, 64); minPrice != "" && err == nil {
-		filter.MinPrice = &floatMin
-	}
-	if floatMax, err := strconv.ParseFloat(maxPrice, 64); maxPrice != "" && err == nil {
-		filter.MaxPrice = &floatMax
-	}
-	if intBeds, err := strconv.Atoi(beds); beds != "" && err == nil {
-		filter.Beds = &intBeds
-	}
-	if intBaths, err := strconv.Atoi(baths); baths != "" && err == nil {
-		filter.Baths = &intBaths
-	}
-
-	props, err := db.GetProperties(ctx, &filter, db.DefaultPageSize, page)
+	props, err := db.GetProperties(ctx, filter, perPage, page)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			respondWithError(w, http.StatusNotFound, ErrorParams{
@@ -554,11 +535,16 @@ func FindProperties(w http.ResponseWriter, r *http.Request) {
 		}
 		log.Printf("Error finding properties: %v\n", err)
 		return
+	} else if len(props) == 0 {
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "No se encontraron propiedades",
+		})
+		return
 	}
 
 	pagination, err := db.GetPaginationData(
-		&filter,
-		db.DefaultPageSize,
+		filter,
+		perPage,
 		page,
 	)
 	if err != nil {

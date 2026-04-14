@@ -265,6 +265,15 @@ func NewPropertyFilterFromQuery(query *url.Values) *PropertyFilter {
 		maxYearBuiltInt, _ := strconv.Atoi(maxYearBuilt)
 		filter.MaxYearBuilt = &maxYearBuiltInt
 	}
+	if textSearch := query.Get("textSearch"); textSearch != "" {
+		filter.TextSearch = &textSearch
+	}
+	if orderBy := query.Get("orderBy"); orderBy != "" {
+		filter.OrderBy = &orderBy
+	}
+	if orderDirection := query.Get("orderDirection"); orderDirection != "" {
+		filter.OrderDirection = &orderDirection
+	}
 	return filter
 }
 
@@ -711,6 +720,11 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 		prop.SyncLatLon()
 
 		properties = append(properties, &prop)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
 	}
 
 	return
