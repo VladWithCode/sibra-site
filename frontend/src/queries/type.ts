@@ -133,15 +133,22 @@ type TQuoteCreateSuccess = {
     quote: TQuote;
 };
 
-export type TPropInfoRequest = {
-    id: string;
+export type TContactRequest = {
     name: string;
     phone: string;
+}
+
+export type TPropInfoRequest = TContactRequest & {
+    id: string;
     property: string;
     status: string;
     date: string;
     updatedAt: string;
 };
+
+export type TContactRequestCreateResult =
+    | { success: true; request: TContactRequest }
+    | { error: string; etc?: Record<string, any> };
 
 export type TPropInfoRequestCreateResult =
     | { success: true; request: TPropInfoRequest }

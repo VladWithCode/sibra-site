@@ -1,6 +1,8 @@
 import { mutationOptions, queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
 import type {
     TConqsQuoteSchedule,
+    TContactRequest,
+    TContactRequestCreateResult,
     TPropInfoRequest,
     TPropInfoRequestCreateResult,
     TQuote,
@@ -31,6 +33,11 @@ export const QuoteQueryKeys = {
     createPropInfoRequest: (name: string, phone: string, property: string) => [...QuoteQueryKeys.all(), "createPropInfoRequest", { name, phone, property }] as const,
     updatePropInfoRequest: (id: string) => [...QuoteQueryKeys.all(), "updatePropInfoRequest", { id }] as const,
     deletePropInfoRequest: (id: string) => [...QuoteQueryKeys.all(), "deletePropInfoRequest", { id }] as const,
+
+    // ContactRequest
+    createContactRequest: () => [...QuoteQueryKeys.all(), "createContactRequest"] as const,
+    updateContactRequest: (id: string) => [...QuoteQueryKeys.all(), "updateContactRequest", { id }] as const,
+    deleteContactRequest: (id: string) => [...QuoteQueryKeys.all(), "deleteContactRequest", { id }] as const,
 
     // Conquistadores
     createConqsQuote: (schedule: TConqsQuoteSchedule | "") => [...QuoteQueryKeys.all(), "createConqsQuote", { schedule }] as const,
@@ -90,6 +97,11 @@ export const createPropInfoRequestOpts = (property: string) => mutationOptions({
     mutationFn: createPropInfoRequest,
 });
 
+export const createContactRequestOpts = () => mutationOptions({
+    mutationKey: QuoteQueryKeys.createContactRequest(),
+    mutationFn: createContactRequest,
+})
+
 export const updateConqsQuoteOpts = (id: string) => mutationOptions({
     mutationKey: QuoteQueryKeys.updateConqsQuote(id),
     // mutationFn: updateConqsQuote,
@@ -141,6 +153,23 @@ export async function createPropInfoRequest({ infoRequest }: { infoRequest: Pick
             "Content-Type": "application/json",
         },
         body: JSON.stringify(infoRequest),
+    });
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || "Error al enviar la solicitud");
+    }
+
+    return data;
+}
+
+export async function createContactRequest({ contactRequest }: { contactRequest: TContactRequest }): Promise<TContactRequestCreateResult> {
+    const response = await fetch("/api/contacto/general", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(contactRequest),
     });
     const data = await response.json();
 
