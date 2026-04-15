@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
@@ -6,7 +6,6 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import z from "zod";
 import { useUIStore } from "@/stores/uiStore";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConnectIcon } from "@/components/icons/connect";
@@ -404,7 +403,7 @@ function AgentsSection() {
 function AgentCard({ agent }: { agent: typeof agents[0] }) {
     return (
         <div className="flex flex-col items-center justify-center gap-2">
-            <div className="shrink-0 w-full aspect-square rounded-full bg-surface-container-lowest rounded-xl overflow-hidden">
+            <div className="shrink-0 w-full aspect-square bg-surface-container-lowest rounded-xl overflow-hidden">
                 <img className="w-full h-full object-cover" src={agent.img} alt={agent.name} />
             </div>
             <div className="text-center space-y-1">

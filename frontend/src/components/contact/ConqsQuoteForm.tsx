@@ -109,7 +109,7 @@ export function ConqsQuoteForm() {
                         <FormField
                             control={form.control}
                             name="schedule"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <Select>
                                         <FormLabel className="sm:text-base">Horario de visita</FormLabel>
@@ -252,7 +252,7 @@ export function ConqsFooterQuoteForm() {
                         <FormField
                             control={form.control}
                             name="schedule"
-                            render={({ field }) => (
+                            render={() => (
                                 <FormItem>
                                     <Select>
                                         <FormLabel className="sm:text-base">Horario de visita</FormLabel>

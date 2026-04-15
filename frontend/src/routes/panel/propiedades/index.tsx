@@ -1,6 +1,6 @@
 import { PropertyCard } from '@/components/dashboard/propertyCard';
 import { Button } from '@/components/ui/button';
-import { getFeaturedPropertiesOpts, getPropertiesOpts } from '@/queries/properties';
+import { getPropertiesOpts } from '@/queries/properties';
 import type { TPropertyListingResult } from '@/queries/type';
 import { useQuery, type QueryStatus } from '@tanstack/react-query';
 import { createFileRoute, Link } from '@tanstack/react-router'

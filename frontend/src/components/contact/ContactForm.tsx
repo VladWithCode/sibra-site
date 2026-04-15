@@ -131,7 +131,7 @@ export function ContactForm({
                                 field.handleChange(next);
                             }}
                         />
-                        <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                        <FieldError errors={field.state.meta.errors as unknown as Array<{ message?: string }>} />
                     </Field>
                 )}
             />
@@ -160,7 +160,7 @@ export function ContactForm({
                                     field.handleChange(next);
                                 }}
                             />
-                            <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                            <FieldError errors={field.state.meta.errors as unknown as Array<{ message?: string }>} />
                         </Field>
                     )}
                 />
@@ -172,7 +172,7 @@ export function ContactForm({
                     <Field>
                         <FieldLabel>Tipo de cita</FieldLabel>
                         <QuoteTypeSelector onChange={(t) => field.handleChange(t)} />
-                        <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                        <FieldError errors={field.state.meta.errors as unknown as Array<{ message?: string }>} />
                     </Field>
                 )}
             />
@@ -192,7 +192,7 @@ export function ContactForm({
                             onBlur={field.handleBlur}
                             onChange={(e) => field.handleChange(e.target.value)}
                         />
-                        <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                        <FieldError errors={field.state.meta.errors as unknown as Array<{ message?: string }>} />
                     </Field>
                 )}
             />
@@ -213,7 +213,7 @@ export function ContactForm({
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
                             />
-                            <FieldError errors={field.state.meta.errors as Array<{ message?: string }>} />
+                            <FieldError errors={field.state.meta.errors as unknown as Array<{ message?: string }>} />
                         </Field>
                     )}
                 />
