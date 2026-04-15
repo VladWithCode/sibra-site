@@ -31,7 +31,7 @@ function RouteComponent() {
     return (
         <main>
             <section className="relative z-0 py-16 sm:py-24 px-6 sm:px-12 lg:px-20 xl:pt-32 xl:pb-52">
-                <div className="absolute z-0 inset-0 w-full h-full bg-[url('./agent_showcase_2.webp')] bg-center bg-fixed bg-size-[auto_100%] blur-xs brightness-70">
+                <div className="absolute z-0 inset-0 w-full h-full bg-[url('/agent_showcase_2.webp')] bg-center bg-fixed bg-size-[auto_100%] blur-xs brightness-70">
                 </div>
                 <div className="contents lg:flex lg:gap-16 lg:max-w-7xl mx-auto">
                     <div className="relative z-10 max-w-2xl xl:max-w-none xl:flex-1 xl:basis-3/5 text-white pt-6 mb-16 mx-auto xl:mx-0">

@@ -23,7 +23,7 @@ import type { TProperty } from "@/queries/type";
 import { useUIStore } from "@/stores/uiStore";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bath, Bed, Home, XIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
@@ -68,7 +68,7 @@ function HeroSection({ property }: { property: TProperty }) {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
                 >
-                    <DialogTrigger className="w-full h-full p-0" asChild>
+                    <DialogTrigger className="w-full h-full p-0 cursor-pointer" asChild>
                         <PropertyImage
                             className="w-full h-full object-cover hover:scale-105 active:scale-95"
                             propId={property.id}
@@ -109,39 +109,55 @@ function HeroSection({ property }: { property: TProperty }) {
             </section>
             <DialogContent
                 showCloseButton={false}
-                className="w-screen max-w-screen flex flex-col bg-transparent border-none p-0 shadow-none"
+                className="lg:max-w-4/5 lg:max-h-[95vh] flex flex-col bg-transparent border-none p-0 shadow-none"
             >
-                <DialogClose className="fixed z-10 top-4 right-2">
+                <DialogClose className="fixed z-10 top-4 right-4">
                     <XIcon className="text-primary-foreground stroke-3" />
                 </DialogClose>
                 <DialogTitle className="sr-only">Galería de fotos: {property.address}</DialogTitle>
-                <Carousel setApi={setApi} className="w-full mt-auto" opts={{ loop: true }}>
-                    <CarouselContent>
+                <Carousel className="w-full h-full mt-auto md:[&>div]:h-[80vh] lg:[&>div]:h-[95vh]" setApi={setApi} opts={{ loop: true }}>
+                    <CarouselContent className="h-full">
                         {property.imgs.map((img, i) => (
                             <CarouselItem key={`${img}-${i}`}>
-                                <div className="flex items-center justify-center w-full aspect-[4/5] sm:aspect-video">
-                                    <PropertyImage
-                                        className="max-w-full max-h-full object-contain"
-                                        propId={property.id}
-                                        propName={property.address}
-                                        src={img}
-                                    />
+                                <div
+                                    className="flex items-center justify-center w-full h-full aspect-[4/5] bg-center bg-contain bg-no-repeat sm:aspect-video overflow-hidden"
+                                    style={{
+                                        "backgroundImage": "url(/static/properties/" + property.id + "/" + img + ")",
+                                    }}
+                                >
+                                    {/* <PropertyImage */}
+                                    {/*     className="max-w-full max-h-full w-auto h-full object-contain" */}
+                                    {/*     propId={property.id} */}
+                                    {/*     propName={property.address} */}
+                                    {/*     src={img} */}
+                                    {/* /> */}
                                 </div>
                             </CarouselItem>
                         ))}
                     </CarouselContent>
-                    <CarouselPrevious className="left-2 sm:-left-12 bg-white/90" />
+                    <CarouselPrevious className="left-2 sm:-left-12 top-1/2 -translate-y-1/2 bg-white/90" />
                     <CarouselNext className="right-2 sm:-right-12 bg-white/90" />
                 </Carousel>
-                <p className="text-center text-sm font-sans font-bold tracking-widest text-white/80 uppercase">
+                <p className="lg:absolute lg:top-6 lg:inset-x-0 text-center text-sm font-sans font-bold tracking-widest text-white/80 uppercase">
                     {current} / {property.imgs.length} Fotos
                 </p>
-                <div className="flex justify-between gap-3 text-on-primary mt-auto p-4">
-                    <Button variant="outline" className="flex-1 bg-surface-container-low/30 backdrop-blur-md">
-                        Solicitar Precalificación
+                <div className="lg:absolute lg:bottom-0 lg:inset-x-0 flex justify-between gap-3 text-on-primary mt-auto p-4">
+                    <Button
+                        variant="outline"
+                        className="flex-1 bg-surface-container-low/30 backdrop-blur-md"
+                        onClick={() => setOpen(false)}
+                        asChild
+                    >
+                        {/* @ts-ignore */}
+                        <Link to="#formulario-contacto">Solicitar Precalificación</Link>
                     </Button>
-                    <Button className="flex-1">
-                        Agendar Cita
+                    <Button
+                        className="flex-1"
+                        onClick={() => setOpen(false)}
+                        asChild
+                    >
+                        {/* @ts-ignore */}
+                        <Link to="#formulario-cita">Agendar Cita</Link>
                     </Button>
                 </div>
             </DialogContent>
@@ -290,7 +306,7 @@ function InquiryForm({ property }: { property: TProperty }) {
     });
 
     return (
-        <section className="p-3 md:p-0">
+        <section className="p-3 md:p-0" id="formulario-contacto">
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -404,7 +420,7 @@ function InquiryForm({ property }: { property: TProperty }) {
 
 function QuoteFormSection({ property }: { property: TProperty }) {
     return (
-        <section className="p-3 md:p-0">
+        <section className="p-3 md:p-0" id="formulario-cita">
             <div className="bg-surface-container-lowest p-6 rounded-lg  shadow-[0_20px_50px_rgba(0,0,0,0.04)] border-2 border-sbr-green/40">
                 <h2 className="text-2xl font-semibold mb-8">Agenda tu cita</h2>
                 <ContactForm viewDetail="simple" forPropertyID={property.id} />
