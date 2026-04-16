@@ -56,8 +56,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id := uuid.Must(uuid.NewV7()).String()
-	property.Id = id
+	property.Id = uuid.Must(uuid.NewV7()).String()
 	property.Agent = user.Id
 	property.SetSlug()
 	property.SyncLatLon()
@@ -78,7 +77,7 @@ func CreateProperty(w http.ResponseWriter, r *http.Request) {
 
 	err = property.CreateStaticDir()
 	if err != nil {
-		fmt.Printf("Error creating static dir for prop: %v\n", property.Id)
+		log.Printf("Error creating static dir for prop: %v\n", property.Id)
 	}
 }
 
