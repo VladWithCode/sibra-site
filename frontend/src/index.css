@@ -195,6 +195,32 @@
     .text-label-md {
         @apply font-sans text-xs font-bold uppercase tracking-[0.05em];
     }
+
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+
+    .hero-gradient {
+        background: linear-gradient(180deg, rgba(26, 28, 28, 0.4) 0%, rgba(26, 28, 28, 0.1) 50%, rgba(26, 28, 28, 0.7) 100%);
+    }
+
+    .signature-gradient {
+        background: linear-gradient(135deg, #005bbf 0%, #1a73e8 100%);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #c1c6d6;
+    }
 }
 
 @theme inline {

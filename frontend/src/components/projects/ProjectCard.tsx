@@ -12,11 +12,14 @@ export function ProjectCard({ project, className }: { project: TProject } & Reac
             className,
         )}>
             <CardHeader className="p-0">
-                <img className="aspect-video w-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="luxury modern villa architectural rendering with minimalist concrete structure and infinity pool overlooking a valley" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUBxRvbj8T5r_T0I7b8A6zKkSgkijLeHUkXAZS_HzXNiNdHe3SVfZ5-9P0Gkxs0v38p2CJtaW7_Sq3J3Y5ypUmRagjzqWiPptLd9rAKojFVHLUhTYIWA9cjIONxuHFRahiI4KQUyrmca9FcQbov63UI9Az32xgfzZtG9StvLw9p92JrMbCK1_dY_H8crWLJRxzUWNMKwoOQUIqnb4cVWnHjATqIpGXOsMIG0xaJXuEslsPPQXgiZNPjaTJ-8a4uccvig_zMlBRKZU" />
+                <img
+                    className="aspect-video w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    src={project.main_img ? `/static/uploads/${project.main_img}` : "/sample.webp"}
+                    alt={`Imagen principal del proyecto ${project.name}`}
+                />
             </CardHeader>
             <CardContent className="space-y-6">
                 <CardTitle className="space-y-1.5">
-                    {/* <span className="text-sbr-blue font-bold text-xs uppercase tracking-widest block mb-2">Proyecto Insignia</span> */}
                     <h3 className="font-headline text-2xl font-bold text-on-surface tracking-tight">{project.name}</h3>
                     <div className="text-on-surface-variant/80 font-light mt-1 line-clamp-2">
                         {project.description}
@@ -25,11 +28,15 @@ export function ProjectCard({ project, className }: { project: TProject } & Reac
                 <div className="grid grid-cols-2 gap-6 min-h-20 border-y border-outline-variant/30">
                     <div className="flex flex-col justify-around bg-surface-container p-2 rounded-md">
                         <p className="text-on-surface-variant text-xs uppercase tracking-tighter">Área Total</p>
-                        <p className="font-bold md:text-lg">12,450 m²</p>
+                        <p className="font-bold md:text-lg">
+                            {project.total_area > 0 ? `${project.total_area.toLocaleString("es-MX")} m²` : "—"}
+                        </p>
                     </div>
                     <div className="flex flex-col justify-around bg-surface-container p-2 rounded-md">
                         <p className="text-on-surface-variant text-xs uppercase tracking-tighter">Disponibilidad</p>
-                        <p className="font-headline font-bold md:text-lg">14/42 Lotes</p>
+                        <p className="font-headline font-bold md:text-lg">
+                            {project.lot_count > 0 ? `${project.available_lots}/${project.lot_count} Lotes` : "—"}
+                        </p>
                     </div>
                     {/* <div> */}
                     {/*     <p className="text-on-surface-variant text-[10px] uppercase tracking-tighter">Rendimiento Meta</p> */}
