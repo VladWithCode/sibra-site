@@ -48,6 +48,12 @@ func RegisterProjectRoutes(router *customServeMux) {
 
 	router.HandleFunc("GET /api/proyectos/{id}/acceso", CheckProjectAccess)
 	router.HandleFunc("POST /api/proyectos/{id}/acceso", ValidateProjectAccess)
+
+	router.HandleFunc("GET /api/atractivos", GetAppealItems)
+	router.HandleFunc("GET /api/atractivos/{id}", GetAppealItem)
+	router.HandleFunc("POST /api/atractivos", CreateAppealItem)
+	router.HandleFunc("PUT /api/atractivos/{id}", UpdateAppealItem)
+	router.HandleFunc("DELETE /api/atractivos/{id}", DeleteAppealItem)
 }
 
 func CheckProjectAccess(w http.ResponseWriter, r *http.Request) {
@@ -1366,6 +1372,126 @@ func RemoveProjectAvailability(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage: "Ocurrió un error al eliminar la imagen",
 		})
 		log.Printf("Error deleting image: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+	})
+}
+
+func GetAppealItems(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	items, err := db.FindAppealItems(ctx)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar los atractivos",
+		})
+		log.Printf("Failed to find appeal items: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"items":   items,
+	})
+}
+
+func GetAppealItem(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := r.PathValue("id")
+
+	item, err := db.FindAppealItemByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró el atractivo",
+			})
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar el atractivo",
+		})
+		log.Printf("Failed to find appeal item: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"item":    item,
+	})
+}
+
+func CreateAppealItem(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	item := db.ProjectAppealItem{}
+
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	if err := decoder.Decode(&item); err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
+		})
+		log.Printf("Error parsing appeal item: %v\n", err)
+		return
+	}
+
+	if err := db.CreateAppealItem(ctx, &item); err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al crear el atractivo",
+		})
+		log.Printf("Failed to create appeal item: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, map[string]any{
+		"success": true,
+		"item":    item,
+	})
+}
+
+func UpdateAppealItem(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := r.PathValue("id")
+	item := db.ProjectAppealItem{}
+
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	if err := decoder.Decode(&item); err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
+		})
+		log.Printf("Error parsing appeal item: %v\n", err)
+		return
+	}
+
+	item.ID = id
+
+	if err := db.UpdateAppealItem(ctx, &item); err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar el atractivo",
+		})
+		log.Printf("Failed to update appeal item: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"item":    item,
+	})
+}
+
+func DeleteAppealItem(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := r.PathValue("id")
+
+	if err := db.DeleteAppealItem(ctx, id); err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al eliminar el atractivo",
+		})
+		log.Printf("Failed to delete appeal item: %v\n", err)
 		return
 	}
 

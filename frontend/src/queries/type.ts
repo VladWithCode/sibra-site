@@ -179,18 +179,33 @@ export type TProjectDoc = {
     updated_at: string;
 };
 
+export type TProjectAppealItem = {
+    id: string;
+    name: string;
+    description: string;
+};
+
 export type TProject = {
     id: string;
     slug: string;
     name: string;
     description: string;
+    quote: string;
+    summary: string;
+    location: string;
     main_img: string;
     availability_img: string;
     gallery: string[];
 
+    total_area: number;
+    lot_count: number;
+    available_lots: number;
+
     amenities: TProjectAmenity[];
     associates: TProjectAssociate[];
     docs: TProjectDoc[];
+    appeal_list: TProjectAppealItem[];
+
     lat?: number;
     lon?: number;
 
@@ -198,9 +213,34 @@ export type TProject = {
     updated_at: string;
 }
 
+export type TProjectInput = Partial<Omit<TProject, "created_at" | "updated_at">>;
+
 export type TProjectListingResult = {
     success?: boolean;
     projects: TProject[];
+};
+
+export type TProjectMutationResult = {
+    success: true;
+    project: TProject;
+};
+
+export type TProjectDeleteResult = {
+    success: true;
+};
+
+export type TAppealItemsResult = {
+    success: boolean;
+    items: TProjectAppealItem[];
+};
+
+export type TAppealItemDetailResult = {
+    success: boolean;
+    item: TProjectAppealItem;
+};
+
+export type TAppealItemDeleteResult = {
+    success: true;
 };
 
 export type TProjectAssociateDetailResult = {

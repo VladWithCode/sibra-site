@@ -1,5 +1,5 @@
 import { queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
-import type { TProjectAssociate, TProjectAssociateDetailResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDetailResult, TProjectDocsResult, TProjectListingResult } from "./type";
+import type { TAppealItemDeleteResult, TAppealItemDetailResult, TAppealItemsResult, TProjectAmenity, TProjectAppealItem, TProjectAssociate, TProjectAssociateDetailResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDeleteResult, TProjectDetailResult, TProjectDocsResult, TProjectInput, TProjectListingResult, TProjectMutationResult } from "./type";
 
 export const ProjectQueryKeys = {
     all: () => ["projects"] as const,
@@ -27,6 +27,17 @@ export const ProjectQueryKeys = {
     checkProjectAccess: (projectId: string, rfcOrCurp: string, lotNum: number, appleNum: number) =>
         [...ProjectQueryKeys.associates(), "checkProjectAccess", { projectId, rfcOrCurp, lotNum, appleNum }] as const,
 } as const;
+
+export const AppealItemQueryKeys = {
+    all: () => ["appealItems"] as const,
+    listing: () => [...AppealItemQueryKeys.all(), "listing"] as const,
+    detail: () => [...AppealItemQueryKeys.all(), "detail"] as const,
+    byId: (id: string) =>
+        [...AppealItemQueryKeys.detail(), "byId", { id }] as const,
+} as const;
+
+export type QKAppealItemsListing = ReturnType<typeof AppealItemQueryKeys.listing>;
+export type QKAppealItemById = ReturnType<typeof AppealItemQueryKeys.byId>;
 
 export type QKProjectsListing = ReturnType<typeof ProjectQueryKeys.listing>;
 export type QKProjectsDetail = ReturnType<typeof ProjectQueryKeys.detail>;
@@ -158,4 +169,258 @@ export async function checkProjectAccess(accessData: TProjectCheckAccessData): P
         default:
             throw new Error(data.error || "Error al buscar acceso al proyecto");
     }
+}
+
+async function jsonFetch<T>(url: string, init: RequestInit, fallbackMsg: string): Promise<T> {
+    const response = await fetch(url, init);
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || data.message || fallbackMsg);
+    }
+
+    return data as T;
+}
+
+// Project CRUD mutations
+
+export async function createProject(input: TProjectInput): Promise<TProjectMutationResult> {
+    return jsonFetch<TProjectMutationResult>("/api/proyectos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+    }, "Error al crear el proyecto");
+}
+
+export async function updateProject(id: string, input: TProjectInput): Promise<TProjectMutationResult> {
+    return jsonFetch<TProjectMutationResult>(`/api/proyectos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+    }, "Error al actualizar el proyecto");
+}
+
+export async function deleteProject(id: string): Promise<TProjectDeleteResult> {
+    return jsonFetch<TProjectDeleteResult>(`/api/proyectos/${id}`, {
+        method: "DELETE",
+    }, "Error al eliminar el proyecto");
+}
+
+// Media mutations — main image
+
+export type TUploadProjectMainImgInput = { projectId: string; file: File };
+
+export async function uploadProjectMainImg({ projectId, file }: TUploadProjectMainImgInput): Promise<TProjectMutationResult> {
+    const fd = new FormData();
+    fd.append("file", file);
+    return jsonFetch<TProjectMutationResult>(`/api/proyectos/${projectId}/medios/principal`, {
+        method: "PUT",
+        body: fd,
+    }, "Error al subir la imagen principal");
+}
+
+export async function removeProjectMainImg(projectId: string): Promise<{ success: true }> {
+    return jsonFetch<{ success: true }>(`/api/proyectos/${projectId}/medios/principal`, {
+        method: "DELETE",
+    }, "Error al eliminar la imagen principal");
+}
+
+// Media mutations — gallery
+
+export type TUploadProjectGalleryInput = { projectId: string; files: File[] };
+
+export async function uploadProjectGallery({ projectId, files }: TUploadProjectGalleryInput): Promise<TProjectMutationResult> {
+    const fd = new FormData();
+    for (const f of files) fd.append("file", f);
+    return jsonFetch<TProjectMutationResult>(`/api/proyectos/${projectId}/medios/galeria`, {
+        method: "PUT",
+        body: fd,
+    }, "Error al subir la galería");
+}
+
+export async function removeFromProjectGallery({ projectId, imgId }: { projectId: string; imgId: string }): Promise<{ success: true }> {
+    return jsonFetch<{ success: true }>(`/api/proyectos/${projectId}/medios/galeria/${imgId}`, {
+        method: "DELETE",
+    }, "Error al eliminar la imagen de la galería");
+}
+
+// Media mutations — amenities
+
+export type TProjectAmenityFormInput = {
+    projectId: string;
+    name: string;
+    icon: string;
+    file?: File;
+};
+
+export async function uploadProjectAmenity({ projectId, name, icon, file }: TProjectAmenityFormInput): Promise<TProjectMutationResult> {
+    const fd = new FormData();
+    fd.append("name", name);
+    fd.append("icon", icon);
+    if (file) fd.append("file", file);
+    return jsonFetch<TProjectMutationResult>(`/api/proyectos/${projectId}/medios/amenidades`, {
+        method: "PUT",
+        body: fd,
+    }, "Error al subir la amenidad");
+}
+
+export async function updateProjectAmenity({ projectId, amenityId, name, icon, file }: TProjectAmenityFormInput & { amenityId: string }): Promise<{ success: true; amenity?: TProjectAmenity; project?: TProjectMutationResult["project"] }> {
+    const fd = new FormData();
+    fd.append("name", name);
+    fd.append("icon", icon);
+    if (file) fd.append("file", file);
+    return jsonFetch(`/api/proyectos/${projectId}/medios/amenidades/${amenityId}`, {
+        method: "PUT",
+        body: fd,
+    }, "Error al actualizar la amenidad");
+}
+
+export async function deleteProjectAmenity({ projectId, amenityId }: { projectId: string; amenityId: string }): Promise<{ success: true }> {
+    return jsonFetch<{ success: true }>(`/api/proyectos/${projectId}/medios/amenidades/${amenityId}`, {
+        method: "DELETE",
+    }, "Error al eliminar la amenidad");
+}
+
+// Media mutations — availability image
+
+export async function uploadProjectAvailability({ projectId, file }: { projectId: string; file: File }): Promise<TProjectMutationResult> {
+    const fd = new FormData();
+    fd.append("file", file);
+    return jsonFetch<TProjectMutationResult>(`/api/proyectos/${projectId}/medios/disponibilidad`, {
+        method: "PUT",
+        body: fd,
+    }, "Error al subir la imagen de disponibilidad");
+}
+
+export async function removeProjectAvailability(projectId: string): Promise<{ success: true }> {
+    return jsonFetch<{ success: true }>(`/api/proyectos/${projectId}/medios/disponibilidad`, {
+        method: "DELETE",
+    }, "Error al eliminar la imagen de disponibilidad");
+}
+
+// Doc mutations
+
+export type TCreateProjectDocInput = {
+    projectId: string;
+    file: File;
+    filename: string;
+    description?: string;
+};
+
+export async function createProjectDoc({ projectId, file, filename, description }: TCreateProjectDocInput): Promise<{ success: true; project: TProjectMutationResult["project"] }> {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("filename", filename);
+    if (description) fd.append("description", description);
+    return jsonFetch(`/api/proyectos/${projectId}/documentos`, {
+        method: "POST",
+        body: fd,
+    }, "Error al subir el documento");
+}
+
+export async function removeProjectDoc({ projectId, docId }: { projectId: string; docId: string }): Promise<{ success: true }> {
+    return jsonFetch<{ success: true }>(`/api/proyectos/${projectId}/documentos/${docId}`, {
+        method: "DELETE",
+    }, "Error al eliminar el documento");
+}
+
+// Associate mutations
+
+export type TAssociateInput = Partial<TProjectAssociate>;
+
+export async function createAssociate(input: TAssociateInput): Promise<{ success: true; associate: TProjectAssociate }> {
+    return jsonFetch(`/api/socios`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+    }, "Error al crear el socio");
+}
+
+export async function updateAssociate(id: string, input: TAssociateInput): Promise<{ success: true; associate: TProjectAssociate }> {
+    return jsonFetch(`/api/socios/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+    }, "Error al actualizar el socio");
+}
+
+export async function deleteAssociate(id: string): Promise<{ success: true }> {
+    return jsonFetch<{ success: true }>(`/api/socios/${id}`, {
+        method: "DELETE",
+    }, "Error al eliminar el socio");
+}
+
+export type TProjectAssociateRelInput = {
+    projectId: string;
+    associateId: string;
+    pendingPayment: boolean;
+    lotNum?: string;
+    appleNum?: string;
+};
+
+export async function addProjectAssociate({ projectId, associateId, ...rest }: TProjectAssociateRelInput): Promise<{ success: true; associate: TProjectAssociate }> {
+    return jsonFetch(`/api/proyectos/${projectId}/socios/${associateId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(rest),
+    }, "Error al asociar el socio al proyecto");
+}
+
+export async function updateProjectAssociate({ projectId, associateId, pendingPayment }: { projectId: string; associateId: string; pendingPayment: boolean }): Promise<{ success: true; associate: TProjectAssociate }> {
+    return jsonFetch(`/api/proyectos/${projectId}/socios/${associateId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pendingPayment }),
+    }, "Error al actualizar la relación socio-proyecto");
+}
+
+export async function removeProjectAssociate({ projectId, associateId }: { projectId: string; associateId: string }): Promise<{ success: true }> {
+    return jsonFetch<{ success: true }>(`/api/proyectos/${projectId}/socios/${associateId}`, {
+        method: "DELETE",
+    }, "Error al eliminar la relación socio-proyecto");
+}
+
+// Appeal item queries + mutations
+
+export const getAppealItemsOpts = queryOptions({
+    queryKey: AppealItemQueryKeys.listing(),
+    queryFn: getAppealItems,
+});
+
+export const getAppealItemByIdOpts = (id: string) => queryOptions({
+    queryKey: AppealItemQueryKeys.byId(id),
+    queryFn: getAppealItemById,
+});
+
+export async function getAppealItems(): Promise<TAppealItemsResult> {
+    return jsonFetch<TAppealItemsResult>("/api/atractivos", {}, "Error al obtener los atractivos");
+}
+
+export async function getAppealItemById({ queryKey }: QueryFunctionContext<QKAppealItemById>): Promise<TAppealItemDetailResult> {
+    const { id } = queryKey[3];
+    return jsonFetch<TAppealItemDetailResult>(`/api/atractivos/${id}`, {}, "Error al obtener el atractivo");
+}
+
+export type TAppealItemInput = Partial<TProjectAppealItem>;
+
+export async function createAppealItem(input: TAppealItemInput): Promise<TAppealItemDetailResult> {
+    return jsonFetch<TAppealItemDetailResult>("/api/atractivos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+    }, "Error al crear el atractivo");
+}
+
+export async function updateAppealItem(id: string, input: TAppealItemInput): Promise<TAppealItemDetailResult> {
+    return jsonFetch<TAppealItemDetailResult>(`/api/atractivos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+    }, "Error al actualizar el atractivo");
+}
+
+export async function deleteAppealItem(id: string): Promise<TAppealItemDeleteResult> {
+    return jsonFetch<TAppealItemDeleteResult>(`/api/atractivos/${id}`, {
+        method: "DELETE",
+    }, "Error al eliminar el atractivo");
 }
