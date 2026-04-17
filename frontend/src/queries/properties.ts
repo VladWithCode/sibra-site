@@ -334,7 +334,7 @@ export async function updatePropertyMainImg({ id, file }: { id: string, file: Fi
     return data;
 }
 
-export async function updatePropertyGallery({ id, files }: { id: string, files: FileList }): Promise<TPropertyDetailResult> {
+export async function updatePropertyGallery({ id, files }: { id: string, files: FileList | File[] }): Promise<TPropertyDetailResult> {
     const formData = new FormData();
 
     for (let f of files) {
