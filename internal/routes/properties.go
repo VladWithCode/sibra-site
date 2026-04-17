@@ -27,11 +27,11 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/propiedades/panel/{id}", auth.ValidateAuthMiddleware(FindSingleProperty))
 	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
-	router.HandleFunc("POST /api/property", auth.ValidateAuthMiddleware(CreateProperty))
-	router.HandleFunc("PUT /api/property/{id}", auth.ValidateAuthMiddleware(UpdateProperty))
-	router.HandleFunc("DELETE /api/property/{id}", auth.ValidateAuthMiddleware(DeletePropertyById))
-	router.HandleFunc("POST /api/property/pictures/{id}", auth.ValidateAuthMiddleware(UploadPropertyPictures))
-	router.HandleFunc("DELETE /api/property/pictures/{id}", auth.ValidateAuthMiddleware(DeletePropertyPictures))
+	router.HandleFunc("POST /api/property", auth.WithAuthAccessLevelMiddleware(CreateProperty, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthAccessLevelMiddleware(UpdateProperty, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/property/{id}", auth.WithAuthAccessLevelMiddleware(DeletePropertyById, auth.AccessLevelEditor))
+	router.HandleFunc("POST /api/property/pictures/{id}", auth.WithAuthAccessLevelMiddleware(UploadPropertyPictures, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/property/pictures/{id}", auth.WithAuthAccessLevelMiddleware(DeletePropertyPictures, auth.AccessLevelEditor))
 }
 
 func CreateProperty(w http.ResponseWriter, r *http.Request) {

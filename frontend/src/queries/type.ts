@@ -15,6 +15,19 @@ export type TPropertyStatus = "borrador" | "archivada" | "publicada" | "en_revis
 export type TPropertyType = "casa" | "apartamento" | "terreno";
 export type TPropertyContract = "venta" | "renta";
 
+export type TPropertyFeature = {
+    id: string;
+    icon: string;
+    title: string;
+    description: string;
+};
+
+export type TPropertyAmenity = {
+    id: string;
+    icon: string;
+    title: string;
+};
+
 export type TProperty = {
     id: string;
     address: string;
@@ -35,7 +48,8 @@ export type TProperty = {
     yearBuilt: number;
     status: TPropertyStatus;
     coords: string;
-    features: Record<string, any>;
+    features: TPropertyFeature[];
+    amenities: TPropertyAmenity[];
     lat: number;
     lon: number;
     featured: boolean;

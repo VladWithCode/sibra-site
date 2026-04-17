@@ -18,6 +18,8 @@ func NewRouter() http.Handler {
 	RegisterUserRoutes(router)
 	RegisterRequestsRouter(router)
 	RegisterProjectRoutes(router)
+	RegisterFeatureRoutes(router)
+	RegisterAmenityRoutes(router)
 
 	// Serve static
 	// *Might change it to serve static files through nginx
