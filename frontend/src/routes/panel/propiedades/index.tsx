@@ -1,72 +1,78 @@
-import { PropertyCard } from '@/components/dashboard/propertyCard';
-import { Button } from '@/components/ui/button';
-import { getPropertiesOpts } from '@/queries/properties';
-import type { TPropertyListingResult } from '@/queries/type';
-import { useQuery, type QueryStatus } from '@tanstack/react-query';
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { CircleX } from 'lucide-react';
+import { PropertiesFilters } from '@/components/panel/properties/PropertiesFilters';
+import { PropertiesHeader } from '@/components/panel/properties/PropertiesHeader';
+import { PropertiesTable } from '@/components/panel/properties/PropertiesTable';
+import { getPropertyFilteredListingOpts } from '@/queries/properties';
+import type { TPropertyFilters } from '@/queries/type';
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute } from '@tanstack/react-router';
+import { z } from 'zod';
+
+const PanelPropertiesSearchSchema = z.object({
+    q: z.string().optional().catch(undefined),
+    status: z
+        .enum(['borrador', 'archivada', 'publicada', 'en_revision', 'vendida', 'no_disponible'])
+        .optional()
+        .catch(undefined),
+    propType: z.enum(['casa', 'apartamento', 'terreno']).optional().catch(undefined),
+    contract: z.enum(['venta', 'renta']).optional().catch(undefined),
+    page: z.coerce.number().int().positive().optional().catch(undefined),
+    perPage: z.coerce.number().int().positive().optional().catch(undefined),
+});
+
+type PanelPropertiesSearch = z.infer<typeof PanelPropertiesSearchSchema>;
+
+function toFilters(search: PanelPropertiesSearch): Partial<TPropertyFilters> {
+    return {
+        textSearch: search.q || undefined,
+        status: search.status,
+        propType: search.propType,
+        contract: search.contract,
+        page: search.page,
+        perPage: search.perPage,
+    };
+}
 
 export const Route = createFileRoute('/panel/propiedades/')({
     component: RouteComponent,
-    loader: async ({ context }) => {
-        await context.queryClient.ensureQueryData(getPropertiesOpts);
+    validateSearch: (search) => PanelPropertiesSearchSchema.parse(search),
+    loaderDeps: ({ search }) => toFilters(search),
+    loader: async ({ context, deps }) => {
+        await context.queryClient.ensureQueryData(getPropertyFilteredListingOpts(deps));
     },
-})
+});
 
 function RouteComponent() {
-    const { data, status } = useQuery(getPropertiesOpts);
+    const search = Route.useSearch();
+    const filters = toFilters(search);
+    const { data, isLoading } = useQuery(getPropertyFilteredListingOpts(filters));
+
+    const properties = data?.properties ?? [];
+    const pagination = data?.pagination ?? {
+        total: 0,
+        page: 1,
+        perPage: 10,
+        hasNext: false,
+        hasPrev: false,
+    };
 
     return (
-        <main className="grid grid-rows-[auto_1fr] gap-y-3 p-2 px-4 overflow-x-hidden overflow-y-auto bg-gray-200">
-            <div className="flex justify-between items-center gap-6">
-                <div className="space-y-0.5">
-                    <h2 className="text-xl font-semibold">Propiedades</h2>
-                    <p className="text-current/60">Listado de propiedades</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <Button variant="link" size="lg" asChild>
-                        <Link to="/panel/propiedades/nueva" className="bg-sbr-blue text-primary-foreground shadow-lg hover:scale-105 active:scale-95">
-                            <span>Crear propiedad</span>
-                        </Link>
-                    </Button>
-                </div>
+        <main className="p-4 sm:p-6 lg:p-8">
+            <PropertiesHeader />
+            <div className="mb-6">
+                <PropertiesFilters
+                    filters={{
+                        q: search.q,
+                        status: search.status,
+                        propType: search.propType,
+                        contract: search.contract,
+                    }}
+                />
             </div>
-            <div className="grid grid-rows-[2.5rem_1fr] gap-1.5">
-                <div className="flex items-center gap-3">
-                    filtros
-                </div>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(30rem,1fr))] gap-x-3 gap-y-6">
-                    <PropertyGrid data={data} queryStatus={status} />
-                </div>
-            </div>
+            <PropertiesTable
+                properties={properties}
+                pagination={pagination}
+                isLoading={isLoading}
+            />
         </main>
     );
-}
-
-function PropertyGrid({ data, queryStatus }: { data: TPropertyListingResult | undefined, queryStatus: QueryStatus }) {
-    switch (queryStatus) {
-        case "pending":
-            return (
-                <div className="col-span-full flex flex-col items-center justify-center gap-4">
-                    <span className="loader text-3xl w-24!"></span>
-                    <span className="text-2xl text-current/60 font-medium">Cargando...</span>
-                </div>
-            );
-        case "error":
-            return (
-                <div className="col-span-full flex flex-col items-center justify-center gap-3">
-                    <CircleX className="size-40 fill-destructive text-gray-50" />
-                    <p className="text-2xl text-current/60 font-semibold">Ocurrió un error</p>
-                    <div className="mt-8">
-                        <Button className="text-base" size="lg">Reintentar</Button>
-                    </div>
-                </div>
-            );
-        case "success":
-            return (
-                (data as TPropertyListingResult).properties.map((prop) => (
-                    <PropertyCard propData={prop} key={prop.id} />
-                ))
-            );
-    }
 }
