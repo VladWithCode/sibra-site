@@ -43,6 +43,7 @@ func RegisterProjectRoutes(router *customServeMux) {
 	router.HandleFunc("DELETE /api/proyectos/{id}/socios/{associateID}", RemoveProjectAssociate)
 
 	router.HandleFunc("GET /api/proyectos/{id}/documentos", auth.ValidateProjectAccessMiddleware(GetProjectDocs))
+	router.HandleFunc("GET /api/proyectos/{id}/documentos/admin", auth.ValidateAuthMiddleware(GetProjectDocs))
 	router.HandleFunc("POST /api/proyectos/{id}/documentos", CreateProjectDoc)
 	router.HandleFunc("DELETE /api/proyectos/{id}/documentos/{docID}", RemoveProjectDoc)
 

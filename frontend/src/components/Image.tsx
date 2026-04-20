@@ -18,3 +18,10 @@ export function PropertyImage({ propId, propName, src, ...props }: {
 } & React.ImgHTMLAttributes<HTMLImageElement>) {
     return <Image src={`/properties/${propId}/${src}`} alt={`Foto de la propiedad ${propName}`} {...props} />
 }
+
+export function ProjectImage({ projName, src, ...props }: {
+    projName: string,
+    src: string,
+} & React.ImgHTMLAttributes<HTMLImageElement>) {
+    return <Image src={`/uploads/${src}`} alt={`Foto del proyecto ${projName}`} {...props} />
+}

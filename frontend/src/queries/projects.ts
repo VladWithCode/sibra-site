@@ -1,4 +1,5 @@
-import { queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
+import { mutationOptions, queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
+import { queryClient } from "./queryClient";
 import type { TAppealItemDeleteResult, TAppealItemDetailResult, TAppealItemsResult, TProjectAmenity, TProjectAppealItem, TProjectAssociate, TProjectAssociateDetailResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDeleteResult, TProjectDetailResult, TProjectDocsResult, TProjectInput, TProjectListingResult, TProjectMutationResult } from "./type";
 
 export const ProjectQueryKeys = {
@@ -118,7 +119,7 @@ export async function getProjectBySlug({ queryKey }: QueryFunctionContext<QKProj
 
 export async function getProjectDocs({ queryKey }: QueryFunctionContext<QKProjectsDocs>): Promise<TProjectDocsResult> {
     const { id } = queryKey[3];
-    const response = await fetch(`/api/proyectos/${id}/documentos`);
+    const response = await fetch(`/api/proyectos/${id}/documentos/admin`);
     const data = await response.json();
 
     if (response.status < 200 || response.status >= 300) {
@@ -199,6 +200,138 @@ export async function updateProject(id: string, input: TProjectInput): Promise<T
         body: JSON.stringify(input),
     }, "Error al actualizar el proyecto");
 }
+
+export const deleteProjectOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "delete", { id }],
+        mutationFn: () => deleteProject(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ProjectQueryKeys.listing(),
+            });
+        },
+    });
+
+export const createProjectOpts = () =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "create"],
+        mutationFn: (input: TProjectInput) => createProject(input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ProjectQueryKeys.listing(),
+            });
+        },
+    });
+
+export const updateProjectOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "update", { id }],
+        mutationFn: (input: TProjectInput) => updateProject(id, input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.listing() });
+        },
+    });
+
+export const uploadProjectMainImgOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "mainImg", { id }],
+        mutationFn: uploadProjectMainImg,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const uploadProjectAvailabilityOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "availability", { id }],
+        mutationFn: uploadProjectAvailability,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const uploadProjectGalleryOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "gallery", { id }],
+        mutationFn: uploadProjectGallery,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const uploadProjectAmenityOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "amenity", { id }],
+        mutationFn: uploadProjectAmenity,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const createProjectDocOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "doc", { id }],
+        mutationFn: createProjectDoc,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const removeProjectMainImgOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "removeMainImg", { id }],
+        mutationFn: () => removeProjectMainImg(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const removeFromProjectGalleryOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "removeGalleryImg", { id }],
+        mutationFn: (params: { projectId: string; imgId: string }) => removeFromProjectGallery(params),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const deleteProjectAmenityOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "deleteAmenity", { id }],
+        mutationFn: (params: { projectId: string; amenityId: string }) => deleteProjectAmenity(params),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const removeProjectAvailabilityOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "removeAvailability", { id }],
+        mutationFn: () => removeProjectAvailability(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const removeProjectDocOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "removeDoc", { id }],
+        mutationFn: (params: { projectId: string; docId: string }) => removeProjectDoc(params),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.docs(id) });
+        },
+    });
+
+export const createAppealItemOpts = () =>
+    mutationOptions({
+        mutationKey: [...AppealItemQueryKeys.all(), "create"],
+        mutationFn: (input: TAppealItemInput) => createAppealItem(input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: AppealItemQueryKeys.listing() });
+        },
+    });
 
 export async function deleteProject(id: string): Promise<TProjectDeleteResult> {
     return jsonFetch<TProjectDeleteResult>(`/api/proyectos/${id}`, {

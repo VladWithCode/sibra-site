@@ -426,6 +426,10 @@ func CreateProject(ctx context.Context, project *Project) error {
 		project.GetSlug()
 	}
 
+	if len(project.Gallery) == 0 {
+		project.Gallery = []string{}
+	}
+
 	project.SetCoords()
 
 	args := pgx.NamedArgs{
@@ -594,6 +598,10 @@ func UpdateProject(ctx context.Context, project *Project) error {
 	}
 
 	project.SetCoords()
+
+	if project.Gallery == nil {
+		project.Gallery = make([]string, 0)
+	}
 
 	tx, err := conn.Begin(ctx)
 	if err != nil {

@@ -322,6 +322,10 @@ function AmenityCard({ amenity, delay }: { amenity: TProjectAmenity, delay?: num
 
 function AmenitiesCarousel({ projectData }: { projectData: TProject }) {
     const toggleableAmenities = useMemo(() => {
+        if (!projectData.amenities?.length) {
+            return { visible: [], rest: [] };
+        }
+
         const visible = projectData.amenities.slice(0, 4);
         const rest = projectData.amenities.slice(4);
 
