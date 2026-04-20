@@ -16,8 +16,10 @@ import { Route as PublicRouteRouteImport } from './routes/_public/route'
 import { Route as PanelIndexRouteImport } from './routes/panel/index'
 import { Route as ConquistadoresIndexRouteImport } from './routes/conquistadores_/index'
 import { Route as PublicIndexRouteImport } from './routes/_public/index'
+import { Route as PublicVendeTuCasaRouteImport } from './routes/_public/vende-tu-casa'
 import { Route as PublicTerrenosRouteImport } from './routes/_public/terrenos'
 import { Route as PublicTerminosYCondicionesRouteImport } from './routes/_public/terminos-y-condiciones'
+import { Route as PublicPrecalificacionesRouteImport } from './routes/_public/precalificaciones'
 import { Route as PublicPoliticaDePrivacidadRouteImport } from './routes/_public/politica-de-privacidad'
 import { Route as PublicNosotrosRouteImport } from './routes/_public/nosotros'
 import { Route as PublicIniciarSesionRouteImport } from './routes/_public/iniciar-sesion'
@@ -71,6 +73,11 @@ const PublicIndexRoute = PublicIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicRouteRoute,
 } as any)
+const PublicVendeTuCasaRoute = PublicVendeTuCasaRouteImport.update({
+  id: '/vende-tu-casa',
+  path: '/vende-tu-casa',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicTerrenosRoute = PublicTerrenosRouteImport.update({
   id: '/terrenos',
   path: '/terrenos',
@@ -82,6 +89,11 @@ const PublicTerminosYCondicionesRoute =
     path: '/terminos-y-condiciones',
     getParentRoute: () => PublicRouteRoute,
   } as any)
+const PublicPrecalificacionesRoute = PublicPrecalificacionesRouteImport.update({
+  id: '/precalificaciones',
+  path: '/precalificaciones',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicPoliticaDePrivacidadRoute =
   PublicPoliticaDePrivacidadRouteImport.update({
     id: '/politica-de-privacidad',
@@ -201,8 +213,10 @@ export interface FileRoutesByFullPath {
   '/iniciar-sesion': typeof PublicIniciarSesionRoute
   '/nosotros': typeof PublicNosotrosRoute
   '/politica-de-privacidad': typeof PublicPoliticaDePrivacidadRoute
+  '/precalificaciones': typeof PublicPrecalificacionesRoute
   '/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
   '/terrenos': typeof PublicTerrenosRoute
+  '/vende-tu-casa': typeof PublicVendeTuCasaRoute
   '/': typeof PublicIndexRoute
   '/conquistadores': typeof ConquistadoresIndexRoute
   '/panel/': typeof PanelIndexRoute
@@ -227,8 +241,10 @@ export interface FileRoutesByTo {
   '/iniciar-sesion': typeof PublicIniciarSesionRoute
   '/nosotros': typeof PublicNosotrosRoute
   '/politica-de-privacidad': typeof PublicPoliticaDePrivacidadRoute
+  '/precalificaciones': typeof PublicPrecalificacionesRoute
   '/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
   '/terrenos': typeof PublicTerrenosRoute
+  '/vende-tu-casa': typeof PublicVendeTuCasaRoute
   '/': typeof PublicIndexRoute
   '/conquistadores': typeof ConquistadoresIndexRoute
   '/panel': typeof PanelIndexRoute
@@ -256,8 +272,10 @@ export interface FileRoutesById {
   '/_public/iniciar-sesion': typeof PublicIniciarSesionRoute
   '/_public/nosotros': typeof PublicNosotrosRoute
   '/_public/politica-de-privacidad': typeof PublicPoliticaDePrivacidadRoute
+  '/_public/precalificaciones': typeof PublicPrecalificacionesRoute
   '/_public/terminos-y-condiciones': typeof PublicTerminosYCondicionesRoute
   '/_public/terrenos': typeof PublicTerrenosRoute
+  '/_public/vende-tu-casa': typeof PublicVendeTuCasaRoute
   '/_public/': typeof PublicIndexRoute
   '/conquistadores_/': typeof ConquistadoresIndexRoute
   '/panel/': typeof PanelIndexRoute
@@ -288,8 +306,10 @@ export interface FileRouteTypes {
     | '/iniciar-sesion'
     | '/nosotros'
     | '/politica-de-privacidad'
+    | '/precalificaciones'
     | '/terminos-y-condiciones'
     | '/terrenos'
+    | '/vende-tu-casa'
     | '/'
     | '/conquistadores'
     | '/panel/'
@@ -314,8 +334,10 @@ export interface FileRouteTypes {
     | '/iniciar-sesion'
     | '/nosotros'
     | '/politica-de-privacidad'
+    | '/precalificaciones'
     | '/terminos-y-condiciones'
     | '/terrenos'
+    | '/vende-tu-casa'
     | '/'
     | '/conquistadores'
     | '/panel'
@@ -342,8 +364,10 @@ export interface FileRouteTypes {
     | '/_public/iniciar-sesion'
     | '/_public/nosotros'
     | '/_public/politica-de-privacidad'
+    | '/_public/precalificaciones'
     | '/_public/terminos-y-condiciones'
     | '/_public/terrenos'
+    | '/_public/vende-tu-casa'
     | '/_public/'
     | '/conquistadores_/'
     | '/panel/'
@@ -414,6 +438,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicIndexRouteImport
       parentRoute: typeof PublicRouteRoute
     }
+    '/_public/vende-tu-casa': {
+      id: '/_public/vende-tu-casa'
+      path: '/vende-tu-casa'
+      fullPath: '/vende-tu-casa'
+      preLoaderRoute: typeof PublicVendeTuCasaRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/terrenos': {
       id: '/_public/terrenos'
       path: '/terrenos'
@@ -426,6 +457,13 @@ declare module '@tanstack/react-router' {
       path: '/terminos-y-condiciones'
       fullPath: '/terminos-y-condiciones'
       preLoaderRoute: typeof PublicTerminosYCondicionesRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
+    '/_public/precalificaciones': {
+      id: '/_public/precalificaciones'
+      path: '/precalificaciones'
+      fullPath: '/precalificaciones'
+      preLoaderRoute: typeof PublicPrecalificacionesRouteImport
       parentRoute: typeof PublicRouteRoute
     }
     '/_public/politica-de-privacidad': {
@@ -646,8 +684,10 @@ interface PublicRouteRouteChildren {
   PublicIniciarSesionRoute: typeof PublicIniciarSesionRoute
   PublicNosotrosRoute: typeof PublicNosotrosRoute
   PublicPoliticaDePrivacidadRoute: typeof PublicPoliticaDePrivacidadRoute
+  PublicPrecalificacionesRoute: typeof PublicPrecalificacionesRoute
   PublicTerminosYCondicionesRoute: typeof PublicTerminosYCondicionesRoute
   PublicTerrenosRoute: typeof PublicTerrenosRoute
+  PublicVendeTuCasaRoute: typeof PublicVendeTuCasaRoute
   PublicIndexRoute: typeof PublicIndexRoute
   PublicPropiedadesRoute: typeof PublicPropiedadesRouteWithChildren
 }
@@ -660,8 +700,10 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicIniciarSesionRoute: PublicIniciarSesionRoute,
   PublicNosotrosRoute: PublicNosotrosRoute,
   PublicPoliticaDePrivacidadRoute: PublicPoliticaDePrivacidadRoute,
+  PublicPrecalificacionesRoute: PublicPrecalificacionesRoute,
   PublicTerminosYCondicionesRoute: PublicTerminosYCondicionesRoute,
   PublicTerrenosRoute: PublicTerrenosRoute,
+  PublicVendeTuCasaRoute: PublicVendeTuCasaRoute,
   PublicIndexRoute: PublicIndexRoute,
   PublicPropiedadesRoute: PublicPropiedadesRouteWithChildren,
 }
