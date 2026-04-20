@@ -5,8 +5,8 @@ import { LocationMapSection } from "@/components/dashboard/property/LocationMapS
 import { MainInfoSection } from "@/components/dashboard/property/MainInfoSection";
 import {
     PropertyFormSchema,
+    buildPropertyPayload,
     propertyFormDefaults,
-    type PropertyFormValues,
 } from "@/components/dashboard/property/schema";
 import { Button } from "@/components/ui/button";
 import { getAmenitiesOpts } from "@/queries/amenities";
@@ -16,7 +16,6 @@ import {
     updatePropertyGalleryOpts,
     updatePropertyMainImgOpts,
 } from "@/queries/properties";
-import type { TProperty } from "@/queries/type";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
@@ -32,33 +31,6 @@ export const Route = createFileRoute("/panel/propiedades/nueva")({
         ]);
     },
 });
-
-function buildPropertyPayload(v: PropertyFormValues): Partial<TProperty> {
-    const payload: Partial<TProperty> = {
-        address: v.address,
-        nbHood: v.nbHood,
-        city: v.city,
-        state: v.state,
-        zip: v.zip,
-        country: v.country,
-        description: v.description,
-        price: v.price,
-        propertyType: v.propertyType,
-        contract: v.contract,
-        status: v.status,
-        beds: v.beds,
-        baths: v.baths,
-        sqMt: v.sqMt,
-        lotSize: v.lotSize,
-        featured: v.featured,
-        features: v.features as TProperty["features"],
-        amenities: v.amenities as TProperty["amenities"],
-    };
-    if (typeof v.yearBuilt === "number") payload.yearBuilt = v.yearBuilt;
-    if (typeof v.lat === "number") payload.lat = v.lat;
-    if (typeof v.lon === "number") payload.lon = v.lon;
-    return payload;
-}
 
 function RouteComponent() {
     const navigate = useNavigate();

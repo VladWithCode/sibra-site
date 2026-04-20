@@ -29,6 +29,7 @@ import { motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import z from "zod";
+import { DynamicIcon } from "lucide-react/dynamic";
 
 const inquiryFormSchema = z.object({
     name: z.string().min(1, "El nombre no puede estar vacío"),
@@ -241,8 +242,6 @@ function ArchitecturalVision({ property }: { property: TProperty }) {
 }
 
 function AmenitiesGrid({ property }: { property: TProperty }) {
-    const feats = Object.entries(property.features);
-
     return (
         <section className="p-3 md:p-0">
             <motion.div
@@ -251,20 +250,20 @@ function AmenitiesGrid({ property }: { property: TProperty }) {
                 viewport={{ once: true }}
                 transition={{ duration: 0.7 }}
             >
-                <h2 className="text-xl font-sans font-bold text-on-surface mb-8">Características y Amenidades</h2>
-                <div className="grid grid-cols-2 gap-4">
-                    {feats.map((feat, i) => (
+                <h2 className="text-xl font-sans font-bold text-on-surface mb-8">Amenidades</h2>
+                <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+                    {property.amenities.map((amty, i) => (
                         <motion.div
-                            key={feat[0]}
+                            key={amty.id}
                             whileTap={{ scale: 0.95 }}
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: i * 0.1 }}
-                            className="flex items-center gap-4 p-4 rounded-xl bg-surface-container-lowest shadow-sm border border-outline-variant/10"
+                            className="flex flex-col gap-3 items-center p-4 rounded-xl bg-surface-container-lowest shadow-sm text-on-surface-variant border border-outline-variant/10"
                         >
-                            {/* <amenity.icon className="text-primary size-5" /> */}
-                            <span className="text-sm font-semibold">{feat[0]}</span>
+                            <DynamicIcon name={amty.icon as unknown as any} className="shrink-0 grow-0 size-8" />
+                            <span className="text-sm font-semibold">{amty.title}</span>
                         </motion.div>
                     ))}
                 </div>

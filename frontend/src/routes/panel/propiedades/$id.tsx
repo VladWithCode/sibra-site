@@ -1,136 +1,237 @@
-import { EditPropertyForm, EditPropertyGalleryForm, EditPropertyPicForm } from '@/components/dashboard/propertyForm';
-import { SqMtIcon } from '@/components/icons/icons';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { deletePropertyOpts, getSinglePropertyOpts } from '@/queries/properties';
-import { useMutation, useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { createFileRoute, useRouter } from '@tanstack/react-router'
-import { CircleX, DollarSign, Home, Trash, UserIcon } from 'lucide-react';
-import { useCallback, useState } from 'react';
-import { toast } from 'sonner';
+import { PropertyImage } from "@/components/Image";
+import { AmenitiesSection } from "@/components/dashboard/property/AmenitiesSection";
+import { FeaturesSection } from "@/components/dashboard/property/FeaturesSection";
+import { GallerySection } from "@/components/dashboard/property/GallerySection";
+import { LocationMapSection } from "@/components/dashboard/property/LocationMapSection";
+import { MainInfoSection } from "@/components/dashboard/property/MainInfoSection";
+import {
+    PropertyFormSchema,
+    buildPropertyPayload,
+    propertyToFormValues,
+} from "@/components/dashboard/property/schema";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getAmenitiesOpts } from "@/queries/amenities";
+import { getFeaturesOpts } from "@/queries/features";
+import {
+    deletePropertyImgOpts,
+    getSinglePropertyOpts,
+    updatePropertyDetailsOpts,
+    updatePropertyGalleryOpts,
+    updatePropertyMainImgOpts,
+} from "@/queries/properties";
+import type { TProperty } from "@/queries/type";
+import { useForm } from "@tanstack/react-form";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { Save, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
-export const Route = createFileRoute('/panel/propiedades/$id')({
+export const Route = createFileRoute("/panel/propiedades/$id")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        await context.queryClient.ensureQueryData(getSinglePropertyOpts(params.id));
+        await Promise.all([
+            context.queryClient.ensureQueryData(getSinglePropertyOpts(params.id)),
+            context.queryClient.ensureQueryData(getFeaturesOpts),
+            context.queryClient.ensureQueryData(getAmenitiesOpts),
+        ]);
     },
-})
+});
 
 function RouteComponent() {
-    const router = useRouter()
     const { id } = Route.useParams();
-    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
-    const { data, status } = useSuspenseQuery(getSinglePropertyOpts(id));
-    const deletePropertyMut = useMutation(deletePropertyOpts(id));
-    const onDelete = useCallback(() => {
-        deletePropertyMut.mutate({
-            id: id,
-        }, {
-            onSuccess: () => {
-                router.history.push("/panel/propiedades");
-                toast.success("La propiedad ha sido eliminada correctamente.", { closeButton: true });
-            },
-            onError: (err) => {
-                toast.error(err.message, { closeButton: true });
-            },
-        });
-    }, [id])
+    const { data } = useSuspenseQuery(getSinglePropertyOpts(id));
+    const property = data.property;
 
-    if (status === "error") {
-        return (
-            <div className="col-span-full flex flex-col items-center justify-center gap-3">
-                <CircleX className="size-40 fill-destructive text-gray-50" />
-                <p className="text-2xl text-current/60 font-semibold">Ocurrió un error</p>
-                <div className="mt-8">
-                    <Button className="text-base" size="lg">Reintentar</Button>
-                </div>
-            </div>
+    const updateMut = useMutation(updatePropertyDetailsOpts(id));
+    const mainImgMut = useMutation(updatePropertyMainImgOpts(id));
+    const galleryMut = useMutation(updatePropertyGalleryOpts(id));
+    const deleteImgMut = useMutation(deletePropertyImgOpts(id));
+
+    const form = useForm({
+        defaultValues: propertyToFormValues(property),
+        validators: { onChange: PropertyFormSchema },
+        onSubmit: async ({ value }) => {
+            try {
+                const payload = { ...buildPropertyPayload(value), id };
+                await updateMut.mutateAsync(payload);
+                toast.success("Propiedad actualizada", { closeButton: true });
+
+                if (value.mainImg) {
+                    try {
+                        await mainImgMut.mutateAsync({ id, file: value.mainImg });
+                    } catch (e: any) {
+                        toast.warning(
+                            `Se guardó la propiedad, pero falló la imagen principal: ${e?.message || ""}`,
+                            { closeButton: true },
+                        );
+                    }
+                }
+
+                if (value.gallery.length > 0) {
+                    try {
+                        await galleryMut.mutateAsync({ id, files: value.gallery });
+                    } catch (e: any) {
+                        toast.warning(
+                            `Se guardó la propiedad, pero falló la galería: ${e?.message || ""}`,
+                            { closeButton: true },
+                        );
+                    }
+                }
+            } catch (e: any) {
+                toast.error(e?.message || "Error al actualizar la propiedad", {
+                    closeButton: true,
+                });
+            }
+        },
+    });
+
+    function handleDeleteImg(imgName: string, type: "main" | "gallery") {
+        deleteImgMut.mutate(
+            { id, imgName, type },
+            {
+                onSuccess: () =>
+                    toast.success("Imagen eliminada", { closeButton: true }),
+                onError: (e: any) =>
+                    toast.error(e?.message || "Error al eliminar la imagen", {
+                        closeButton: true,
+                    }),
+            },
         );
     }
-    const prop = data.property;
 
     return (
-        <main className="grid grid-cols-[1fr_2px_1fr] grid-rows-[auto_auto_1fr] gap-y-4 gap-x-6 bg-gray-200 p-2 px-4">
-            <div className="col-span-full space-y-1">
-                <h2 className="text-xl">
-                    {prop.address}, {prop.nbHood}. C.P. {prop.zip}
-                </h2>
-                <ul className="flex items-center gap-6 py-1 capitalize text-current/60">
-                    <li className="flex items-center gap-1.5 font-semibold">
-                        <DollarSign className="size-4 text-current/60" />
-                        <span>{prop.price.toLocaleString('es-ES', { style: 'currency', currency: 'MXN' })}</span>
-                    </li>
-                    <li className="flex items-center gap-1.5 font-semibold">
-                        <Home className="size-4 text-current/80" />
-                        <span>{prop.propertyType}</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                        <span>{prop.contract}</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                        <SqMtIcon className="size-4 text-current/60" />
-                        <span>{prop.sqMt.toLocaleString('es-ES', { style: 'unit', unit: "meter", unitDisplay: "short" })}²</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                        <SqMtIcon className="size-4 text-current/60" />
-                        <span>Const {prop.lotSize.toLocaleString('es-ES', { style: 'unit', unit: "meter", unitDisplay: "short" })}²</span>
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                        <UserIcon className="size-4 text-current/80" />
-                        <span>Subida por <strong>{prop.agentData.name}</strong></span>
-                    </li>
-                </ul>
-            </div>
-            <ul className="col-span-1 flex items-center gap-3">
-                {/* <li> */}
-                {/*     <Button className="text-base bg-sbr-blue-light" size="lg"> */}
-                {/*         <Edit2 /> */}
-                {/*         <span>Editar</span> */}
-                {/*     </Button> */}
-                {/* </li> */}
-                <li>
-                    <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-                        <DialogTrigger asChild>
+        <main className="bg-surface min-h-screen w-full p-6 lg:p-8">
+            <div className="mx-auto max-w-5xl space-y-8">
+                <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                    <div className="space-y-1.5">
+                        <span className="text-primary text-xs font-semibold tracking-widest uppercase">
+                            Gestión de inventario
+                        </span>
+                        <h1 className="text-3xl font-extrabold tracking-tight">
+                            Editar propiedad
+                        </h1>
+                        <p className="text-muted-foreground max-w-lg text-sm">
+                            Modifica los detalles de la propiedad.
+                        </p>
+                    </div>
+                    <form.Subscribe
+                        selector={(s) => ({
+                            canSubmit: s.canSubmit,
+                            isSubmitting: s.isSubmitting,
+                        })}
+                    >
+                        {({ canSubmit, isSubmitting }) => (
                             <Button
-                                className="text-base"
                                 size="lg"
-                                variant="destructive"
+                                type="submit"
+                                form="edit-property-form"
+                                disabled={!canSubmit || isSubmitting}
                             >
-                                <Trash />
-                                <span>Eliminar</span>
+                                <Save className="size-4" />
+                                {isSubmitting ? "Guardando..." : "Guardar"}
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Confirmar eliminación</DialogTitle>
-                            </DialogHeader>
-                            <p className="text-sm text-current/60">¿Estás seguro de que quieres eliminar esta propiedad?</p>
-                            <div className="flex justify-end gap-3">
-                                <Button variant="secondary" size="sm" onClick={() => setDeleteConfirmOpen(false)}>
-                                    Cancelar
-                                </Button>
-                                <Button variant="destructive" size="sm" onClick={onDelete}>
-                                    Eliminar
-                                </Button>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
-                </li>
-            </ul>
-            <div className="col-start-1 pt-2 pb-6">
-                <div className="bg-accent p-4 py-6 rounded-lg shadow">
-                    <EditPropertyForm property={prop} />
-                </div>
-            </div>
-            <div className="col-start-2 w-full h-9/10 bg-gray-200/80 my-auto"></div>
-            <div className="h-min grid grid-cols-1 grid-rows-[repeat(2,_auto)] gap-6 col-start-3">
-                <div className="h-min bg-accent p-4 py-6 rounded-lg shadow">
-                    <EditPropertyPicForm property={prop} />
-                </div>
-                <div className="h-min bg-accent p-4 py-6 rounded-lg shadow">
-                    <EditPropertyGalleryForm property={prop} />
-                </div>
+                        )}
+                    </form.Subscribe>
+                </header>
+
+                <form
+                    id="edit-property-form"
+                    className="space-y-8"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        form.handleSubmit();
+                    }}
+                >
+                    <MainInfoSection form={form} />
+                    <LocationMapSection form={form} />
+                    <ExistingImagesSection
+                        property={property}
+                        onDelete={handleDeleteImg}
+                        isDeleting={deleteImgMut.isPending}
+                    />
+                    <GallerySection form={form} />
+                    <FeaturesSection form={form} />
+                    <AmenitiesSection form={form} />
+                </form>
             </div>
         </main>
+    );
+}
+
+function ExistingImagesSection({
+    property,
+    onDelete,
+    isDeleting,
+}: {
+    property: TProperty;
+    onDelete: (imgName: string, type: "main" | "gallery") => void;
+    isDeleting: boolean;
+}) {
+    const hasMainImg = !!property.mainImg;
+    const hasGallery = property.imgs && property.imgs.length > 0;
+
+    if (!hasMainImg && !hasGallery) return null;
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-xl">Imágenes actuales</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                {hasMainImg && (
+                    <div className="space-y-2">
+                        <p className="text-sm font-medium">Imagen principal</p>
+                        <div className="group relative aspect-video w-full overflow-hidden rounded-lg">
+                            <PropertyImage
+                                propId={property.id}
+                                propName={property.address}
+                                src={property.mainImg}
+                                className="h-full w-full object-cover"
+                            />
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                disabled={isDeleting}
+                                onClick={() => onDelete(property.mainImg, "main")}
+                                className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
+                            >
+                                <Trash2 className="size-4" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
+                {hasGallery && (
+                    <div className="space-y-2">
+                        <p className="text-sm font-medium">Galería</p>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                            {property.imgs.map((img) => (
+                                <div
+                                    key={img}
+                                    className="group relative aspect-square overflow-hidden rounded-md border"
+                                >
+                                    <PropertyImage
+                                        propId={property.id}
+                                        propName={property.address}
+                                        src={img}
+                                        className="h-full w-full object-cover"
+                                    />
+                                    <button
+                                        type="button"
+                                        disabled={isDeleting}
+                                        onClick={() => onDelete(img, "gallery")}
+                                        className="bg-background/80 text-destructive absolute top-2 right-2 rounded p-1 opacity-0 backdrop-blur transition-opacity group-hover:opacity-100"
+                                    >
+                                        <Trash2 className="size-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }

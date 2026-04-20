@@ -1,3 +1,4 @@
+import type { TProperty } from "@/queries/type";
 import z from "zod";
 
 const PROPERTY_STATUSES = [
@@ -117,3 +118,58 @@ export const PROPERTY_CONTRACT_LABELS: Record<(typeof PROPERTY_CONTRACTS)[number
 };
 
 export { PROPERTY_STATUSES, PROPERTY_TYPES, PROPERTY_CONTRACTS };
+
+export function buildPropertyPayload(v: PropertyFormValues): Partial<TProperty> {
+    const payload: Partial<TProperty> = {
+        address: v.address,
+        nbHood: v.nbHood,
+        city: v.city,
+        state: v.state,
+        zip: v.zip,
+        country: v.country,
+        description: v.description,
+        price: v.price,
+        propertyType: v.propertyType,
+        contract: v.contract,
+        status: v.status,
+        beds: v.beds,
+        baths: v.baths,
+        sqMt: v.sqMt,
+        lotSize: v.lotSize,
+        featured: v.featured,
+        features: v.features as TProperty["features"],
+        amenities: v.amenities as TProperty["amenities"],
+    };
+    if (typeof v.yearBuilt === "number") payload.yearBuilt = v.yearBuilt;
+    if (typeof v.lat === "number") payload.lat = v.lat;
+    if (typeof v.lon === "number") payload.lon = v.lon;
+    return payload;
+}
+
+export function propertyToFormValues(p: TProperty): PropertyFormValues {
+    return {
+        address: p.address ?? "",
+        nbHood: p.nbHood ?? "",
+        city: p.city ?? "",
+        state: p.state ?? "",
+        zip: p.zip ?? "",
+        country: p.country ?? "México",
+        description: p.description ?? "",
+        price: p.price ?? 0,
+        propertyType: p.propertyType ?? "casa",
+        contract: p.contract ?? "venta",
+        status: p.status ?? "borrador",
+        beds: p.beds ?? 0,
+        baths: p.baths ?? 0,
+        sqMt: p.sqMt ?? 0,
+        lotSize: p.lotSize ?? 0,
+        yearBuilt: p.yearBuilt || undefined,
+        lat: p.lat || undefined,
+        lon: p.lon || undefined,
+        featured: p.featured ?? false,
+        features: p.features ?? [],
+        amenities: p.amenities ?? [],
+        mainImg: undefined,
+        gallery: [],
+    };
+}
