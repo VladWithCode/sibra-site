@@ -58,6 +58,10 @@ const sidebarMenuItems = linkOptions([
         to: "/panel/proyectos",
     },
     {
+        label: "Asociados",
+        to: "/panel/asociados",
+    },
+    {
         label: "Citas y contacto",
         to: "/panel/citas",
     },

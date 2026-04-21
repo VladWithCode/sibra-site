@@ -257,6 +257,11 @@ export type TAppealItemDeleteResult = {
     success: true;
 };
 
+export type TProjectAssociatesByDataResult = {
+    success: true;
+    associates: TProjectAssociate[];
+};
+
 export type TProjectAssociateDetailResult = {
     associate: TProjectAssociate;
 };
@@ -275,8 +280,12 @@ export type TProjectAssociate = {
     phone: string;
     rfc: string;
     curp: string;
+    lotNum?: string;
+    appleNum?: string;
     pendingPayment: boolean;
 }
+
+export type TProjectAssociateFilter = { rfcOrCurp?: string } & Partial<TProjectAssociate>;
 
 export type TProjectCheckAccessData = {
     projectId: string;

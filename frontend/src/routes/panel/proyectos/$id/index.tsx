@@ -41,7 +41,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { FileText, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/panel/proyectos/$id")({
+export const Route = createFileRoute("/panel/proyectos/$id/")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
         await Promise.all([

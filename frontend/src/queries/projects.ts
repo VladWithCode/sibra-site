@@ -1,6 +1,6 @@
 import { mutationOptions, queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
 import { queryClient } from "./queryClient";
-import type { TAppealItemDeleteResult, TAppealItemDetailResult, TAppealItemsResult, TProjectAmenity, TProjectAppealItem, TProjectAssociate, TProjectAssociateDetailResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDeleteResult, TProjectDetailResult, TProjectDocsResult, TProjectInput, TProjectListingResult, TProjectMutationResult } from "./type";
+import type { TAppealItemDeleteResult, TAppealItemDetailResult, TAppealItemsResult, TProjectAmenity, TProjectAppealItem, TProjectAssociate, TProjectAssociateDetailResult, TProjectAssociateFilter, TProjectAssociatesByDataResult, TProjectCheckAccessData, TProjectCheckAccessResult, TProjectDeleteResult, TProjectDetailResult, TProjectDocsResult, TProjectInput, TProjectListingResult, TProjectMutationResult } from "./type";
 
 export const ProjectQueryKeys = {
     all: () => ["projects"] as const,
@@ -21,8 +21,13 @@ export const ProjectQueryKeys = {
         [...ProjectQueryKeys.associates(), "byProjectId", { projectId }] as const,
     associatesById: (id: string) =>
         [...ProjectQueryKeys.associates(), "byId", { id }] as const,
-    associatesWithData: (projectId: string, rfcOrCurp: string, lotNum: number, appleNum: number) =>
-        [...ProjectQueryKeys.associates(), "withData", { projectId, rfcOrCurp, lotNum, appleNum }] as const,
+    associatesWithData: (projectId: string, {
+        rfcOrCurp,
+        lotNum,
+        appleNum,
+        pendingPayment,
+    }: TProjectAssociateFilter) =>
+        [...ProjectQueryKeys.associates(), "withData", projectId, { rfcOrCurp, lotNum, appleNum, pendingPayment }] as const,
 
     // Mutations
     checkProjectAccess: (projectId: string, rfcOrCurp: string, lotNum: number, appleNum: number) =>
@@ -80,6 +85,11 @@ export const getProjectAssociatesOpts = (projectId: string) => queryOptions({
 export const getProjectAssociateByIdOpts = (id: string) => queryOptions({
     queryKey: ProjectQueryKeys.associatesById(id),
     queryFn: getProjectAssociateById,
+});
+
+export const getProjectAssociateByDataOpts = (projectId: string, data: TProjectAssociateFilter) => queryOptions({
+    queryKey: ProjectQueryKeys.associatesWithData(projectId, data),
+    queryFn: getProjectAssociateByData,
 });
 
 export async function getProjects(): Promise<TProjectListingResult> {
@@ -143,6 +153,25 @@ export async function getProjectAssociateById({ queryKey }: QueryFunctionContext
     const data = await response.json();
 
     return data.associate;
+}
+
+export async function getProjectAssociateByData({ queryKey }: QueryFunctionContext<QKProjectsAssociatesWithData>): Promise<TProjectAssociatesByDataResult> {
+    const projectId = queryKey[3];
+    const { rfcOrCurp, lotNum, appleNum, pendingPayment } = queryKey[4];
+    const query = new URLSearchParams();
+    if (rfcOrCurp) query.append("rfcOrCurp", rfcOrCurp);
+    if (lotNum) query.append("lotNum", lotNum);
+    if (appleNum) query.append("appleNum", appleNum);
+    if (pendingPayment) query.append("pendingPayment", pendingPayment ? "T" : "F");
+
+    const response = await fetch(`/api/proyectos/${projectId}/socios?${query.toString()}`);
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || "Error al buscar el socio");
+    }
+
+    return data;
 }
 
 export async function checkProjectAccess(accessData: TProjectCheckAccessData): Promise<TProjectCheckAccessResult> {
@@ -512,6 +541,15 @@ export async function removeProjectAssociate({ projectId, associateId }: { proje
         method: "DELETE",
     }, "Error al eliminar la relación socio-proyecto");
 }
+
+export const deleteAssociateOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.associates(), "delete", { id }],
+        mutationFn: () => deleteAssociate(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associates() });
+        },
+    });
 
 // Appeal item queries + mutations
 
