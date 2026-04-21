@@ -21,6 +21,8 @@ export const ProjectQueryKeys = {
         [...ProjectQueryKeys.associates(), "byProjectId", { projectId }] as const,
     associatesById: (id: string) =>
         [...ProjectQueryKeys.associates(), "byId", { id }] as const,
+    associateDetail: (projectId: string, associateId: string) =>
+        [...ProjectQueryKeys.associates(), "detail", { projectId, associateId }] as const,
     associatesWithData: (projectId: string, {
         rfcOrCurp,
         lotNum,
@@ -54,6 +56,7 @@ export type QKProjectsDocs = ReturnType<typeof ProjectQueryKeys.docs>;
 export type QKProjectsAssociates = ReturnType<typeof ProjectQueryKeys.associates>;
 export type QKProjectsAssociatesByProjectId = ReturnType<typeof ProjectQueryKeys.associatesByProjectId>;
 export type QKProjectsAssociatesById = ReturnType<typeof ProjectQueryKeys.associatesById>;
+export type QKProjectsAssociateDetail = ReturnType<typeof ProjectQueryKeys.associateDetail>;
 export type QKProjectsAssociatesWithData = ReturnType<typeof ProjectQueryKeys.associatesWithData>;
 export type QKProjectsCheckProjectAccess = ReturnType<typeof ProjectQueryKeys.checkProjectAccess>;
 
@@ -85,6 +88,11 @@ export const getProjectAssociatesOpts = (projectId: string) => queryOptions({
 export const getProjectAssociateByIdOpts = (id: string) => queryOptions({
     queryKey: ProjectQueryKeys.associatesById(id),
     queryFn: getProjectAssociateById,
+});
+
+export const getProjectAssociateDetailOpts = (projectId: string, associateId: string) => queryOptions({
+    queryKey: ProjectQueryKeys.associateDetail(projectId, associateId),
+    queryFn: getProjectAssociateDetail,
 });
 
 export const getProjectAssociateByDataOpts = (projectId: string, data: TProjectAssociateFilter) => queryOptions({
@@ -151,6 +159,18 @@ export async function getProjectAssociateById({ queryKey }: QueryFunctionContext
     const { id } = queryKey[3];
     const response = await fetch(`/api/proyectos/socios/${id}`);
     const data = await response.json();
+
+    return data.associate;
+}
+
+export async function getProjectAssociateDetail({ queryKey }: QueryFunctionContext<QKProjectsAssociateDetail>): Promise<TProjectAssociate> {
+    const { projectId, associateId } = queryKey[3];
+    const response = await fetch(`/api/proyectos/${projectId}/socios/${associateId}`);
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.errorMessage || "Error al obtener la información del asociado");
+    }
 
     return data.associate;
 }
@@ -528,11 +548,11 @@ export async function addProjectAssociate({ projectId, associateId, ...rest }: T
     }, "Error al asociar el socio al proyecto");
 }
 
-export async function updateProjectAssociate({ projectId, associateId, pendingPayment }: { projectId: string; associateId: string; pendingPayment: boolean }): Promise<{ success: true; associate: TProjectAssociate }> {
+export async function updateProjectAssociate({ projectId, associateId, pendingPayment, lotNum, appleNum }: { projectId: string; associateId: string; pendingPayment: boolean; lotNum?: string; appleNum?: string }): Promise<{ success: true; associate: TProjectAssociate }> {
     return jsonFetch(`/api/proyectos/${projectId}/socios/${associateId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pendingPayment }),
+        body: JSON.stringify({ pendingPayment, lotNum, appleNum }),
     }, "Error al actualizar la relación socio-proyecto");
 }
 
@@ -547,6 +567,47 @@ export const deleteAssociateOpts = (id: string) =>
         mutationKey: [...ProjectQueryKeys.associates(), "delete", { id }],
         mutationFn: () => deleteAssociate(id),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associates() });
+        },
+    });
+
+export const createAssociateOpts = () =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.associates(), "create"],
+        mutationFn: (input: TAssociateInput) => createAssociate(input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associates() });
+        },
+    });
+
+export const addProjectAssociateOpts = (projectId: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.associates(), "addToProject", { projectId }],
+        mutationFn: (input: Omit<TProjectAssociateRelInput, "projectId">) =>
+            addProjectAssociate({ projectId, ...input }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associatesByProjectId(projectId) });
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associates() });
+        },
+    });
+
+export const updateAssociateOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.associates(), "update", { id }],
+        mutationFn: (input: TAssociateInput) => updateAssociate(id, input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associatesById(id) });
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associates() });
+        },
+    });
+
+export const updateProjectAssociateOpts = (projectId: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.associates(), "updateProjectRel", { projectId }],
+        mutationFn: (input: { associateId: string; pendingPayment: boolean; lotNum?: string; appleNum?: string }) =>
+            updateProjectAssociate({ projectId, ...input }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associatesByProjectId(projectId) });
             queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.associates() });
         },
     });

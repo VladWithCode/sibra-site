@@ -20,7 +20,15 @@ export function AssociateRowCard({
         params: { id: projectId, associateId: associate.id },
     } as const;
 
-    const onCardClick = () => navigate(detailHref);
+    const onCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        console.log("card click", e.target);
+        const target = e.target as HTMLElement;
+        if (target.closest('button,[data-button-wrapper]')) {
+            return;
+        }
+
+        // navigate(detailHref);
+    }
     const onCardKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -63,7 +71,7 @@ export function AssociateRowCard({
                     </span>
                 )}
             </div>
-            <div className="flex items-center justify-end gap-1 pt-1">
+            <div className="flex items-center justify-end gap-1 pt-1" data-button-wrapper>
                 <Link
                     {...detailHref}
                     onClick={stop}
@@ -75,7 +83,8 @@ export function AssociateRowCard({
                 <button
                     type="button"
                     onClick={(e) => {
-                        stop(e);
+                        console.log("del click", e.target);
+                        e.stopPropagation();
                         setDeleteOpen(true);
                     }}
                     aria-label="Eliminar asociado"

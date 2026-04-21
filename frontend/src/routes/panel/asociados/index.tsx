@@ -1,6 +1,6 @@
 import { getProjectsOpts } from '@/queries/projects';
 import type { TProject } from '@/queries/type';
-import { useQuery } from '@tanstack/react-query';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link, createFileRoute } from '@tanstack/react-router';
 import { ChevronRight, Users } from 'lucide-react';
 
@@ -12,8 +12,8 @@ export const Route = createFileRoute('/panel/asociados/')({
 });
 
 function RouteComponent() {
-    const { data, isLoading } = useQuery(getProjectsOpts);
-    const projects = data?.projects ?? [];
+    const { data } = useSuspenseQuery(getProjectsOpts);
+    const projects = data.projects;
 
     return (
         <main className="p-4 sm:p-6 lg:p-8">
@@ -29,16 +29,7 @@ function RouteComponent() {
                 </p>
             </div>
 
-            {isLoading ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                        <div
-                            key={i}
-                            className="h-32 rounded-xl bg-surface-container animate-pulse"
-                        />
-                    ))}
-                </div>
-            ) : projects.length === 0 ? (
+            {projects.length === 0 ? (
                 <div className="bg-surface-container-lowest rounded-xl shadow-sm p-10 text-center">
                     <p className="text-sm font-semibold text-on-surface">
                         Sin proyectos

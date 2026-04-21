@@ -20,15 +20,19 @@ export function AssociateRow({
         params: { id: projectId, associateId: associate.id },
     } as const;
 
-    const onRowClick = () => navigate(detailHref);
+    const onRowClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('button,[data-button-wrapper]')) {
+            return;
+        }
+        navigate(detailHref);
+    }
     const onRowKey = (e: React.KeyboardEvent<HTMLTableRowElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             navigate(detailHref);
         }
     };
-    const stop = (e: React.MouseEvent | React.KeyboardEvent) =>
-        e.stopPropagation();
 
     return (
         <tr
@@ -79,7 +83,10 @@ export function AssociateRow({
                 />
             </td>
             <td className="px-6 py-5 text-right">
-                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                <div
+                    className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+                    data-button-wrapper
+                >
                     <Link
                         {...detailHref}
                         onClick={stop}
@@ -90,8 +97,7 @@ export function AssociateRow({
                     </Link>
                     <button
                         type="button"
-                        onClick={(e) => {
-                            stop(e);
+                        onClick={() => {
                             setDeleteOpen(true);
                         }}
                         aria-label="Eliminar asociado"
