@@ -34,9 +34,9 @@ type ProjectAssociate struct {
 	Phone          string `json:"phone" db:"phone"`
 	RFC            string `json:"rfc" db:"rfc"`
 	CURP           string `json:"curp" db:"curp"`
-	LotNum         string `json:"lot_num,omitempty" db:"lot_num"`
-	AppleNum       string `json:"apple_num,omitempty" db:"apple_num"`
-	PendingPayment bool   `json:"pending_payment" db:"pending_payment"`
+	LotNum         string `json:"lotNum,omitempty" db:"lot_num"`
+	AppleNum       string `json:"appleNum,omitempty" db:"apple_num"`
+	PendingPayment bool   `json:"pendingPayment" db:"pending_payment"`
 }
 
 type ProjectDoc struct {
@@ -928,6 +928,9 @@ func FindProjectAssociates(ctx context.Context, projectID string, associateFilte
 			&associate.Phone,
 			&associate.RFC,
 			&associate.CURP,
+			&associate.PendingPayment,
+			&associate.LotNum,
+			&associate.AppleNum,
 		)
 
 		if err != nil {
