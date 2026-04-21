@@ -40,6 +40,7 @@ func RegisterProjectRoutes(router *customServeMux) {
 	router.HandleFunc("DELETE /api/proyectos/{id}/medios/disponibilidad", RemoveProjectAvailability)
 
 	router.HandleFunc("GET /api/proyectos/{id}/socios", auth.ValidateAuthMiddleware(GetProjectAssociates))
+	router.HandleFunc("GET /api/proyectos/{id}/socios/{associateID}", auth.ValidateAuthMiddleware(GetProjectAssociate))
 	router.HandleFunc("POST /api/proyectos/{id}/socios/{associateID}", AddProjectAssociate)
 	router.HandleFunc("PUT /api/proyectos/{id}/socios/{associateID}", UpdateProjectAssociate)
 	router.HandleFunc("DELETE /api/proyectos/{id}/socios/{associateID}", RemoveProjectAssociate)
@@ -703,6 +704,33 @@ func GetProjectAssociates(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success":    true,
 		"associates": associates,
+	})
+}
+
+func GetProjectAssociate(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("id")
+	associateID := r.PathValue("associateID")
+
+	associate, err := db.FindProjectAssociateByID(ctx, projectID, associateID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró el socio",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar el socio",
+		})
+		log.Printf("Failed to find associate: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success":   true,
+		"associate": associate,
 	})
 }
 

@@ -964,6 +964,45 @@ func FindProjectAssociates(ctx context.Context, projectID string, associateFilte
 	return associates, nil
 }
 
+func FindProjectAssociateByID(ctx context.Context, projectID string, id string) (*ProjectAssociate, error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	row := conn.QueryRow(ctx, `
+		SELECT
+			a.id, a.name, a.phone, a.rfc, a.curp,
+            pa.pending_payment, pa.lot_num, pa.apple_num
+		FROM associates a
+        LEFT JOIN project_associates pa ON pa.associate_id = a.id
+		WHERE
+        pa.project_id = $1 AND pa.associate_id = $2
+	`, projectID, id)
+
+	var assoc ProjectAssociate
+	err = row.Scan(
+		&assoc.ID,
+		&assoc.Name,
+		&assoc.Phone,
+		&assoc.RFC,
+		&assoc.CURP,
+		&assoc.PendingPayment,
+		&assoc.LotNum,
+		&assoc.AppleNum,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &assoc, nil
+}
+
 // buildProjectAssociateFilterConditions builds the conditions for the project-associate relationship query
 // and populates the provided args with the values for the conditions.
 //
