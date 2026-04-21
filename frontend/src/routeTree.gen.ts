@@ -43,6 +43,7 @@ import { Route as PanelProyectosIdIndexRouteImport } from './routes/panel/proyec
 import { Route as PublicPropiedadesListingIndexRouteImport } from './routes/_public/propiedades/_listing/index'
 import { Route as PanelProyectosIdAsociadosRouteImport } from './routes/panel/proyectos/$id/asociados'
 import { Route as PublicPropiedadesListingContractRouteImport } from './routes/_public/propiedades/_listing/$contract'
+import { Route as PanelProyectosIdAsociadosIndexRouteImport } from './routes/panel/proyectos/$id/asociados.index'
 import { Route as PanelProyectosIdAsociadosNuevoRouteImport } from './routes/panel/proyectos/$id/asociados.nuevo'
 import { Route as PanelProyectosIdAsociadosAssociateIdRouteImport } from './routes/panel/proyectos/$id/asociados.$associateId'
 import { Route as PublicPropiedadesDetailContractSlugRouteImport } from './routes/_public/propiedades/_detail/$contract.$slug'
@@ -218,6 +219,12 @@ const PublicPropiedadesListingContractRoute =
     path: '/$contract',
     getParentRoute: () => PublicPropiedadesListingRouteRoute,
   } as any)
+const PanelProyectosIdAsociadosIndexRoute =
+  PanelProyectosIdAsociadosIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => PanelProyectosIdAsociadosRoute,
+  } as any)
 const PanelProyectosIdAsociadosNuevoRoute =
   PanelProyectosIdAsociadosNuevoRouteImport.update({
     id: '/nuevo',
@@ -271,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
   '/panel/proyectos/$id/asociados/$associateId': typeof PanelProyectosIdAsociadosAssociateIdRoute
   '/panel/proyectos/$id/asociados/nuevo': typeof PanelProyectosIdAsociadosNuevoRoute
+  '/panel/proyectos/$id/asociados/': typeof PanelProyectosIdAsociadosIndexRoute
 }
 export interface FileRoutesByTo {
   '/contacto': typeof PublicContactoRoute
@@ -297,11 +305,11 @@ export interface FileRoutesByTo {
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
-  '/panel/proyectos/$id/asociados': typeof PanelProyectosIdAsociadosRouteWithChildren
   '/panel/proyectos/$id': typeof PanelProyectosIdIndexRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
   '/panel/proyectos/$id/asociados/$associateId': typeof PanelProyectosIdAsociadosAssociateIdRoute
   '/panel/proyectos/$id/asociados/nuevo': typeof PanelProyectosIdAsociadosNuevoRoute
+  '/panel/proyectos/$id/asociados': typeof PanelProyectosIdAsociadosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -341,6 +349,7 @@ export interface FileRoutesById {
   '/_public/propiedades/_detail/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
   '/panel/proyectos/$id/asociados/$associateId': typeof PanelProyectosIdAsociadosAssociateIdRoute
   '/panel/proyectos/$id/asociados/nuevo': typeof PanelProyectosIdAsociadosNuevoRoute
+  '/panel/proyectos/$id/asociados/': typeof PanelProyectosIdAsociadosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -378,6 +387,7 @@ export interface FileRouteTypes {
     | '/propiedades/$contract/$slug'
     | '/panel/proyectos/$id/asociados/$associateId'
     | '/panel/proyectos/$id/asociados/nuevo'
+    | '/panel/proyectos/$id/asociados/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/contacto'
@@ -404,11 +414,11 @@ export interface FileRouteTypes {
     | '/panel/propiedades'
     | '/panel/proyectos'
     | '/propiedades/$contract'
-    | '/panel/proyectos/$id/asociados'
     | '/panel/proyectos/$id'
     | '/propiedades/$contract/$slug'
     | '/panel/proyectos/$id/asociados/$associateId'
     | '/panel/proyectos/$id/asociados/nuevo'
+    | '/panel/proyectos/$id/asociados'
   id:
     | '__root__'
     | '/_public'
@@ -447,6 +457,7 @@ export interface FileRouteTypes {
     | '/_public/propiedades/_detail/$contract/$slug'
     | '/panel/proyectos/$id/asociados/$associateId'
     | '/panel/proyectos/$id/asociados/nuevo'
+    | '/panel/proyectos/$id/asociados/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -688,6 +699,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublicPropiedadesListingContractRouteImport
       parentRoute: typeof PublicPropiedadesListingRouteRoute
     }
+    '/panel/proyectos/$id/asociados/': {
+      id: '/panel/proyectos/$id/asociados/'
+      path: '/'
+      fullPath: '/panel/proyectos/$id/asociados/'
+      preLoaderRoute: typeof PanelProyectosIdAsociadosIndexRouteImport
+      parentRoute: typeof PanelProyectosIdAsociadosRoute
+    }
     '/panel/proyectos/$id/asociados/nuevo': {
       id: '/panel/proyectos/$id/asociados/nuevo'
       path: '/nuevo'
@@ -811,6 +829,7 @@ const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
 interface PanelProyectosIdAsociadosRouteChildren {
   PanelProyectosIdAsociadosAssociateIdRoute: typeof PanelProyectosIdAsociadosAssociateIdRoute
   PanelProyectosIdAsociadosNuevoRoute: typeof PanelProyectosIdAsociadosNuevoRoute
+  PanelProyectosIdAsociadosIndexRoute: typeof PanelProyectosIdAsociadosIndexRoute
 }
 
 const PanelProyectosIdAsociadosRouteChildren: PanelProyectosIdAsociadosRouteChildren =
@@ -818,6 +837,7 @@ const PanelProyectosIdAsociadosRouteChildren: PanelProyectosIdAsociadosRouteChil
     PanelProyectosIdAsociadosAssociateIdRoute:
       PanelProyectosIdAsociadosAssociateIdRoute,
     PanelProyectosIdAsociadosNuevoRoute: PanelProyectosIdAsociadosNuevoRoute,
+    PanelProyectosIdAsociadosIndexRoute: PanelProyectosIdAsociadosIndexRoute,
   }
 
 const PanelProyectosIdAsociadosRouteWithChildren =
