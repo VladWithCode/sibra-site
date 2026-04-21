@@ -699,6 +699,54 @@ func DeleteProject(ctx context.Context, id string) error {
 	return nil
 }
 
+func FindAssociates(ctx context.Context, filter *ProjectAssociateFilter) ([]*ProjectAssociate, error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	baseQuery := "SELECT id, name, phone, rfc, curp FROM associates"
+	args := pgx.NamedArgs{}
+
+	queryConditions, err := buildProjectAssociateFilterConditions(filter, &args)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(queryConditions) > 0 {
+		baseQuery = baseQuery + " WHERE " + strings.Join(queryConditions, " AND ")
+	}
+
+	rows, err := conn.Query(ctx, baseQuery, args)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	associates := []*ProjectAssociate{}
+	for rows.Next() {
+		var associate ProjectAssociate
+		err = rows.Scan(
+			&associate.ID,
+			&associate.Name,
+			&associate.Phone,
+			&associate.RFC,
+			&associate.CURP,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+		associates = append(associates, &associate)
+	}
+
+	return associates, nil
+}
+
 func FindAssociateByID(ctx context.Context, id string) (*ProjectAssociate, error) {
 	conn, err := GetPool()
 	if err != nil {

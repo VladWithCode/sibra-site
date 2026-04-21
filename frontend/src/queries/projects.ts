@@ -30,6 +30,8 @@ export const ProjectQueryKeys = {
         pendingPayment,
     }: TProjectAssociateFilter) =>
         [...ProjectQueryKeys.associates(), "withData", projectId, { rfcOrCurp, lotNum, appleNum, pendingPayment }] as const,
+    associatesFiltered: ({ rfcOrCurp, name, phone }: TProjectAssociateFilter) =>
+        [...ProjectQueryKeys.associates(), "filtered", { rfcOrCurp, name, phone }] as const,
 
     // Mutations
     checkProjectAccess: (projectId: string, rfcOrCurp: string, lotNum: number, appleNum: number) =>
@@ -58,6 +60,7 @@ export type QKProjectsAssociatesByProjectId = ReturnType<typeof ProjectQueryKeys
 export type QKProjectsAssociatesById = ReturnType<typeof ProjectQueryKeys.associatesById>;
 export type QKProjectsAssociateDetail = ReturnType<typeof ProjectQueryKeys.associateDetail>;
 export type QKProjectsAssociatesWithData = ReturnType<typeof ProjectQueryKeys.associatesWithData>;
+export type QKProjectsAssociatesFiltered = ReturnType<typeof ProjectQueryKeys.associatesFiltered>;
 export type QKProjectsCheckProjectAccess = ReturnType<typeof ProjectQueryKeys.checkProjectAccess>;
 
 export const getProjectsOpts = queryOptions({
@@ -98,6 +101,11 @@ export const getProjectAssociateDetailOpts = (projectId: string, associateId: st
 export const getProjectAssociateByDataOpts = (projectId: string, data: TProjectAssociateFilter) => queryOptions({
     queryKey: ProjectQueryKeys.associatesWithData(projectId, data),
     queryFn: getProjectAssociateByData,
+});
+
+export const getAssociatesFilteredOpts = (data: TProjectAssociateFilter) => queryOptions({
+    queryKey: ProjectQueryKeys.associatesFiltered(data),
+    queryFn: getAssociatesFiltered,
 });
 
 export async function getProjects(): Promise<TProjectListingResult> {
@@ -185,6 +193,25 @@ export async function getProjectAssociateByData({ queryKey }: QueryFunctionConte
     if (pendingPayment) query.append("pendingPayment", pendingPayment ? "T" : "F");
 
     const response = await fetch(`/api/proyectos/${projectId}/socios?${query.toString()}`);
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || "Error al buscar el socio");
+    }
+
+    return data;
+}
+
+export async function getAssociatesFiltered({ queryKey }: QueryFunctionContext<QKProjectsAssociatesFiltered>): Promise<TProjectAssociatesByDataResult> {
+    const filters = queryKey[3];
+    const query = new URLSearchParams();
+    if (filters.rfcOrCurp) query.append("rfcOrCurp", filters.rfcOrCurp);
+    if (filters.name) query.append("name", filters.name);
+    if (filters.phone) query.append("phone", filters.phone);
+    const hasFilters = query.size > 0;
+
+    const path = "/api/socios";
+    const response = await fetch(hasFilters ? `${path}?${query}` : path);
     const data = await response.json();
 
     if (response.status < 200 || response.status >= 300) {

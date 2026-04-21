@@ -39,6 +39,8 @@ func RegisterProjectRoutes(router *customServeMux) {
 	router.HandleFunc("PUT /api/proyectos/{id}/medios/disponibilidad", UploadProjectAvailability)
 	router.HandleFunc("DELETE /api/proyectos/{id}/medios/disponibilidad", RemoveProjectAvailability)
 
+	router.HandleFunc("GET /api/socios", auth.WithAuthAccessLevelMiddleware(GetAssociates, auth.AccessLevelEditor))
+
 	router.HandleFunc("GET /api/proyectos/{id}/socios", auth.ValidateAuthMiddleware(GetProjectAssociates))
 	router.HandleFunc("GET /api/proyectos/{id}/socios/{associateID}", auth.ValidateAuthMiddleware(GetProjectAssociate))
 	router.HandleFunc("POST /api/proyectos/{id}/socios/{associateID}", AddProjectAssociate)
@@ -609,6 +611,36 @@ func CreateAssociate(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, map[string]any{
 		"success":   true,
 		"associate": associate,
+	})
+}
+
+func GetAssociates(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q := r.URL.Query()
+	filter := db.NewProjectAssociateFilter()
+
+	if rfcOrCurp := q.Get("rfcOrCurp"); rfcOrCurp != "" {
+		filter.RfcOrCurp = &rfcOrCurp
+	}
+	if name := q.Get("name"); name != "" {
+		filter.Name = &name
+	}
+	if phone := q.Get("phone"); phone != "" {
+		filter.Phone = &phone
+	}
+
+	associates, err := db.FindAssociates(ctx, filter)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar los socios",
+		})
+		log.Printf("Failed to find associates: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success":    true,
+		"associates": associates,
 	})
 }
 
