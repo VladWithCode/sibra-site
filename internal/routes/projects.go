@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -38,6 +39,7 @@ func RegisterProjectRoutes(router *customServeMux) {
 	router.HandleFunc("PUT /api/proyectos/{id}/medios/disponibilidad", UploadProjectAvailability)
 	router.HandleFunc("DELETE /api/proyectos/{id}/medios/disponibilidad", RemoveProjectAvailability)
 
+	router.HandleFunc("GET /api/proyectos/{id}/socios", auth.ValidateAuthMiddleware(GetProjectAssociates))
 	router.HandleFunc("POST /api/proyectos/{id}/socios/{associateID}", AddProjectAssociate)
 	router.HandleFunc("PUT /api/proyectos/{id}/socios/{associateID}", UpdateProjectAssociate)
 	router.HandleFunc("DELETE /api/proyectos/{id}/socios/{associateID}", RemoveProjectAssociate)
@@ -656,6 +658,48 @@ func DeleteAssociate(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success": true,
+	})
+}
+
+func GetProjectAssociates(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("id")
+
+	query := r.URL.Query()
+	filter := db.NewProjectAssociateFilter()
+
+	if pendingPayment := query.Get("pendingPayment"); pendingPayment != "" {
+		b, _ := strconv.ParseBool(pendingPayment)
+		filter.PendingPayment = &b
+	}
+	if lotNum := query.Get("lotNum"); lotNum != "" {
+		filter.LotNum = &lotNum
+	}
+	if appleNum := query.Get("appleNum"); appleNum != "" {
+		filter.AppleNum = &appleNum
+	}
+	if rfcOrCurp := query.Get("rfcOrCurp"); rfcOrCurp != "" {
+		filter.RfcOrCurp = &rfcOrCurp
+	}
+	if name := query.Get("name"); name != "" {
+		filter.Name = &name
+	}
+	if phone := query.Get("phone"); phone != "" {
+		filter.Phone = &phone
+	}
+
+	associates, err := db.FindProjectAssociates(ctx, projectID, filter)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar los socios del proyecto",
+		})
+		log.Printf("Failed to find associates: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success":    true,
+		"associates": associates,
 	})
 }
 

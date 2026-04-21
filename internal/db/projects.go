@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,6 +16,9 @@ import (
 var (
 	ErrAssociateMissingIDs = errors.New("RFC or CURP must be set")
 	ErrAssociateBatchError = errors.New("error inserting associates")
+
+	ErrProjectAssociateFilterInvalid = errors.New("invalid project associate filter")
+	ErrProjectAssociateArgsInvalid   = errors.New("invalid project associate args")
 )
 
 type ProjectAmenity struct {
@@ -868,6 +872,128 @@ func DeleteAssociate(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+type ProjectAssociateFilter struct {
+	RfcOrCurp      *string `json:"rfcOrCurp"`
+	Name           *string `json:"name"`
+	Phone          *string `json:"phone"`
+	LotNum         *string `json:"lotNum"`
+	AppleNum       *string `json:"appleNum"`
+	PendingPayment *bool   `json:"pendingPayment"`
+}
+
+func NewProjectAssociateFilter() *ProjectAssociateFilter {
+	return &ProjectAssociateFilter{}
+}
+
+func FindProjectAssociates(ctx context.Context, projectID string, associateFilter *ProjectAssociateFilter) ([]*ProjectAssociate, error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	args := pgx.NamedArgs{
+		"projectId": projectID,
+	}
+	baseQuery := `SELECT a.id, a.name, a.phone, a.rfc, a.curp, pa.pending_payment, pa.lot_num, pa.apple_num
+        FROM project_associates pa
+        LEFT JOIN associates a ON a.id = pa.associate_id
+        WHERE pa.project_id = @projectId`
+	queryConditions, err := buildProjectAssociateFilterConditions(associateFilter, &args)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryConditions) > 0 {
+		baseQuery = baseQuery + " AND " + strings.Join(queryConditions, " AND ")
+	}
+
+	baseQuery = baseQuery + " ORDER BY pa.apple_num, pa.lot_num ASC"
+	rows, err := conn.Query(ctx, baseQuery, args)
+
+	if err != nil {
+		return nil, err
+	}
+
+	associates := []*ProjectAssociate{}
+	for rows.Next() {
+		associate := ProjectAssociate{}
+		err = rows.Scan(
+			&associate.ID,
+			&associate.Name,
+			&associate.Phone,
+			&associate.RFC,
+			&associate.CURP,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+		associates = append(associates, &associate)
+	}
+
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	return associates, nil
+}
+
+// buildProjectAssociateFilterConditions builds the conditions for the project-associate relationship query
+// and populates the provided args with the values for the conditions.
+//
+// Providing a nil filter will return an error.
+// Providing a nil args will return an error.
+func buildProjectAssociateFilterConditions(filter *ProjectAssociateFilter, args *pgx.NamedArgs) ([]string, error) {
+	var queryConditions []string
+
+	if filter == nil {
+		return queryConditions, ErrProjectAssociateFilterInvalid
+	}
+
+	if args == nil {
+		return nil, ErrProjectAssociateArgsInvalid
+	}
+	if *args == nil {
+		*args = pgx.NamedArgs{}
+	}
+	locArgs := *args
+
+	if filter.PendingPayment != nil {
+		queryConditions = append(queryConditions, "pending_payment = @searchPendPayment")
+		locArgs["searchPendPayment"] = *filter.PendingPayment
+	}
+
+	if filter.LotNum != nil {
+		queryConditions = append(queryConditions, "lot_num = @searchLotNum")
+		locArgs["searchLotNum"] = *filter.LotNum
+	}
+
+	if filter.AppleNum != nil {
+		queryConditions = append(queryConditions, "apple_num = @searchAppleNum")
+		locArgs["searchAppleNum"] = *filter.AppleNum
+	}
+
+	if filter.RfcOrCurp != nil {
+		queryConditions = append(queryConditions, "rfc ILIKE @searchRfc OR curp ILIKE @searchRfc")
+		locArgs["searchRfc"] = *filter.RfcOrCurp
+	}
+
+	if filter.Name != nil {
+		queryConditions = append(queryConditions, "name ILIKE @searchName")
+		locArgs["searchName"] = *filter.Name
+	}
+
+	if filter.Phone != nil {
+		queryConditions = append(queryConditions, "phone ILIKE @searchPhone")
+		locArgs["searchPhone"] = *filter.Phone
+	}
+
+	return queryConditions, nil
 }
 
 // AddProjectAssociate adds a project-associate relationship
