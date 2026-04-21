@@ -1057,7 +1057,7 @@ func buildProjectAssociateFilterConditions(filter *ProjectAssociateFilter, args 
 }
 
 // AddProjectAssociate adds a project-associate relationship
-func AddProjectAssociate(ctx context.Context, projectID string, associate *ProjectAssociate) error {
+func AddProjectAssociate(ctx context.Context, projectID, associateID string, relData *ProjectAssociate) error {
 	conn, err := GetPool()
 	if err != nil {
 		return err
@@ -1069,10 +1069,10 @@ func AddProjectAssociate(ctx context.Context, projectID string, associate *Proje
 
 	args := pgx.NamedArgs{
 		"project_id":      projectID,
-		"associate_id":    associate.ID,
-		"pending_payment": associate.PendingPayment,
-		"lot_num":         associate.LotNum,
-		"apple_num":       associate.AppleNum,
+		"associate_id":    associateID,
+		"pending_payment": relData.PendingPayment,
+		"lot_num":         relData.LotNum,
+		"apple_num":       relData.AppleNum,
 	}
 	_, err = conn.Exec(
 		ctx,
@@ -1091,7 +1091,7 @@ func AddProjectAssociate(ctx context.Context, projectID string, associate *Proje
 
 // UpdateProjectAssociate is used to update the pending_payment field of a project-associate relationship
 // This may change in the future
-func UpdateProjectAssociate(ctx context.Context, projectID, associateID string, pendingPayment bool) error {
+func UpdateProjectAssociate(ctx context.Context, projectID, associateID string, associateData *ProjectAssociate) error {
 	conn, err := GetPool()
 	if err != nil {
 		return err
@@ -1104,12 +1104,14 @@ func UpdateProjectAssociate(ctx context.Context, projectID, associateID string, 
 	args := pgx.NamedArgs{
 		"project_id":      projectID,
 		"associate_id":    associateID,
-		"pending_payment": pendingPayment,
+		"pending_payment": associateData.PendingPayment,
+		"lot_num":         associateData.LotNum,
+		"apple_num":       associateData.AppleNum,
 	}
 	_, err = conn.Exec(
 		ctx,
-		`UPDATE project_associates
-            SET pending_payment = @pending_payment
+		`UPDATE project_associates SET
+            pending_payment = @pending_payment, lot_num = @lot_num, apple_num = @apple_num
         WHERE project_id = @project_id AND associate_id = @associate_id`,
 		args,
 	)

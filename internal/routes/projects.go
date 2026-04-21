@@ -751,20 +751,7 @@ func AddProjectAssociate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	associate, err := db.FindAssociateByID(ctx, associateID)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, ErrorParams{
-			ErrorMessage: "Ocurrió un error al buscar el socio",
-		})
-		log.Printf("Failed to find associate: %v\n", err)
-		return
-	}
-
-	associate.PendingPayment = relData.PendingPayment
-	associate.LotNum = relData.LotNum
-	associate.AppleNum = relData.AppleNum
-
-	err = db.AddProjectAssociate(ctx, projectID, associate)
+	err = db.AddProjectAssociate(ctx, projectID, associateID, &relData)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al crear la relación de proyecto-asociado",
@@ -774,8 +761,7 @@ func AddProjectAssociate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respondWithJSON(w, http.StatusCreated, map[string]any{
-		"success":   true,
-		"associate": associate,
+		"success": true,
 	})
 }
 
@@ -798,7 +784,7 @@ func UpdateProjectAssociate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.UpdateProjectAssociate(ctx, projectID, associateID, associate.PendingPayment)
+	err = db.UpdateProjectAssociate(ctx, projectID, associateID, &associate)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al actualizar la relación de proyecto-asociado",
