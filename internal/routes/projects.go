@@ -23,7 +23,7 @@ func RegisterProjectRoutes(router *customServeMux) {
 	router.HandleFunc("PUT /api/socios/{id}", UpdateAssociate)
 	router.HandleFunc("DELETE /api/socios/{id}", DeleteAssociate)
 
-	router.HandleFunc("GET /api/proyectos", GetProjects)
+	router.HandleFunc("GET /api/proyectos", auth.PopulateAuthMiddleware(GetProjects))
 	router.HandleFunc("GET /api/proyectos/{id}", GetProject)
 	router.HandleFunc("POST /api/proyectos", CreateProject)
 	router.HandleFunc("PUT /api/proyectos/{id}", UpdateProject)
@@ -204,9 +204,12 @@ func GetProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, project := range projects {
-		project.Associates = nil
-		project.Docs = nil
+	authData, err := auth.ExtractAuthDataFromCtx(ctx)
+	if err != nil || !authData.HasAccess(auth.AccessLevelEditor) {
+		for _, project := range projects {
+			project.Associates = nil
+			project.Docs = nil
+		}
 	}
 
 	respondWithJSON(w, http.StatusOK, map[string]any{

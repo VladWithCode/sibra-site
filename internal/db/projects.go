@@ -117,8 +117,15 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
             main_img, gallery, availability_img,
             total_area, lot_count, available_lots,
             lat, lon, earth_coords,
-            amenities, docs, created_at, updated_at
-        FROM projects`,
+            amenities, docs, p.created_at, p.updated_at,
+            COALESCE(pa.associates, '{}'::uuid[]) AS associates
+        FROM projects p
+        LEFT JOIN (
+            SELECT project_id, array_agg(associate_id) AS associates
+            FROM project_associates
+            GROUP BY project_id
+        ) pa ON pa.project_id = p.id
+        `,
 	)
 	if err != nil {
 		return nil, err
@@ -128,6 +135,7 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 	var (
 		rawDocs      []byte
 		rawAmenities []byte
+		associates   []string
 	)
 	for rows.Next() {
 		var project Project
@@ -152,6 +160,7 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 			&rawDocs,
 			&project.CreatedAt,
 			&project.UpdatedAt,
+			&associates,
 		)
 
 		if err != nil {
@@ -171,6 +180,15 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 			err = json.Unmarshal(rawDocs, &project.Docs)
 			if err != nil {
 				return nil, err
+			}
+		}
+
+		if assocLen := len(associates); assocLen > 0 {
+			project.Associates = make([]ProjectAssociate, assocLen)
+			for i, a := range associates {
+				project.Associates[i] = ProjectAssociate{
+					ID: a,
+				}
 			}
 		}
 
