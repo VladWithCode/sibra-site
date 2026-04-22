@@ -16,8 +16,9 @@ import { toast } from 'sonner';
 import { PalapaIcon, PlaygroundIcon, PoolIcon } from '@/components/icons/icons';
 import { cn } from '@/lib/utils';
 import { MDash } from '@/components/util';
-import { Image } from '@/components/Image';
+import { ProjectImage } from '@/components/Image';
 import { AnimatePresence, motion } from 'motion/react';
+import { DynamicIcon } from 'lucide-react/dynamic';
 
 const APPEAL_ICONS = [VerifiedIcon, TrendingUp, MapPin, StarIcon] as const;
 
@@ -49,15 +50,15 @@ function RouteComponent() {
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-surface-container to-65% to-surface-container/0"></div>
                 </div>
-                <div className="relative z-10 xl:max-w-7xl mx-auto p-6 pt-60 pb-32 w-full">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                <div className="relative z-10 xl:max-w-7xl mx-auto p-6 md:px-12 xl:px-24 2xl:px-0 pt-60 pb-32 w-full">
+                    <div className="flex flex-col md:items-end xl:items-start justify-between gap-8">
                         <div className="space-y-6">
                             <h1 className="max-w-full text-5xl md:text-8xl text-white font-semibold leading-none text-shadow-lg">
                                 {projectData.name}
                             </h1>
                             {projectData.location && (
-                                <div className="flex items-center gap-3 text-white/90">
-                                    <MapPin />
+                                <div className="flex items-center gap-3 text-white">
+                                    <MapPin className="text-current" />
                                     <p className="font-medium">{projectData.location}</p>
                                 </div>
                             )}
@@ -74,8 +75,8 @@ function RouteComponent() {
             </section>
 
             <section className="bg-surface-container relative z-20">
-                <div className="max-w-7xl mx-auto px-6 -translate-y-20">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-0 items-center">
+                <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-24 2xl:px-0 md:pt-12 -translate-y-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-center *:h-full">
                         <div className="flex flex-col items-start md:items-start bg-surface border-l-4 border-sbr-blue-light p-3 rounded-sm shadow-md">
                             <span className="text-on-surface-variant/80 text-xs uppercase tracking-widest mb-3">Superficie Total</span>
                             <p className="text-3xl font-headline font-bold text-primary">
@@ -98,8 +99,8 @@ function RouteComponent() {
                 </div>
             </section>
 
-            <section className="py-12 bg-surface-container">
-                <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+            <section className="py-12 md:py-24 lg:py-32 bg-surface-container">
+                <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-24 2xl:px-0 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
                     <div className="lg:col-span-7 space-y-8">
                         <span className="text-primary/60 font-medium tracking-tight text-sm uppercase mb-3 block">La Filosofía</span>
                         {projectData.quote && (
@@ -139,19 +140,19 @@ function RouteComponent() {
                 </div>
             </section>
 
-            <section className="py-12 bg-surface-container-low overflow-hidden">
-                <div className="max-w-7xl mx-auto px-6 mb-16">
+            <section className="py-12 md:pb-24 lg:py-32 bg-surface-container-low overflow-hidden">
+                <div className="max-w-7xl mx-auto px-6 md:px-12 2xl:px-0 mb-16">
                     <h2 className="text-3xl font-headline font-bold text-on-surface tracking-tighter mb-4 text-center">Descripción General del Plan Maestro</h2>
                     <p className="text-on-surface-variant/60 text-center max-w-2xl mx-auto">Distribuciones estratégicamente distribuidas diseñadas para máxima privacidad y ventilación.</p>
                 </div>
-                <div className="max-w-7xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                        <div className="lg:col-span-3 bg-surface-container-lowest rounded-2xl overflow-hidden aspect-video shadow-sm border border-outline-variant/10 relative">
+                <div className="max-w-7xl mx-auto px-6 xl:px-24 2xl:px-0 relative">
+                    <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+                        <div className="lg:col-span-4 bg-surface-container-lowest rounded-2xl overflow-hidden aspect-video shadow-sm border border-outline-variant/10 relative">
                             {projectData.availability_img ? (
-                                <img
+                                <ProjectImage
+                                    projName={projectData.name}
+                                    src={projectData.availability_img}
                                     className="w-full h-full object-cover opacity-80"
-                                    src={`/static/uploads/${projectData.availability_img}`}
-                                    alt={`Plan de disponibilidad de ${projectData.name}`}
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-on-surface-variant/60 text-sm">
@@ -159,24 +160,28 @@ function RouteComponent() {
                                 </div>
                             )}
                         </div>
-                        <AmenitiesCarousel projectData={projectData} />
+                        <div className="col-span-2">
+                            <AmenitiesCarousel projectData={projectData} />
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section className="py-12 bg-surface">
-                <div className="max-w-7xl flex flex-col md:flex-row justify-between md:items-end gap-6 px-6 mx-auto mb-6">
+            <section className="py-12 md:py-24 lg:py-32 bg-surface space-y-6 md:space-y-12">
+                <div className="max-w-7xl flex flex-col md:flex-row justify-between md:items-end gap-6 px-6 md:px-12 xl:px-24 2xl:px-0 mx-auto">
                     <div>
                         <h2 className="text-3xl font-bold text-on-surface tracking-tighter mb-4">Galería Arquitectónica</h2>
                         <p className="text-on-surface-variant/60">Un viaje visual a través del alma del desarrollo.</p>
                     </div>
                 </div>
-                <ProjectGallery projectData={projectData} />
+                <div className="max-w-7xl md:px-3 lg:px-12 xl:px-24 2xl:px-0 mx-auto">
+                    <ProjectGallery projectData={projectData} />
+                </div>
             </section>
 
             {projectData.appeal_list && projectData.appeal_list.length > 0 && (
                 <section className="py-12 bg-surface-container-low">
-                    <div className="max-w-7xl mx-auto px-8">
+                    <div className="max-w-7xl mx-auto px-8 md:px-12 xl:px-24 2xl:px-0">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {projectData.appeal_list.map((item, i) => {
                                 const Icon = APPEAL_ICONS[i % APPEAL_ICONS.length];
@@ -198,8 +203,8 @@ function RouteComponent() {
                 </section>
             )}
 
-            <section className="bg-surface-container-low px-6 py-12 space-y-6">
-                <div className="space-y-3">
+            <section className="bg-surface-container px-6 md:px-12 py-12 md:py-24 lg:py-32 space-y-6 lg:space-y-12">
+                <div className="space-y-3 md:text-center">
                     <h2 className="text-3xl">Portal de Asociados</h2>
                     <p className="text-current/60">
                         Accede a los documentos actualizados del proyecto y revisa si tienes algún saldo pendiente.
@@ -296,25 +301,28 @@ function AmenityCard({ amenity, delay }: { amenity: TProjectAmenity, delay?: num
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: delay ?? 0 }}
             viewport={{ once: true, amount: 0.3 }}
-            className="relative aspect-square p-6 rounded-xl border border-outline-variant/30 shadow"
+            className="relative aspect-square rounded-xl border border-outline-variant/30 shadow"
         >
-            <div className="absolute inset-0 flex items-center justify-center brightness-75">
-                {
-                    amenity.img
-                        ? (
-                            <Image
-                                src={amenity.img}
-                                alt={amenity.name}
-                                className="w-full h-full object-cover object-center"
-                            />
-                        ) : (
-                            <AmenityIcon className="size-24 text-sbr-blue" icon={amenity.icon} />
-                        )
-                }
-            </div>
-            <div className="relative z-10 h-full flex flex-col items-center justify-center gap-3 bg-surface-container-lowest/30 backdrop-blur-sm">
-                <AmenityIcon className="size-10 text-sbr-blue" icon={amenity.icon} />
-                <h4 className="font-headline font-bold text-center mb-2">{amenity.name}</h4>
+            {/* <div className="absolute inset-0 flex items-center justify-center brightness-75"> */}
+            {/*     { */}
+            {/*         amenity.img */}
+            {/*             ? ( */}
+            {/*                 <ProjectImage */}
+            {/*                     projName={"Amenidad de proyecto"} */}
+            {/*                     src={amenity.img} */}
+            {/*                     alt={amenity.name} */}
+            {/*                     className="w-full h-full object-cover object-center" */}
+            {/*                 /> */}
+            {/*             ) : ( */}
+            {/*                 <AmenityIcon className="size-24 lg:size-1/3 text-sbr-blue" icon={amenity.icon} /> */}
+            {/*             ) */}
+            {/*     } */}
+            {/* </div> */}
+            <div className="relative z-10 h-full flex flex-col items-center justify-center gap-3 bg-sbr-blue text-on-primary p-6 rounded-md">
+                <div className="">
+                    <AmenityIcon className="size-6 text-on-primary" icon={amenity.icon} />
+                </div>
+                <h4 className="font-headline font-bold text-center line-clamp-1 text-ellipsis">{amenity.name}</h4>
             </div>
         </motion.div>
     );
@@ -344,7 +352,7 @@ function AmenitiesCarousel({ projectData }: { projectData: TProject }) {
     }
 
     return (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 overflow-hidden">
             <div className="grid grid-cols-2 gap-6">
                 {toggleableAmenities.visible.map((amenity, idx) => (
                     <AmenityCard key={amenity.id} amenity={amenity} delay={idx * 0.0675} />
@@ -370,7 +378,7 @@ function AmenitiesCarousel({ projectData }: { projectData: TProject }) {
                                 initial={{ height: 0 }}
                                 animate={{ height: 'auto' }}
                                 exit={{ height: 0 }}
-                                className="grid grid-cols-2 gap-6"
+                                className="grid grid-cols-2 gap-6 overflow-hidden"
                             >
                                 {toggleableAmenities.rest.map((amenity, idx) => (
                                     <AmenityCard key={amenity.id} amenity={amenity} delay={idx * 0.0675} />
@@ -397,7 +405,7 @@ function AmenitiesCarousel({ projectData }: { projectData: TProject }) {
 type TAmenityIcon = "pool" | "playground" | "palapa" | "services" | string;
 
 function AmenityIcon({ icon, className }: { icon: TAmenityIcon, className?: string }) {
-    const _className = cn("size-4/5 lg:size-3/5 2xl:size-1/2", className);
+    const _className = cn("text-primary", className);
     switch (icon) {
         case "pool":
             return <PoolIcon className={cn(_className, "lg:size-3/4 2xl:size-2/3")} />;
@@ -408,7 +416,7 @@ function AmenityIcon({ icon, className }: { icon: TAmenityIcon, className?: stri
         // case "services":
         //     return <ServicesIcon className={_className} />;
         default:
-            return <StarIcon className={_className} />;
+            return <DynamicIcon className={_className} name={icon as unknown as any} />;
     }
 }
 
@@ -440,18 +448,35 @@ function ProjectGallery({ projectData }: { projectData: TProject }) {
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button className="relative aspect-video w-full h-auto p-0 group">
+                <Button className="relative aspect-video w-full h-auto p-0 group rounded-lg overflow-hidden" variant="ghost">
                     <div
                         className="absolute z-10 inset-0 flex items-center justify-center bg-sbr-blue/50 backdrop-blur-sm transition-opacity duration-300 opacity-0 group-hover:opacity-100 cursor-pointer data-[show-hint=true]:opacity-100"
                         data-show-hint={showHint}
                     >
-                        <p className="flex items-center justify-center gap-3 text-xl font-semibold" data-show-hint={showHint}>
+                        <p className="flex items-center justify-center gap-3 text-xl font-semibold text-on-primary" data-show-hint={showHint}>
                             <ImageIcon className="size-8" />
                             Ver galería
                         </p>
                     </div>
-                    <div className="relative w-full h-full z-0">
-                        <img className="w-full h-full object-cover object-center" src={"/static/uploads/" + projectData.main_img} alt={projectData.name} />
+                    <div className="relative z-0 w-full h-full md:grid md:grid-cols-5 md:grid-rows-2 md:gap-3 lg:gap-6">
+                        <ProjectImage
+                            projName={projectData.name}
+                            src={projectData.main_img}
+                            className="w-full h-full col-span-3 row-span-2 object-cover object-center md:rounded-md"
+                            alt={projectData.name}
+                        />
+                        <ProjectImage
+                            projName={projectData.name}
+                            src={projectData.gallery[0]}
+                            className="hidden md:block col-span-2 w-full h-full object-cover object-center rounded-md"
+                            alt={projectData.name}
+                        />
+                        <ProjectImage
+                            projName={projectData.name}
+                            src={projectData.gallery[1]}
+                            className="hidden md:block col-span-2 w-full h-full object-cover object-center rounded-md"
+                            alt={projectData.name}
+                        />
                     </div>
                 </Button>
             </DialogTrigger>
@@ -522,7 +547,7 @@ function ProjectAssociates({ projectData }: { projectData: TProject }) {
     }, []);
 
     return (
-        <div className="space-y-6">
+        <div className="max-w-md mx-auto space-y-6 lg:space-y-12">
             <Button
                 className="w-full bg-sbr-green text-on-primary text-lg sm:text-xl font-bold sm:py-6"
                 variant="ghost"
@@ -538,7 +563,7 @@ function ProjectAssociates({ projectData }: { projectData: TProject }) {
                             initial={{ height: 0 }}
                             animate={{ height: 'auto' }}
                             exit={{ height: 0 }}
-                            className="bg-surface-container-lowest text-gray-800 rounded-lg p-3 sm:p-6 space-y-3"
+                            className="bg-surface-container-lowest text-gray-800 rounded-lg p-3 sm:p-6 space-y-3 overflow-hidden"
                         >
                             {
                                 customerAuthenticated
@@ -589,7 +614,7 @@ function ProjectAssociatesDocumentListing({ customerData, projectData }: { custo
                 </p>
             </div>
 
-            {data.docs.length === 0
+            {!data.docs || data.docs.length === 0
                 ? (
                     <p className="text-center font-semibold p-6">Aún no hay documentos disponibles para este proyecto.</p>
                 )
@@ -793,19 +818,5 @@ function _ContactForm() {
                 </div>
             </div>
         </section>
-    );
-}
-
-function HouseClip() {
-    return (
-        <svg className="h-0 w-0">
-            <defs>
-                <clipPath id="house-clip" clipPathUnits="objectBoundingBox">
-                    <polygon
-                        points="0,0.3 0.2,0.1 0.4,0.3 0.4,0.4 0.7,0.3 1,0.4 1,0.9 0,0.9"
-                    />
-                </clipPath>
-            </defs>
-        </svg>
     );
 }
