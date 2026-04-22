@@ -1,128 +1,161 @@
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
-import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
-import { ImgPlaceholder } from "@/components/ui/img-placeholder";
+import { Button } from "@/components/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
+import { Gem, Mountain, Pen } from "lucide-react";
 
 export const Route = createFileRoute("/_public/nosotros")({
     component: RouteComponent,
 });
 
+const philosophyItems = [
+    {
+        icon: Pen,
+        title: "Diseño Intencionado",
+        description:
+            "Cada línea, material y fuente de luz es deliberada. Impulsamos espacios que respiran y funcionan con gracia natural.",
+    },
+    {
+        icon: Gem,
+        title: "La Verdad del Material",
+        description:
+            "Honramos la autenticidad de los materiales. La piedra, la madera y el acero son valorados por sus características innatas, que embellecen con el paso del tiempo.",
+    },
+    {
+        icon: Mountain,
+        title: "Armonía con el Entorno",
+        description:
+            "Un edificio debe dialogar con su entorno. Nuestras propiedades se integran de forma natural con su contexto urbano o natural.",
+    },
+];
+
+const teamMembers: { name: string; role: string; bio: string; src: string; reverse?: boolean }[] = [
+    {
+        name: "Elena Rostova",
+        role: "Curadora Principal",
+        bio: "Con más de dos décadas dando forma a paisajes urbanos, Elena posee un ojo inigualable para el detalle. Su enfoque equilibra el pragmatismo arquitectónico con una sensibilidad refinada por la estética espacial, garantizando que cada propiedad de SIBRA sea una obra maestra del habitar contemporáneo.",
+        src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAjLBceZ-JAgoguZyUcL-NetH9R0nnUNYm2V1D0VpmHzBeLqTrAj2E52jXYPSAkVjxHbhMyhTFvJurJpo7MLq1NLYPeEAv_6wOY7DfiL1wKyrG60TtIVOmapur6uHMC54wxZM6BkWhkI10jswQ_Lc_vuz6RK3Ho3HeUieZsjnYB6wz847AWZTfOoU5YWF3t1E4pw_XzL7dpRYy0OJcLVNQPPKN2B2_3jcSib02mYDd2WjzXMxCXhdk4Eg0OBYRJJnEnQQy9cZNOr3Q",
+    },
+    {
+        name: "Marcus Chen",
+        role: "Director de Adquisiciones",
+        bio: "Marcus supervisa la incorporación selectiva a nuestro portafolio. Su visión estratégica y su profundo conocimiento de la dinámica del mercado solo son superados por su compromiso de preservar la integridad arquitectónica de cada activo que adquirimos.",
+        src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAqREqXAFcltVAaBzmSnMUfqLdrrS-h2tqs4AecOZSHzo5glfmtfJS5lfpF-YWaeUWyCSeGuh-4K7UsyHhZJSx9POBJSbDuA5_mpoBvwNMWuh0LRNNjDq7TEDfMpN3gTVmWhhyOtjpKT0ambz4own-j5LY3MZWSadCgcP4e4Iwc2YCFuG5k7JXhEb_3tb5Tz3a0JJkZ83yngwdIR3SB1hLjX8t5gLF0WMzafQJDx6ov8vp4VLlrzb5WLdW3Zz5KdOvogKTWhzyYJSE",
+        reverse: true,
+    },
+];
+
+function PhilosophyCard({ icon: Icon, title, description }: (typeof philosophyItems)[number]) {
+    return (
+        <div className="bg-surface-container-lowest p-8 rounded-lg transition-transform hover:scale-[1.02] duration-300 flex flex-col items-start border border-outline-variant/15 shadow-[0_32px_64px_rgba(26,28,28,0.04)]">
+            <div className="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center mb-6">
+                <Icon className="text-primary" size={22} />
+            </div>
+            <h4 className="text-xl font-semibold mb-3">{title}</h4>
+            <p className="font-body text-on-surface-variant/80 text-sm">{description}</p>
+        </div>
+    );
+}
+
+function TeamMemberRow({ name, role, bio, src, reverse }: (typeof teamMembers)[number]) {
+    return (
+        <div className={`flex flex-col gap-8 items-center ${reverse ? "md:flex-row-reverse" : "md:flex-row"}`}>
+            <div className="w-full md:w-1/3 aspect-[3/4] overflow-hidden rounded-lg">
+                <img alt={`${name}, ${role}`} className="w-full h-full object-cover" src={src} />
+            </div>
+            <div className={`w-full md:w-2/3 ${reverse ? "md:pr-8" : "md:pl-8"}`}>
+                <h3 className="text-2xl font-bold mb-1">{name}</h3>
+                <p className="text-on-surface-variant/80 uppercase tracking-widest mb-6">{role}</p>
+                <p className="text-on-surface-variant/60 leading-relaxed max-w-xl">{bio}</p>
+            </div>
+        </div>
+    );
+}
+
 function RouteComponent() {
     return (
-        <main>
-            <section className="relative z-0">
-                <div className="absolute z-0 inset-0">
+        <main className="w-full">
+            <section className="relative w-full flex items-end overflow-hidden">
+                <div className="absolute inset-0 z-0">
                     <img
-                        src="/sample.webp"
-                        alt=""
-                        className="h-full w-full object-cover object-center brightness-80"
+                        alt="Cinematic Architectural View"
+                        className="w-full h-full object-cover"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSwiwxIVUW9inGz2VYo-_u9-JTOILleZ2w74962wfnOapv4iOblkrJS8-LC87J5vqIGS1gJqNa2ReMLB5w97HQbpV-KodwF-DG6Opz2gMBO0ORRwksI1sUaho7HoEKNylr6RzrTYvDbK0o35Vourq0imsFGn8yY3-DdcbH7SzC9ORZ1sTjCTlu6SsN6qYo1fPGgHeZxqtsS35SvcptISYD0EYQ-QHV2CmTVMdr4C2wWy2E9GwjmnHRhe9jrqMM3hc-HDdV5pbACxw"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-on-background/80 via-on-background/30 to-transparent"></div>
                 </div>
-                <div className="relative z-10 bg-linear-to-b from-sbr-blue/60 to-sbr-blue/60 px-6 sm:px-8 lg:px-24 2xl:px-32 pt-28 sm:pt-40 lg:pt-48 2xl:pt-56 pb-16 sm:pb-24 2xl:pb-36">
-                    <h1 className="text-3xl sm:text-5xl lg:text-6xl 2xl:text-7xl text-gray-50 font-semibold sm:font-medium text-center tracking-tighter sm:tracking-tight">
-                        "Tu solución inteligente en bienes raíces"
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-6 md:px-12 xl:px-24 2xl:px-0 pt-60 2xl:pt-80 pb-16 md:pb-24 lg:pb-32">
+                    <h1 className="font-headline text-5xl md:text-7xl font-extrabold text-on-primary tracking-tight mb-4 text-shadow-lg">
+                        Forjando Legado.
                     </h1>
+                    <p className="font-body text-lg text-outline-variant/80 max-w-xl">
+                        Creamos espacios que trascienden lo funcional, diseñando entornos donde cada detalle eleva el estándar de vida.
+                    </p>
                 </div>
             </section>
-            <section className="relative z-0 max-w-6xl px-6 sm:px-8 lg:px-16 py-12 sm:py-16 lg:py-24 space-y-12 xl:space-y-20 mx-auto">
-                <div className="xl:flex items-center gap-8 xl:py-16 2xl:py-24 space-y-3 sm:space-y-8 xl:space-y-0">
-                    <div className="flex-1 space-y-3 2xl:space-y-8">
-                        <h2 className="text-2xl sm:text-3xl 2xl:text-5xl font-semibold">Nuestra esencia</h2>
-                        <p className="text-current/60">
-                            En SIBRA creemos que cada propiedad es mucho más que un inmueble: es el
-                            inicio de una historia, un legado y una oportunidad de construir
-                            confianza. Desde hace más de 26 años, hemos acompañado a miles de
-                            familias en Durango a tomar decisiones inteligentes, simpre con cercanía
-                            y compromiso real.
-                        </p>
-                    </div>
-                    <div className="flex-1 w-full aspect-[3/2] bg-gray-200 rounded-lg">
-                        <img
-                            src="/agent_showcase.webp"
-                            alt=""
-                            className="w-full h-full object-cover object-center rounded-lg"
-                        />
+
+            <section className="bg-surface">
+                <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-24 2xl:px-0 py-12 md:py-20 lg:py-24">
+                    <div className="max-w-2xl">
+                        <h2 className="text-sm uppercase tracking-[0.2em] text-primary/80 mb-3 font-bold">Nuestra Esencia</h2>
+                        <h3 className="text-3xl md:text-4xl font-semibold leading-tight mb-8">
+                            Un compromiso con la solidez del diseño y la poesía del espacio.
+                        </h3>
+                        <div className="space-y-6 font-body text-on-surface-variant/60 leading-relaxed">
+                            <p>
+                                Desde nuestros inicios, SIBRA ha entendido el mundo inmobiliario no como simples transacciones, sino como la
+                                creación del escenario de la vida. Creemos que la arquitectura tiene la profunda capacidad de moldear la
+                                experiencia humana.
+                            </p>
+                            <p>
+                                Nuestro portafolio es testimonio de esta convicción: una colección de espacios seleccionados por su calidad sin
+                                concesiones, su visión innovadora y su valor perdurable. No somos solo desarrolladores; somos guardianes del
+                                entorno que habitamos.
+                            </p>
+                        </div>
                     </div>
                 </div>
-                <div className="sm:grid grid-cols-2 gap-6 space-y-6 sm:space-y-0">
-                    <Card className="bg-sbr-blue pt-0 overflow-hidden">
-                        <CardHeader className="p-0">
-                            {/* <img src="" alt="" className="w-full h-full object-cover object-center" /> */}
-                            <ImgPlaceholder className="aspect-[2/1] rounded-b-none" />
-                        </CardHeader>
-                        <CardContent className="text-gray-50 space-y-1">
-                            <CardTitle className="text-lg sm:text-xl font-bold">
-                                Asesoría gratuita
-                            </CardTitle>
-                            <CardDescription className="text-current/60 font-medium">
-                                Antes de comprar o vender, te orientamos para evitar errores
-                                costosos.
-                            </CardDescription>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-sbr-blue pt-0 overflow-hidden">
-                        <CardHeader className="p-0">
-                            {/* <img src="" alt="" className="w-full h-full object-cover object-center" /> */}
-                            <ImgPlaceholder className="aspect-[2/1] rounded-b-none" />
-                        </CardHeader>
-                        <CardContent className="text-gray-50 space-y-1">
-                            <CardTitle className="text-lg sm:text-xl font-bold">
-                                Transparencia absoluta
-                            </CardTitle>
-                            <CardDescription className="text-current/60 font-medium">
-                                Procesos claros, contratos en regla, información siempre
-                                disponible
-                            </CardDescription>
-                        </CardContent>
-                    </Card>
+            </section>
+
+            <section className="bg-surface-container-low">
+                <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-24 2xl:px-0 py-12 md:py-24 lg:py-32">
+                    <h2 className="font-headline text-3xl font-bold mb-12 text-center">La Filosofía del Curador</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {philosophyItems.map((item) => (
+                            <PhilosophyCard key={item.title} {...item} />
+                        ))}
+                    </div>
                 </div>
-                <div className="2xl:py-12 space-y-6 2xl:space-y-12">
-                    <h3 className="text-lg sm:text-2xl 2xl:text-3xl font-bold">Lo que recibes con SIBRA</h3>
-                    <Carousel>
-                        <CarouselContent className="pb-1">
-                            {offerList.map((offer, idx) => (
-                                <CarouselItem className="basis-3/4 sm:basis-1/2 xl:basis-2/5" key={idx}>
-                                    <Card className="w-full bg-gray-50 pt-0 overflow-hidden">
-                                        <CardHeader className="p-0">
-                                            {/* <img src="" alt="" className="w-full h-full object-cover object-center" /> */}
-                                            <ImgPlaceholder className="aspect-[2/1] rounded-b-none" />
-                                        </CardHeader>
-                                        <CardContent className="space-y-1.5 2xl:space-y-2.5">
-                                            <CardTitle className="2xl:text-xl font-semibold">
-                                                {offer.title}
-                                            </CardTitle>
-                                            <CardDescription className="text-sm 2xl:text-base">
-                                                {offer.description}
-                                            </CardDescription>
-                                        </CardContent>
-                                    </Card>
-                                </CarouselItem>
-                            ))}
-                        </CarouselContent>
-                    </Carousel>
+            </section>
+
+            <section className="bg-surface">
+                <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-24 2xl:px-0 py-12 md:py-24 lg:py-32">
+                    <h2 className="font-headline text-3xl font-bold mb-16">Los Visionarios</h2>
+                    <div className="flex flex-col gap-16">
+                        {teamMembers.map((member) => (
+                            <TeamMemberRow key={member.name} {...member} />
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            <section className="relative bg-sbr-blue text-on-primary overflow-hidden">
+                <div className="absolute inset-0 opacity-20">
+                    <img
+                        alt="Background Texture"
+                        className="w-full h-full object-cover"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnofUE5ZmdN-4Sl_dJobcL1rUM6Njc5N2zWY_qreELYW24OhY7pfFy5Njtth302NWPT44HY_u91hXryLUso1CpGYdyhvvaSfPtY5hRghNYWxUUeCCaqQnp48muyPwWUWD0Sc9xsihINWaWCPm9nexoxxleOmCEAQeezok1b0QUBxHgYGVUbSqLJIkvyFSw68URr9ZF_QNN-pagbMorh70oLWP7kXskaIofoWDK2CNgW6BFYRh02uNJsHLpV_Wan36O0Y_7fgn1T4Y"
+                    />
+                </div>
+                <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 xl:px-24 2xl:px-0 py-16 md:py-24 lg:py-32 flex flex-col items-center text-center">
+                    <h2 className="font-headline text-4xl md:text-5xl font-bold mb-6">Descubre la Colección</h2>
+                    <p className="font-body text-outline-variant/80 mb-10 text-lg max-w-2xl">
+                        Explora nuestro portafolio de propiedades excepcionales, donde el diseño visionario se encuentra con la calidad sin
+                        concesiones.
+                    </p>
+                    <Button className="h-auto bg-gradient-to-br from-sbr-blue to-sbr-blue-light text-on-primary-container px-8 py-4 rounded-md font-label font-medium uppercase tracking-widest text-sm hover:scale-[1.02] transition-transform duration-300">
+                        Ver Propiedades
+                    </Button>
                 </div>
             </section>
         </main>
     );
 }
-
-const offerList = [
-    {
-        title: "Orientación profesional",
-        description: "Para comprar, vender o resolver tus problemas inmobiliarios.",
-    },
-    {
-        title: "Orientación profesional",
-        description: "Con SIBRA, puedes disfrutar de un servicio profesional y personalizado. Conoce nuestros servicios y haz preguntas en nuestro chat.",
-    },
-    {
-        title: "Orientación profesional",
-        description: "Con SIBRA, puedes disfrutar de un servicio profesional y personalizado. Conoce nuestros servicios y haz preguntas en nuestro chat.",
-    },
-]
