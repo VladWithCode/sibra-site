@@ -86,7 +86,7 @@ function HeroSection({ property }: { property: TProperty }) {
                         transition={{ duration: 0.6, delay: 0.4 }}
                         className="absolute z-10 bottom-4 right-4 glass border-none px-4 py-2 rounded-lg shadow-lg active:scale-95 active:shadow-sm"
                     >
-                        <span className="text-[10px] font-sans font-bold tracking-widest text-primary uppercase">1 / {property.imgs.length} Fotos</span>
+                        <span className="text-[10px] font-sans font-bold tracking-widest text-primary uppercase">1 / {property.imgs?.length || 0} Fotos</span>
                     </motion.p>
                 </DialogTrigger>
                 <div className="absolute top-4 left-4 flex gap-2">
@@ -118,7 +118,7 @@ function HeroSection({ property }: { property: TProperty }) {
                 <DialogTitle className="sr-only">Galería de fotos: {property.address}</DialogTitle>
                 <Carousel className="w-full h-full mt-auto md:[&>div]:h-[80vh] lg:[&>div]:h-[95vh]" setApi={setApi} opts={{ loop: true }}>
                     <CarouselContent className="h-full">
-                        {property.imgs.map((img, i) => (
+                        {property.imgs?.map((img, i) => (
                             <CarouselItem key={`${img}-${i}`}>
                                 <div
                                     className="flex items-center justify-center w-full h-full aspect-[4/5] bg-center bg-contain bg-no-repeat sm:aspect-video overflow-hidden"
@@ -140,7 +140,7 @@ function HeroSection({ property }: { property: TProperty }) {
                     <CarouselNext className="right-2 sm:-right-12 bg-white/90" />
                 </Carousel>
                 <p className="lg:absolute lg:top-6 lg:inset-x-0 text-center text-sm font-sans font-bold tracking-widest text-white/80 uppercase">
-                    {current} / {property.imgs.length} Fotos
+                    {current} / {property.imgs?.length || 0} Fotos
                 </p>
                 <div className="lg:absolute lg:bottom-0 lg:inset-x-0 flex justify-between gap-3 text-on-primary mt-auto p-4">
                     <Button
