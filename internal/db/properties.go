@@ -408,6 +408,9 @@ func UpdateProperty(property *Property) error {
 	// Ensure coords are set from lat/lon
 	property.SetCoords()
 
+	// Ensure slug is set
+	property.SetSlug()
+
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return err

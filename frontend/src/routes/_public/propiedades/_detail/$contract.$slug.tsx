@@ -140,7 +140,7 @@ function HeroSection({ property }: { property: TProperty }) {
                     <CarouselNext className="right-2 sm:-right-12 bg-white/90" />
                 </Carousel>
                 <p className="lg:absolute lg:top-6 lg:inset-x-0 text-center text-sm font-sans font-bold tracking-widest text-white/80 uppercase">
-                    {current} / {property.imgs?.length || 0} Fotos
+                    {current} / {property.imgs.length} Fotos
                 </p>
                 <div className="lg:absolute lg:bottom-0 lg:inset-x-0 flex justify-between gap-3 text-on-primary mt-auto p-4">
                     <Button
