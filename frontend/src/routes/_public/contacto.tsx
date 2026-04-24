@@ -1,10 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { motion } from "motion/react";
-import { toast } from "sonner";
-import z from "zod";
 import { useUIStore } from "@/stores/uiStore";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,10 +8,8 @@ import { ConnectIcon } from "@/components/icons/connect";
 import { InstagramIcon } from "@/components/icons/instagram";
 import { FacebookIcon } from "@/components/icons/facebook";
 import { Clock, MapPin, Phone, PhoneIcon } from "lucide-react";
-import { createContactRequestOpts } from "@/queries/quotes";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { WhatsappIcon } from "@/components/icons/whatsapp";
+import { InfoForm } from "@/components/contact/InfoForm";
 
 export const Route = createFileRoute("/_public/contacto")({
     component: RouteComponent,
@@ -31,8 +25,9 @@ function RouteComponent() {
     return (
         <main>
             <section className="relative z-0 py-16 sm:py-24 px-6 sm:px-12 lg:px-20 xl:pt-32 xl:pb-52">
-                <div className="absolute z-0 inset-0 w-full h-full bg-[url('/agent_showcase_2.webp')] bg-center bg-fixed bg-size-[auto_100%] blur-xs brightness-70">
+                <div className="absolute z-0 inset-0 w-full h-full bg-[url('/agent_showcase_2.webp')] bg-center bg-fixed bg-size-[auto_100%] brightness-70">
                 </div>
+                <div className="absolute z-0 inset-0 bg-surface-bright/5 backdrop-blur-xs"></div>
                 <div className="contents lg:flex lg:gap-16 lg:max-w-7xl mx-auto">
                     <div className="relative z-10 max-w-2xl xl:max-w-none xl:flex-1 xl:basis-3/5 text-white pt-6 mb-16 mx-auto xl:mx-0">
                         <motion.span
@@ -62,8 +57,8 @@ function RouteComponent() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.7, delay: 0.2 }}
                     >
-                        <div className="relative z-10 max-w-2xl lg:max-w-4xl mx-auto">
-                            <InfoForm />
+                        <div className="relative z-10 max-w-2xl mx-auto">
+                            <InfoForm contactType="informacion" />
                         </div>
                         <div className="relative z-0 lg:hidden">
                             <ContactDataCard />
@@ -195,147 +190,6 @@ function ContactDataCard() {
             </div>
         </div>
     );
-}
-
-const contactFormSchema = z.object({
-    name: z.string().min(2, "El nombre no puede estar vacío"),
-    phone: z.string().min(10, "El número de teléfono no puede estar vacío"),
-    consent: z.boolean().default(false),
-});
-
-export function InfoForm() {
-    const propInfoMut = useMutation(createContactRequestOpts());
-
-    const form = useForm({
-        defaultValues: {
-            name: "",
-            phone: "",
-            consent: false as boolean,
-        },
-        validators: {
-            onSubmit: contactFormSchema,
-        },
-        onSubmit: async ({ value }) => {
-            try {
-                await propInfoMut.mutateAsync({
-                    contactRequest: {
-                        name: value.name,
-                        phone: value.phone,
-                    }
-                });
-                toast.success("Tu solicitud fue enviada. Te contactaremos pronto.", { closeButton: true });
-                form.reset();
-            } catch (err) {
-                toast.error(
-                    err instanceof Error ? err.message : "Ocurrió un error al enviar la solicitud.",
-                    { closeButton: true },
-                );
-            }
-        },
-    });
-
-    return (
-        <div className="bg-surface-container-lowest rounded-lg p-6 shadow-[0_20px_50px_rgba(0,0,0,0.04)] transition-shadow hover:shadow-[0_30px_60px_rgba(0,0,0,0.08)]">
-            <div className="mb-8">
-                <h2 className="text-2xl font-sans font-extrabold text-on-surface">Contactanos</h2>
-            </div>
-            <form
-                className="space-y-6"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    form.handleSubmit();
-                }}
-            >
-                <form.Field
-                    name="name"
-                    children={(field) => (
-                        <div className="space-y-1">
-                            <label htmlFor={field.name} className="block text-[10px] font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Nombre</label>
-                            <Input
-                                id={field.name}
-                                name={field.name}
-                                type="text"
-                                placeholder="Martin Felix"
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                className="w-full px-4 py-4 bg-surface-container-high rounded border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all placeholder:text-outline/50"
-                            />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 ? (
-                                <p className="text-xs text-destructive ml-1 mt-1">
-                                    {field.state.meta.errors.map((err) => err?.message).filter(Boolean).join(", ")}
-                                </p>
-                            ) : null}
-                        </div>
-                    )}
-                />
-                <form.Field
-                    name="phone"
-                    children={(field) => (
-                        <div className="space-y-1">
-                            <label htmlFor={field.name} className="block text-[10px] font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Teléfono</label>
-                            <Input
-                                id={field.name}
-                                name={field.name}
-                                type="tel"
-                                placeholder="6181594681"
-                                value={field.state.value}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                className="w-full px-4 py-4 bg-surface-container-high rounded border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all placeholder:text-outline/50"
-                            />
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 ? (
-                                <p className="text-xs text-destructive ml-1 mt-1">
-                                    {field.state.meta.errors.map((err) => err?.message).filter(Boolean).join(", ")}
-                                </p>
-                            ) : null}
-                        </div>
-                    )}
-                />
-                <form.Field
-                    name="consent"
-                    children={(field) => (
-                        <div className="space-y-2">
-                            <div className="flex items-start gap-3">
-                                <Checkbox
-                                    id={field.name}
-                                    name={field.name}
-                                    checked={field.state.value}
-                                    onBlur={field.handleBlur}
-                                    onCheckedChange={(v) => field.handleChange(v === true)}
-                                    className="mt-0.5"
-                                    required
-                                />
-                                <label htmlFor={field.name} className="text-xs text-on-surface-variant leading-snug">
-                                    Acepto que se me contacte a través de Whatsapp o llamada telefónica.
-                                </label>
-                            </div>
-                            {field.state.meta.isTouched && field.state.meta.errors.length > 0 ? (
-                                <p className="text-xs text-destructive ml-1">
-                                    {field.state.meta.errors.map((err) => err?.message).filter(Boolean).join(", ")}
-                                </p>
-                            ) : null}
-                        </div>
-                    )}
-                />
-                <form.Subscribe
-                    selector={(state) => [state.canSubmit, state.isSubmitting] as const}
-                    children={([canSubmit, isSubmitting]) => (
-                        <motion.div whileTap={{ scale: 0.98 }}>
-                            <Button
-                                type="submit"
-                                disabled={!canSubmit || propInfoMut.isPending}
-                                className="w-full bg-gradient-to-r from-sbr-blue to-primary-container text-primary-foreground font-sans font-bold rounded shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30"
-                            >
-                                {isSubmitting || propInfoMut.isPending ? "Enviando..." : "Solicitar Contacto"}
-                            </Button>
-                        </motion.div>
-                    )}
-                />
-            </form>
-        </div>
-    )
 }
 
 function OfficeCard({ office }: { office: typeof offices[0] }) {

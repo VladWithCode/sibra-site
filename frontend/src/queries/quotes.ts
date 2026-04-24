@@ -164,7 +164,7 @@ export async function createPropInfoRequest({ infoRequest }: { infoRequest: Pick
 }
 
 export async function createContactRequest({ contactRequest }: { contactRequest: TContactRequest }): Promise<TContactRequestCreateResult> {
-    const response = await fetch("/api/contacto/general", {
+    const response = await fetch("/api/contacto", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

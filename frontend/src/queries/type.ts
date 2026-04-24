@@ -147,9 +147,12 @@ type TQuoteCreateSuccess = {
     quote: TQuote;
 };
 
+export type TContactRequestType = "informacion" | "cita" | "venta" | "precalificacion" | "proyecto";
+
 export type TContactRequest = {
     name: string;
     phone: string;
+    type: TContactRequestType;
 }
 
 export type TPropInfoRequest = TContactRequest & {

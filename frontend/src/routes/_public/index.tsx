@@ -191,8 +191,11 @@ function AboutSection() {
                         ))}
                     </div>
 
-                    <Button className="bg-on-surface text-white font-headline font-bold hover:bg-slate-800  transition-all shadow-xl active:scale-95">
-                        Conoce nuestra historia
+                    <Button
+                        className="bg-on-surface text-white font-headline font-bold hover:bg-slate-800  transition-all shadow-xl active:scale-95"
+                        asChild
+                    >
+                        <Link to="/nosotro/nosotross">Conoce nuestra historia</Link>
                     </Button>
                 </div>
             </div>
@@ -279,7 +282,7 @@ function QuoteSection() {
                     <span className="absolute -top-12 xl:-top-16 left-1/2 -translate-x-1/2 text-8xl xl:text-9xl text-red-600">
                         "
                     </span>
-                    <span>Tu solución inteligente en bienes raíces"</span>
+                    <span>Tu Solución Inteligente en Bienes Raíces"</span>
                 </h2>
                 <p className="text-xl sm:text-2xl xl:text-3xl font-medium">SIBRA</p>
             </div>

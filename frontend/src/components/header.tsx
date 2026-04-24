@@ -428,7 +428,7 @@ function HeaderComplementCta() {
     return (
         <div className="flex-auto">
             <Button variant="ghost" asChild>
-                <Link to="/vender" className="bg-sbr-blue text-gray-50 py-1! h-min">
+                <Link to="/vende-tu-casa" className="bg-sbr-blue text-gray-50 py-1! h-min">
                     Vende tu casa
                 </Link>
             </Button>
