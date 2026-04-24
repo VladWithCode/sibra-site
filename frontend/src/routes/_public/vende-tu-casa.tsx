@@ -6,6 +6,17 @@ import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_public/vende-tu-casa')({
     component: RouteComponent,
+    head: () => ({
+        meta: [{
+            title: "Vende tu casa | Sibra Inmobiliaria",
+        }],
+        links: [{
+            rel: "preload",
+            href: "/agent_showcase_3.webp",
+            as: "image",
+            fetchpriority: "high",
+        }],
+    }),
 })
 
 function RouteComponent() {

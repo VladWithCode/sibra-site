@@ -6,6 +6,17 @@ import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_public/precalificaciones')({
     component: RouteComponent,
+    head: () => ({
+        meta: [{
+            title: "Precalificaciones | Sibra Inmobiliaria",
+        }],
+        links: [{
+            rel: "preload",
+            href: "/agent_showcase_4.webp",
+            as: "image",
+            fetchpriority: "high",
+        }],
+    }),
 })
 
 function RouteComponent() {

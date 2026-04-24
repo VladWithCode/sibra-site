@@ -17,6 +17,14 @@ export const Route = createFileRoute("/_public/")({
     loader: async ({ context }) => {
         await context.queryClient.ensureQueryData(getFeaturedPropertiesOpts);
     },
+    head: () => ({
+        links: [{
+            rel: "preload",
+            href: "/hero.webp",
+            as: "image",
+            fetchpriority: "high",
+        }],
+    }),
 });
 
 function HeroSection() {
@@ -31,7 +39,7 @@ function HeroSection() {
             <div className="absolute inset-0 z-0">
                 <img
                     className="h-full max-w-full md:w-full object-cover object-center brightness-85"
-                    src="/hero.png"
+                    src="/hero.webp"
                     alt=""
                 />
             </div>

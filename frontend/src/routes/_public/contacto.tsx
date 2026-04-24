@@ -13,6 +13,17 @@ import { InfoForm } from "@/components/contact/InfoForm";
 
 export const Route = createFileRoute("/_public/contacto")({
     component: RouteComponent,
+    head: () => ({
+        meta: [{
+            title: "Contacto | Sibra Inmobiliaria",
+        }],
+        links: [{
+            rel: "preload",
+            href: "/agent_showcase_2.webp",
+            as: "image",
+            fetchpriority: "high",
+        }],
+    }),
 });
 
 function RouteComponent() {
