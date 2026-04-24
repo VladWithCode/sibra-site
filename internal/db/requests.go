@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -11,11 +12,19 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
+var (
+	ErrRequestFilterInvalid     = errors.New("invalid request filter")
+	ErrRequestFilterArgsInvalid = errors.New("invalid request filter args")
+)
+
 type RequestType string
 
 const (
 	RequestTypeInfo  RequestType = "informacion"
 	RequestTypeQuote RequestType = "cita"
+	RequestTypeSell  RequestType = "venta"
+	RequestTypePreq  RequestType = "precalificacion"
+	RequestTypeProj  RequestType = "proyecto"
 )
 
 type RequestStatus string
@@ -36,6 +45,7 @@ type Request struct {
 	Status        RequestStatus `json:"status" db:"status"`
 	Agent         string        `json:"agent" db:"agent"`
 	Property      string        `json:"property,omitempty" db:"property"`
+	Project       string        `json:"project,omitempty" db:"project"`
 
 	CreatedAt time.Time `json:"date" db:"date"`
 	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
@@ -70,7 +80,61 @@ type RequestFilter struct {
 	Status        *RequestStatus
 	Agent         *string
 	Property      *string
+	Project       *string
 	CreatedAt     *time.Time
+}
+
+func buildRequestFilterConditions(filter *RequestFilter, args *pgx.NamedArgs) ([]string, error) {
+	var queryConditions []string
+
+	if filter == nil {
+		return queryConditions, ErrRequestFilterInvalid
+	}
+
+	if args == nil {
+		return nil, ErrRequestFilterArgsInvalid
+	}
+	if *args == nil {
+		*args = pgx.NamedArgs{}
+	}
+	locArgs := *args
+
+	if filter.Type != nil {
+		queryConditions = append(queryConditions, "r.type = @filterType")
+		locArgs["filterType"] = *filter.Type
+	}
+
+	if filter.Status != nil {
+		queryConditions = append(queryConditions, "r.status = @filterStatus")
+		locArgs["filterStatus"] = *filter.Status
+	}
+
+	if filter.Property != nil {
+		queryConditions = append(queryConditions, "r.property = @filterProperty")
+		locArgs["filterProperty"] = *filter.Property
+	}
+
+	if filter.Project != nil {
+		queryConditions = append(queryConditions, "r.project = @filterProject")
+		locArgs["filterProject"] = *filter.Project
+	}
+
+	if filter.CreatedAt != nil {
+		queryConditions = append(queryConditions, "r.date = @filterCreatedAt")
+		locArgs["filterCreatedAt"] = *filter.CreatedAt
+	}
+
+	if filter.Agent != nil {
+		queryConditions = append(queryConditions, "r.agent = @filterAgent")
+		locArgs["filterAgent"] = *filter.Agent
+	}
+
+	if filter.ScheduledDate != nil {
+		queryConditions = append(queryConditions, "r.scheduled_date = @filterScheduledDate")
+		locArgs["filterScheduledDate"] = *filter.ScheduledDate
+	}
+
+	return queryConditions, nil
 }
 
 func CreateRequest(ctx context.Context, req *Request) error {
@@ -103,6 +167,10 @@ func CreateRequest(ctx context.Context, req *Request) error {
 			String: req.Property,
 			Valid:  req.Property != "",
 		},
+		"project": sql.NullString{
+			String: req.Project,
+			Valid:  req.Project != "",
+		},
 	}
 	_, err = conn.Exec(
 		ctx,
@@ -129,70 +197,25 @@ func GetRequestsPagination(filter *RequestFilter, limit, page int) (paginationDa
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	var queryParams []any
-	var queryConditions []string
-
-	if filter.Type != nil {
-		queryConditions = append(queryConditions, `r.type = $1`)
-		queryParams = append(queryParams, *filter.Type)
-	}
-
-	if filter.Status != nil {
-		queryConditions = append(queryConditions, `r.status = $2`)
-		queryParams = append(queryParams, *filter.Status)
-	}
-
-	if filter.Property != nil {
-		queryConditions = append(queryConditions, `r.property = $3`)
-		queryParams = append(queryParams, *filter.Property)
-	}
-
-	if filter.CreatedAt != nil {
-		queryConditions = append(queryConditions, `r.date = $4`)
-		queryParams = append(queryParams, *filter.CreatedAt)
-	}
-
-	if filter.Agent != nil {
-		queryConditions = append(queryConditions, `r.agent = $5`)
-		queryParams = append(queryParams, *filter.Agent)
-	}
-
-	if filter.ScheduledDate != nil {
-		queryConditions = append(queryConditions, `r.scheduled_date = $6`)
-		queryParams = append(queryParams, *filter.ScheduledDate)
-	}
-
-	baseQuery := `
-		SELECT r.id, r.type, r.phone, r.name, r.date, r.status, r.scheduled_date
-			u.name || ' ' || u.lastname AS agent,
-			p.address || ', ' || p.nb_hood || ' ' || p.zip_code AS property
-		FROM requests r
-		LEFT JOIN users u ON r.agent = u.id
-		LEFT JOIN properties p ON r.property = p.id
-		WHERE 1 = 1
-	`
-
-	if len(queryParams) > 0 {
-		baseQuery = baseQuery + " AND " + strings.Join(queryConditions, " AND ")
-	}
-
-	rows, err := conn.Query(
-		ctx,
-		baseQuery,
-		queryParams...,
-	)
+	args := pgx.NamedArgs{}
+	queryConditions, err := buildRequestFilterConditions(filter, &args)
 	if err != nil {
 		return
 	}
-	defer rows.Close()
+
+	baseQuery := `
+		SELECT COUNT(*)
+		FROM requests r
+	`
+
+	if len(queryConditions) > 0 {
+		baseQuery = baseQuery + " WHERE " + strings.Join(queryConditions, " AND ")
+	}
 
 	var reqCount int
-	for rows.Next() {
-		err = rows.Scan(&reqCount)
-
-		if err != nil {
-			return
-		}
+	err = conn.QueryRow(ctx, baseQuery, args).Scan(&reqCount)
+	if err != nil {
+		return
 	}
 
 	paginationData = NewPagination(reqCount, limit, page)
@@ -217,63 +240,30 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 		paginateOpts = fmt.Sprintf(" LIMIT %v", limit)
 	}
 	if page > 0 {
-		paginateOpts = fmt.Sprintf(" OFFSET %v", limit*(page-1))
+		paginateOpts += fmt.Sprintf(" OFFSET %v", limit*(page-1))
 	}
 
-	var queryParams []any
-	var queryConditions []string
-
-	if filter.Type != nil {
-		queryConditions = append(queryConditions, `r.type = $1`)
-		queryParams = append(queryParams, *filter.Type)
-	}
-
-	if filter.Status != nil {
-		queryConditions = append(queryConditions, `r.status = $2`)
-		queryParams = append(queryParams, *filter.Status)
-	}
-
-	if filter.Property != nil {
-		queryConditions = append(queryConditions, `r.property = $3`)
-		queryParams = append(queryParams, *filter.Property)
-	}
-
-	if filter.CreatedAt != nil {
-		queryConditions = append(queryConditions, `r.date = $4`)
-		queryParams = append(queryParams, *filter.CreatedAt)
-	}
-
-	if filter.Agent != nil {
-		queryConditions = append(queryConditions, `r.agent = $5`)
-		queryParams = append(queryParams, *filter.Agent)
-	}
-
-	if filter.ScheduledDate != nil {
-		queryConditions = append(queryConditions, `r.scheduled_date = $6`)
-		queryParams = append(queryParams, *filter.ScheduledDate)
+	args := pgx.NamedArgs{}
+	queryConditions, err := buildRequestFilterConditions(filter, &args)
+	if err != nil {
+		return
 	}
 
 	baseQuery := `
-		SELECT r.id, r.type, r.phone, r.name, r.date, r.status, r.scheduled_date
-			u.name || ' ' || u.lastname AS agent,
-			p.address || ', ' || p.nb_hood || ' ' || p.zip_code AS property
+		SELECT r.id, r.type, r.phone, r.name, r.date, r.status, r.scheduled_date,
+            r.project, r.property,
+			COALESCE(u.name || ' ' || u.lastname, '') AS agent
 		FROM requests r
 		LEFT JOIN users u ON r.agent = u.id
-		LEFT JOIN properties p ON r.property = p.id
-		WHERE 1 = 1
 	`
-	var query string
-	if len(queryParams) > 0 {
-		query = baseQuery + " AND " + strings.Join(queryConditions, " AND ") + paginateOpts
-	} else {
-		query = baseQuery + paginateOpts
+
+	if len(queryConditions) > 0 {
+		baseQuery = baseQuery + " WHERE " + strings.Join(queryConditions, " AND ")
 	}
 
-	rows, err := conn.Query(
-		ctx,
-		query,
-		queryParams...,
-	)
+	query := baseQuery + paginateOpts
+
+	rows, err := conn.Query(ctx, query, args)
 	if err != nil {
 		return
 	}
@@ -282,15 +272,16 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 	for rows.Next() {
 		var r Request
 		err = rows.Scan(
-			r.Id,
-			r.Type,
-			r.Phone,
-			r.Name,
-			r.CreatedAt,
-			r.Status,
-			r.ScheduledDate,
-			r.Agent,
-			r.Property,
+			&r.Id,
+			&r.Type,
+			&r.Phone,
+			&r.Name,
+			&r.CreatedAt,
+			&r.Status,
+			&r.ScheduledDate,
+			&r.Project,
+			&r.Property,
+			&r.Agent,
 		)
 
 		if err != nil {
@@ -317,11 +308,10 @@ func FindRequestById(id string) (*Request, error) {
 	row := conn.QueryRow(
 		ctx,
 		`SELECT r.id, r.phone, r.name, r.date, r.scheduled_date, r.status, r.type,
-			u.name || ' ' || u.lastname AS agent,
-			p.address || ', ' || p.nb_hood || ' ' || p.zip_code AS property
+            r.project, r.property,
+			COALESCE(u.name || ' ' || u.lastname, '') AS agent
 		FROM requests r
 		LEFT JOIN users u ON r.agent = u.id
-		LEFT JOIN properties p ON r.property = p.id
 		WHERE r.id = $1`,
 		id,
 	)
@@ -334,8 +324,9 @@ func FindRequestById(id string) (*Request, error) {
 		&req.ScheduledDate,
 		&req.Status,
 		&req.Type,
-		&req.Agent,
+		&req.Project,
 		&req.Property,
+		&req.Agent,
 	)
 
 	if err != nil {

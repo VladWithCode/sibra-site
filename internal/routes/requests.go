@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 )
 
 func RegisterRequestsRouter(r *customServeMux) {
-	r.HandleFunc("POST /api/citas", CreateRequest)
+	r.HandleFunc("POST /api/contacto", CreateRequest)
 	r.HandleFunc("POST /api/contacto/info-propiedad", CreatePropInfoRequest)
 
 	r.HandleFunc("POST /api/citas/conquistadores", CreateConquistadoresRequest)
@@ -33,9 +34,8 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var prop *db.Property
 	if req.Property != "" {
-		prop, err = db.FindPropertyById(ctx, req.Property)
+		prop, err := db.FindPropertyById(ctx, req.Property)
 		if err != nil {
 			respondWithError(w, http.StatusBadRequest, ErrorParams{
 				ErrorMessage: "Ocurrió un error al buscar la propiedad",
@@ -45,15 +45,40 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		}
 
 		req.Agent = prop.Agent
-		req.Property = prop.Id
 	}
 
 	err = db.CreateRequest(ctx, &req)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
-			ErrorMessage: "Ocurrió un error al crear la solicitud",
+			ErrorMessage: "Ocurrió un error al crear la solicitud. Por favor, inténtalo de nuevo más tarde.",
 		})
 		log.Printf("Failed to create request: %v\n", err)
+		return
+	}
+
+	tplData, err := getTemplateDataFromRequest(req)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: err.Error(),
+		})
+		log.Printf("Failed to create request: %v\n", err)
+		return
+	}
+	phone := os.Getenv(wsp.EnvVarNotificationPhone)
+	if phone == "" {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "No es posible procesar tu solicitud por el momento. Por favor, intenta de nuevo más tarde.",
+		})
+		log.Printf("Notification phone not set.\n")
+		return
+	}
+
+	err = wsp.SendTemplateMessage(phone, *tplData)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al enviar la solicitud. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error sending request: %v\n", err)
 		return
 	}
 
@@ -322,4 +347,35 @@ func CreateDemoQuote(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}()
+}
+
+func getTemplateDataFromRequest(req db.Request) (*wsp.TemplateData, error) {
+	var tplData wsp.TemplateData
+
+	switch req.Type {
+	case db.RequestTypeInfo:
+		if req.Property != "" {
+			tplData = wsp.BuildPropertyInfoRequest(req.Name, req.Phone, req.Property, req.CreatedAt.Format("2006-01-02"))
+		} else if req.Project != "" {
+			tplData = wsp.BuildInfoRequest(req.Name, req.Phone, req.CreatedAt.Format("2006-01-02"))
+		} else {
+			return nil, errors.New("No se proporciono información de la propiedad/proyecto del que desea información")
+		}
+	case db.RequestTypeQuote:
+		if req.Property != "" {
+			tplData = wsp.BuildPropertyQuoteRequest(req.Name, req.Phone, req.Property, req.CreatedAt.Format("2006-01-02"))
+		} else if req.Project != "" {
+			tplData = wsp.BuildProjectQuoteRequest(req.Name, req.Phone, req.Project, req.CreatedAt.Format("2006-01-02"))
+		} else {
+			return nil, errors.New("No se proporciono información de la propiedad/proyecto a visitar")
+		}
+	case db.RequestTypeSell:
+		tplData = wsp.BuildSellPropRequest(req.Name, req.Phone, req.CreatedAt.Format("2006-01-02"))
+	case db.RequestTypePreq:
+		tplData = wsp.BuildPrequalifyRequest(req.Name, req.Phone, req.CreatedAt.Format("2006-01-02"))
+	default:
+		return nil, errors.New("El tipo de solicitud no es válido")
+	}
+
+	return &tplData, nil
 }
