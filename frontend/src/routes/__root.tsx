@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 export const Route = createRootRouteWithContext<IRouteContext>()({
     component: () => (
         <QueryClientProvider client={queryClient}>
-            <SidebarProvider defaultOpen={false}>
+            <SidebarProvider defaultOpen={true}>
                 <MapsAPIProvider>
                     <HeadContent />
                     <Outlet />
