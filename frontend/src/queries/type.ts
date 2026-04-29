@@ -94,7 +94,7 @@ export type TPropertyDetailResult = {
     nearbyProperties: TProperty[] | null;
 };
 
-export type TQuoteType = "presencial" | "whatsapp";
+export type TQuoteType = "informacion" | "cita" | "venta" | "precalificacion" | "proyecto";
 
 export type TQuotePropType = "proyecto" | "propiedad" | "general";
 
@@ -110,6 +110,8 @@ export type TQuote = {
     status: TQuoteStatus;
     agent: string;
     property: string;
+    project: string;
+    date: string;
 
     createdAt: string;
     updatedAt: string;
@@ -121,13 +123,19 @@ export type TQuoteConquistadores = TQuote & {
     schedule: TConqsQuoteSchedule;
 }
 
-export type TQuoteFilters = Partial<TQuote> & {
+export type TQuoteFilters = {
+    type?: TQuoteType;
+    name?: string;
+    phone?: string;
+    status?: string;
+    scheduledDate?: string;
+    createdAt?: string;
     page?: TPagination["page"];
     perPage?: TPagination["perPage"];
 };
 
 export type TQuoteListingResult = {
-    quotes: TQuote[];
+    requests: TQuote[];
     pagination: TPagination;
 };
 
@@ -329,29 +337,3 @@ export type TUserProfileResult = {
 
 export type TLoginResult = TUserProfileResult
 
-// Requests (Citas y contacto)
-export type TRequest = {
-    id: string;
-    type: TContactRequestType;
-    phone: string;
-    name: string;
-    scheduledDate: string;
-    status: TQuoteStatus;
-    agent: string;
-    property: string;
-    project: string;
-    date: string;
-    updatedAt: string;
-};
-
-export type TRequestFilters = Partial<Pick<TRequest, "type" | "name" | "phone" | "status">> & {
-    scheduledDate?: string;
-    createdAt?: string;
-    page?: number;
-    perPage?: number;
-};
-
-export type TRequestListingResult = {
-    requests: TRequest[];
-    pagination: TPagination;
-};
