@@ -22,7 +22,7 @@ func BuildInfoRequest(name, phone, creationDate string) TemplateData {
 
 func BuildPropertyInfoRequest(name, phone, property, creationDate string) TemplateData {
 	return TemplateData{
-		TemplateName: "sibra_prop_info_req",
+		TemplateName: "sbr_prop_info_req",
 		BodyVars: []TemplateVar{
 			{
 				"type": "text",
