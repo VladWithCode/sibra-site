@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/vladwithcode/sibra-site/internal/auth"
@@ -21,6 +22,11 @@ func RegisterRequestsRouter(r *customServeMux) {
 
 	r.HandleFunc("POST /api/citas/conquistadores", CreateConquistadoresRequest)
 	r.HandleFunc("POST /api/citas/demo", auth.ValidateAuthMiddleware(CreateDemoQuote))
+
+	r.HandleFunc("GET /api/solicitudes", auth.ValidateAuthMiddleware(FindRequests))
+	r.HandleFunc("GET /api/solicitudes/{id}", auth.ValidateAuthMiddleware(FindRequestById))
+	r.HandleFunc("PUT /api/solicitudes/{id}", auth.WithAuthAccessLevelMiddleware(UpdateRequest, auth.AccessLevelEditor))
+	r.HandleFunc("DELETE /api/solicitudes/{id}", auth.WithAuthAccessLevelMiddleware(DeleteRequest, auth.AccessLevelEditor))
 }
 
 func CreateRequest(w http.ResponseWriter, r *http.Request) {
@@ -378,4 +384,114 @@ func getTemplateDataFromRequest(req db.Request) (*wsp.TemplateData, error) {
 	}
 
 	return &tplData, nil
+}
+
+func FindRequests(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	filter := db.NewRequestFilterFromQuery(&params)
+
+	page, err := strconv.Atoi(params.Get("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+
+	perPage, err := strconv.Atoi(params.Get("perPage"))
+	if err != nil || perPage <= 0 {
+		perPage = db.DefaultPageSize
+	}
+
+	requests, err := db.FindRequests(filter, perPage, page)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al obtener las solicitudes",
+		})
+		log.Printf("Error finding filtered requests: %v\n", err)
+		return
+	}
+
+	pagination, err := db.GetRequestsPagination(filter, perPage, page)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al obtener la paginación",
+		})
+		log.Printf("Error finding request pagination: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"requests":   requests,
+		"pagination": pagination,
+	})
+}
+
+func FindRequestById(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	request, err := db.FindRequestById(id)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "No se encontró la solicitud",
+		})
+		log.Printf("Error finding request: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"request": request,
+	})
+}
+
+func UpdateRequest(w http.ResponseWriter, r *http.Request) {
+	var req db.Request
+	err := json.NewDecoder(r.Body).Decode(&req)
+	defer r.Body.Close()
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "El formulario contiene información inválida",
+		})
+		log.Printf("Error decoding request body: %v\n", err)
+		return
+	}
+
+	req.Id = r.PathValue("id")
+
+	_, err = db.FindRequestById(req.Id)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "No se encontró la solicitud",
+		})
+		log.Printf("Error finding request for update: %v\n", err)
+		return
+	}
+
+	err = db.UpdateRequest(&req)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar la solicitud",
+		})
+		log.Printf("Error updating request: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+		"request": req,
+	})
+}
+
+func DeleteRequest(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	err := db.DeleteRequestById(id)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al eliminar la solicitud",
+		})
+		log.Printf("Error deleting request: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
+	})
 }

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -76,12 +77,43 @@ type ConqsRequest struct {
 
 type RequestFilter struct {
 	Type          *RequestType
+	Name          *string
+	Phone         *string
 	ScheduledDate *time.Time
 	Status        *RequestStatus
-	Agent         *string
-	Property      *string
-	Project       *string
 	CreatedAt     *time.Time
+}
+
+func NewRequestFilterFromQuery(query *url.Values) *RequestFilter {
+	filter := &RequestFilter{}
+	if query == nil {
+		return filter
+	}
+	if name := query.Get("name"); name != "" {
+		filter.Name = &name
+	}
+	if phone := query.Get("phone"); phone != "" {
+		filter.Phone = &phone
+	}
+	if reqType := query.Get("type"); reqType != "" {
+		t := RequestType(reqType)
+		filter.Type = &t
+	}
+	if status := query.Get("status"); status != "" {
+		s := RequestStatus(status)
+		filter.Status = &s
+	}
+	if scheduledDate := query.Get("scheduledDate"); scheduledDate != "" {
+		if t, err := time.Parse("2006-01-02", scheduledDate); err == nil {
+			filter.ScheduledDate = &t
+		}
+	}
+	if createdAt := query.Get("createdAt"); createdAt != "" {
+		if t, err := time.Parse("2006-01-02", createdAt); err == nil {
+			filter.CreatedAt = &t
+		}
+	}
+	return filter
 }
 
 func buildRequestFilterConditions(filter *RequestFilter, args *pgx.NamedArgs) ([]string, error) {
@@ -109,29 +141,24 @@ func buildRequestFilterConditions(filter *RequestFilter, args *pgx.NamedArgs) ([
 		locArgs["filterStatus"] = *filter.Status
 	}
 
-	if filter.Property != nil {
-		queryConditions = append(queryConditions, "r.property = @filterProperty")
-		locArgs["filterProperty"] = *filter.Property
-	}
-
-	if filter.Project != nil {
-		queryConditions = append(queryConditions, "r.project = @filterProject")
-		locArgs["filterProject"] = *filter.Project
-	}
-
 	if filter.CreatedAt != nil {
-		queryConditions = append(queryConditions, "r.date = @filterCreatedAt")
+		queryConditions = append(queryConditions, "r.date::date = @filterCreatedAt")
 		locArgs["filterCreatedAt"] = *filter.CreatedAt
 	}
 
-	if filter.Agent != nil {
-		queryConditions = append(queryConditions, "r.agent = @filterAgent")
-		locArgs["filterAgent"] = *filter.Agent
+	if filter.ScheduledDate != nil {
+		queryConditions = append(queryConditions, "r.scheduled_date::date = @filterScheduledDate")
+		locArgs["filterScheduledDate"] = *filter.ScheduledDate
 	}
 
-	if filter.ScheduledDate != nil {
-		queryConditions = append(queryConditions, "r.scheduled_date = @filterScheduledDate")
-		locArgs["filterScheduledDate"] = *filter.ScheduledDate
+	if filter.Name != nil {
+		queryConditions = append(queryConditions, "r.name ILIKE @filterName")
+		locArgs["filterName"] = "%" + *filter.Name + "%"
+	}
+
+	if filter.Phone != nil {
+		queryConditions = append(queryConditions, "r.phone ILIKE @filterPhone")
+		locArgs["filterPhone"] = "%" + *filter.Phone + "%"
 	}
 
 	return queryConditions, nil
@@ -261,7 +288,7 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 		baseQuery = baseQuery + " WHERE " + strings.Join(queryConditions, " AND ")
 	}
 
-	query := baseQuery + paginateOpts
+	query := baseQuery + " ORDER BY r.date DESC" + paginateOpts
 
 	rows, err := conn.Query(ctx, query, args)
 	if err != nil {
@@ -334,6 +361,74 @@ func FindRequestById(id string) (*Request, error) {
 	}
 
 	return &req, nil
+}
+
+func UpdateRequest(req *Request) error {
+	conn, err := GetPool()
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	args := pgx.NamedArgs{
+		"id":     req.Id,
+		"name":   req.Name,
+		"phone":  req.Phone,
+		"status": req.Status,
+		"type":   req.Type,
+		"scheduled_date": sql.NullTime{
+			Time:  req.ScheduledDate,
+			Valid: !req.ScheduledDate.IsZero(),
+		},
+		"agent": sql.NullString{
+			String: req.Agent,
+			Valid:  req.Agent != "",
+		},
+		"property": sql.NullString{
+			String: req.Property,
+			Valid:  req.Property != "",
+		},
+		"project": sql.NullString{
+			String: req.Project,
+			Valid:  req.Project != "",
+		},
+	}
+
+	_, err = conn.Exec(
+		ctx,
+		`UPDATE requests SET
+			name = @name,
+			phone = @phone,
+			status = @status,
+			type = @type,
+			scheduled_date = @scheduled_date,
+			agent = @agent,
+			property = @property,
+			project = @project,
+			updated_at = NOW()
+		WHERE id = @id`,
+		args,
+	)
+
+	return err
+}
+
+func DeleteRequestById(id string) error {
+	conn, err := GetPool()
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	_, err = conn.Exec(ctx, "DELETE FROM requests WHERE id = $1", id)
+
+	return err
 }
 
 type InfoRequest struct {
