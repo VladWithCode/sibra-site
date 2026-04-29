@@ -14,7 +14,7 @@ export function AssociatesHeader({
             <div>
                 <Link
                     to="/panel/asociados"
-                    className="inline-flex items-center gap-1 text-[10px] tracking-[0.15em] uppercase text-sbr-blue font-bold hover:underline"
+                    className="inline-flex items-center gap-1 text-tiny tracking-[0.15em] uppercase text-sbr-blue font-bold hover:underline"
                 >
                     <ArrowLeft className="size-3" />
                     {projectName}

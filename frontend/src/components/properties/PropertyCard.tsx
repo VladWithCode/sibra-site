@@ -192,21 +192,21 @@ export function NewPropertyCard({ property, disableMap }: {
                 <div className="border-t border-outline-variant/30">
                     <div className="w-fit min-w-xs grid grid-cols-3 gap-4 xl:gap-2 text-on-surface-variant py-3 mx-auto">
                         <div className="space-y-1 placese">
-                            <span className="text-[10px] uppercase tracking-widest text-current/80">Beds</span>
+                            <span className="text-tiny uppercase tracking-widest text-current/80">Beds</span>
                             <div className="flex items-center gap-3">
                                 <span className="text-lg">{property.beds}</span>
                                 <Bed className="size-5" />
                             </div>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-[10px] uppercase tracking-widest text-current/80">Baths</span>
+                            <span className="text-tiny uppercase tracking-widest text-current/80">Baths</span>
                             <div className="flex items-center gap-2">
                                 <span className="text-lg">{property.baths}</span>
                                 <Bath className="size-5" />
                             </div>
                         </div>
                         <div className="space-y-1">
-                            <span className="text-[10px] uppercase tracking-widest text-current/80">Area</span>
+                            <span className="text-tiny uppercase tracking-widest text-current/80">Area</span>
                             <div className="flex items-baseline">
                                 <span className="font-bold text-lg">{FormatMetric(property.sqMt)}<sup>2</sup></span>
                             </div>

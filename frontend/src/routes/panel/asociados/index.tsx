@@ -18,7 +18,7 @@ function RouteComponent() {
     return (
         <main className="p-4 sm:p-6 lg:p-8">
             <div className="mb-8 lg:mb-10">
-                <span className="block text-[10px] tracking-[0.15em] uppercase text-sbr-blue font-bold">
+                <span className="block text-tiny tracking-[0.15em] uppercase text-sbr-blue font-bold">
                     Administracion
                 </span>
                 <h2 className="text-2xl lg:text-3xl font-extrabold text-on-surface mt-1 tracking-tight">

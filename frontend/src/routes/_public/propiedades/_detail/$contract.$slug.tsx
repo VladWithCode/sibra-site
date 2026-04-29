@@ -86,7 +86,7 @@ function HeroSection({ property }: { property: TProperty }) {
                         transition={{ duration: 0.6, delay: 0.4 }}
                         className="absolute z-10 bottom-4 right-4 glass border-none px-4 py-2 rounded-lg shadow-lg active:scale-95 active:shadow-sm"
                     >
-                        <span className="text-[10px] font-sans font-bold tracking-widest text-primary uppercase">1 / {property.imgs?.length || 0} Fotos</span>
+                        <span className="text-tiny font-sans font-bold tracking-widest text-primary uppercase">1 / {property.imgs?.length || 0} Fotos</span>
                     </motion.p>
                 </DialogTrigger>
                 <div className="absolute top-4 left-4 flex gap-2">
@@ -330,7 +330,7 @@ function InquiryForm({ property }: { property: TProperty }) {
                         name="name"
                         children={(field) => (
                             <div className="space-y-1">
-                                <label htmlFor={field.name} className="block text-[10px] font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Nombre</label>
+                                <label htmlFor={field.name} className="block text-tiny font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Nombre</label>
                                 <Input
                                     id={field.name}
                                     name={field.name}
@@ -353,7 +353,7 @@ function InquiryForm({ property }: { property: TProperty }) {
                         name="phone"
                         children={(field) => (
                             <div className="space-y-1">
-                                <label htmlFor={field.name} className="block text-[10px] font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Teléfono</label>
+                                <label htmlFor={field.name} className="block text-tiny font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Teléfono</label>
                                 <Input
                                     id={field.name}
                                     name={field.name}

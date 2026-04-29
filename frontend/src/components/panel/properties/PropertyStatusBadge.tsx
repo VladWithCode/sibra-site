@@ -23,7 +23,7 @@ export function PropertyStatusBadge({ status, className }: { status: TPropertySt
     return (
         <span
             className={cn(
-                "inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border",
+                "inline-flex items-center px-2.5 py-0.5 rounded-full text-tiny font-bold uppercase tracking-wide border",
                 STATUS_TONES[status],
                 className,
             )}

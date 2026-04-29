@@ -38,10 +38,6 @@ export function ProjectCard({ project, className }: { project: TProject } & Reac
                             {project.lot_count > 0 ? `${project.available_lots}/${project.lot_count} Lotes` : "—"}
                         </p>
                     </div>
-                    {/* <div> */}
-                    {/*     <p className="text-on-surface-variant text-[10px] uppercase tracking-tighter">Rendimiento Meta</p> */}
-                    {/*     <p className="font-headline font-bold md:text-lg text-primary-container">18.4% APY</p> */}
-                    {/* </div> */}
                 </div>
                 <Button
                     className="flex justify-between items-center gap-2 text-sbr-blue font-bold underline underline-offset-2 hover:scale-103 active:scale-98"

@@ -9,7 +9,7 @@ export function DashboardLayout({ children }: React.PropsWithChildren) {
             <SidebarInset>
                 <div
                     id="main-content"
-                    className="relative h-screen w-screen grid grid-cols-1 grid-rows-[auto_1fr_auto] z-0 bg-gray-50 overflow-x-hidden overflow-y-auto"
+                    className="relative h-screen w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] z-0 bg-gray-50 overflow-x-hidden overflow-y-auto"
                 >
                     <DashboardHeader />
                     {children}

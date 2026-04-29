@@ -74,7 +74,7 @@ export function InfoForm({ contactType, formTitle, submitLabel }: {
                     name="name"
                     children={(field) => (
                         <div className="space-y-1">
-                            <label htmlFor={field.name} className="block text-[10px] font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Nombre</label>
+                            <label htmlFor={field.name} className="block text-tiny font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Nombre</label>
                             <Input
                                 id={field.name}
                                 name={field.name}
@@ -97,7 +97,7 @@ export function InfoForm({ contactType, formTitle, submitLabel }: {
                     name="phone"
                     children={(field) => (
                         <div className="space-y-1">
-                            <label htmlFor={field.name} className="block text-[10px] font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Teléfono</label>
+                            <label htmlFor={field.name} className="block text-tiny font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1">Teléfono</label>
                             <Input
                                 id={field.name}
                                 name={field.name}

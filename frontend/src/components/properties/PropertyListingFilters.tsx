@@ -81,7 +81,7 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
         setOpen(false);
     };
 
-    const labelClass = "block text-[10px] font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1";
+    const labelClass = "block text-tiny font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1";
     const inputClass = "w-full h-11 px-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all";
     const selectTriggerClass = "w-full !h-11 px-3 bg-white border border-outline-variant rounded-xl text-sm font-medium";
 

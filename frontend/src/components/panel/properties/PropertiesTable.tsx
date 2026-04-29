@@ -41,19 +41,19 @@ export function PropertiesTable({
                 <table className="w-full border-collapse">
                     <thead>
                         <tr className="bg-surface-container-low text-left">
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Propiedad
                             </th>
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Ubicación
                             </th>
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Precio
                             </th>
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Estado
                             </th>
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold text-right">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold text-right">
                                 Acciones
                             </th>
                         </tr>

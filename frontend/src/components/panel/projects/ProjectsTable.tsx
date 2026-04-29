@@ -38,19 +38,19 @@ export function ProjectsTable({
                 <table className="w-full border-collapse">
                     <thead>
                         <tr className="bg-surface-container-low text-left">
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Proyecto
                             </th>
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Ubicacion
                             </th>
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Area total
                             </th>
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Lotes
                             </th>
-                            <th className="px-6 py-4 text-[10px] tracking-wider uppercase text-outline font-bold text-right">
+                            <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold text-right">
                                 Acciones
                             </th>
                         </tr>
