@@ -328,3 +328,30 @@ export type TUserProfileResult = {
 }
 
 export type TLoginResult = TUserProfileResult
+
+// Requests (Citas y contacto)
+export type TRequest = {
+    id: string;
+    type: TContactRequestType;
+    phone: string;
+    name: string;
+    scheduledDate: string;
+    status: TQuoteStatus;
+    agent: string;
+    property: string;
+    project: string;
+    date: string;
+    updatedAt: string;
+};
+
+export type TRequestFilters = Partial<Pick<TRequest, "type" | "name" | "phone" | "status">> & {
+    scheduledDate?: string;
+    createdAt?: string;
+    page?: number;
+    perPage?: number;
+};
+
+export type TRequestListingResult = {
+    requests: TRequest[];
+    pagination: TPagination;
+};
