@@ -142,7 +142,7 @@ func buildRequestFilterConditions(filter *RequestFilter, args *pgx.NamedArgs) ([
 	}
 
 	if filter.CreatedAt != nil {
-		queryConditions = append(queryConditions, "r.date::date = @filterCreatedAt")
+		queryConditions = append(queryConditions, "r.created_at::date = @filterCreatedAt")
 		locArgs["filterCreatedAt"] = *filter.CreatedAt
 	}
 
@@ -175,6 +175,13 @@ func CreateRequest(ctx context.Context, req *Request) error {
 	defer cancel()
 
 	req.Id = uuid.Must(uuid.NewV7()).String()
+
+	if req.Status == "" {
+		req.Status = RequestStatusPending
+	}
+	if req.Name == "" {
+		req.Name = "N/A"
+	}
 
 	args := pgx.NamedArgs{
 		"id":     req.Id,
@@ -277,9 +284,8 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 	}
 
 	baseQuery := `
-		SELECT r.id, r.type, r.phone, r.name, r.date, r.status, r.scheduled_date,
-            r.project, r.property,
-			COALESCE(u.name || ' ' || u.lastname, '') AS agent
+		SELECT r.id, r.type, r.phone, r.name, r.created_at, r.status, r.scheduled_date, r.property,
+			u.fullname AS agent
 		FROM requests r
 		LEFT JOIN users u ON r.agent = u.id
 	`
@@ -288,7 +294,7 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 		baseQuery = baseQuery + " WHERE " + strings.Join(queryConditions, " AND ")
 	}
 
-	query := baseQuery + " ORDER BY r.date DESC" + paginateOpts
+	query := baseQuery + " ORDER BY r.created_at DESC" + paginateOpts
 
 	rows, err := conn.Query(ctx, query, args)
 	if err != nil {
@@ -296,6 +302,11 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 	}
 	defer rows.Close()
 
+	var (
+		scheduledDate sql.NullTime
+		property      sql.NullString
+		agent         sql.NullString
+	)
 	for rows.Next() {
 		var r Request
 		err = rows.Scan(
@@ -305,14 +316,23 @@ func FindRequests(filter *RequestFilter, limit, page int) (requests []*Request, 
 			&r.Name,
 			&r.CreatedAt,
 			&r.Status,
-			&r.ScheduledDate,
-			&r.Project,
-			&r.Property,
-			&r.Agent,
+			&scheduledDate,
+			&property,
+			&agent,
 		)
 
 		if err != nil {
 			return
+		}
+
+		if scheduledDate.Valid {
+			r.ScheduledDate = scheduledDate.Time
+		}
+		if property.Valid {
+			r.Property = property.String
+		}
+		if agent.Valid {
+			r.Agent = agent.String
 		}
 
 		requests = append(requests, &r)
@@ -363,14 +383,14 @@ func FindRequestById(id string) (*Request, error) {
 	return &req, nil
 }
 
-func UpdateRequest(req *Request) error {
+func UpdateRequest(ctx context.Context, req *Request) error {
 	conn, err := GetPool()
 	if err != nil {
 		return err
 	}
 	defer conn.Release()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	args := pgx.NamedArgs{

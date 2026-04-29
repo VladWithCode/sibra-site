@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -23,10 +22,10 @@ func RegisterRequestsRouter(r *customServeMux) {
 	r.HandleFunc("POST /api/citas/conquistadores", CreateConquistadoresRequest)
 	r.HandleFunc("POST /api/citas/demo", auth.ValidateAuthMiddleware(CreateDemoQuote))
 
-	r.HandleFunc("GET /api/solicitudes", auth.ValidateAuthMiddleware(FindRequests))
-	r.HandleFunc("GET /api/solicitudes/{id}", auth.ValidateAuthMiddleware(FindRequestById))
-	r.HandleFunc("PUT /api/solicitudes/{id}", auth.WithAuthAccessLevelMiddleware(UpdateRequest, auth.AccessLevelEditor))
-	r.HandleFunc("DELETE /api/solicitudes/{id}", auth.WithAuthAccessLevelMiddleware(DeleteRequest, auth.AccessLevelEditor))
+	r.HandleFunc("GET /api/citas", auth.ValidateAuthMiddleware(FindRequests))
+	r.HandleFunc("GET /api/citas/{id}", auth.ValidateAuthMiddleware(FindRequestById))
+	r.HandleFunc("PUT /api/citas/{id}", auth.WithAuthAccessLevelMiddleware(UpdateRequest, auth.AccessLevelEditor))
+	r.HandleFunc("DELETE /api/citas/{id}", auth.WithAuthAccessLevelMiddleware(DeleteRequest, auth.AccessLevelEditor))
 }
 
 func CreateRequest(w http.ResponseWriter, r *http.Request) {
@@ -147,10 +146,6 @@ func CreatePropInfoRequest(w http.ResponseWriter, r *http.Request) {
 				"type": "text",
 				"text": req.CreatedAt.Format("2006-01-02"),
 			},
-			{
-				"type": "text",
-				"text": fmt.Sprintf("https://sibra.mx/propiedades/%s/%s", prop.Contract, prop.Slug),
-			},
 		},
 		Language: "es",
 	}
@@ -177,7 +172,6 @@ func CreatePropInfoRequest(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"request": req,
 	})
-
 }
 
 func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
@@ -403,7 +397,7 @@ func FindRequests(w http.ResponseWriter, r *http.Request) {
 	requests, err := db.FindRequests(filter, perPage, page)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
-			ErrorMessage: "Ocurrió un error al obtener las solicitudes",
+			ErrorMessage: "Ocurrió un error al obtener las citas",
 		})
 		log.Printf("Error finding filtered requests: %v\n", err)
 		return
@@ -464,7 +458,7 @@ func UpdateRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.UpdateRequest(&req)
+	err = db.UpdateRequest(r.Context(), &req)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al actualizar la solicitud",
