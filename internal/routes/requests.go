@@ -25,6 +25,7 @@ func RegisterRequestsRouter(r *customServeMux) {
 	r.HandleFunc("GET /api/citas", auth.ValidateAuthMiddleware(FindRequests))
 	r.HandleFunc("GET /api/citas/{id}", auth.ValidateAuthMiddleware(FindRequestById))
 	r.HandleFunc("PUT /api/citas/{id}", auth.WithAuthAccessLevelMiddleware(UpdateRequest, auth.AccessLevelEditor))
+	r.HandleFunc("PUT /api/citas/{id}/set-done", auth.WithAuthAccessLevelMiddleware(SetDoneRequest, auth.AccessLevelEditor))
 	r.HandleFunc("DELETE /api/citas/{id}", auth.WithAuthAccessLevelMiddleware(DeleteRequest, auth.AccessLevelEditor))
 }
 
@@ -436,8 +437,8 @@ func FindRequestById(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateRequest(w http.ResponseWriter, r *http.Request) {
-	var req db.Request
-	err := json.NewDecoder(r.Body).Decode(&req)
+	var reqDTO db.RequestDTO
+	err := json.NewDecoder(r.Body).Decode(&reqDTO)
 	defer r.Body.Close()
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
@@ -447,6 +448,7 @@ func UpdateRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	req := reqDTO.ToRequest()
 	req.Id = r.PathValue("id")
 
 	_, err = db.FindRequestById(req.Id)
@@ -458,7 +460,7 @@ func UpdateRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.UpdateRequest(r.Context(), &req)
+	err = db.UpdateRequest(r.Context(), req)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al actualizar la solicitud",
@@ -470,6 +472,23 @@ func UpdateRequest(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success": true,
 		"request": req,
+	})
+}
+
+func SetDoneRequest(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	err := db.SetDoneRequest(r.Context(), id)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar la solicitud",
+		})
+		log.Printf("Error updating request: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
 	})
 }
 

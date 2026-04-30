@@ -3,6 +3,7 @@ import type {
     TConqsQuoteSchedule,
     TContactRequest,
     TContactRequestCreateResult,
+    TQuoteDetailResult,
     TPropInfoRequest,
     TPropInfoRequestCreateResult,
     TQuote,
@@ -12,8 +13,10 @@ import type {
     TQuoteFilters,
     TQuoteListingResult,
     TQuotePropType,
+    TQuoteUpdateResult,
 } from "./type";
 import { objectToQueryString } from "./util";
+import { queryClient } from "./queryClient";
 
 export const QuoteQueryKeys = {
     all: () => ["quotes"] as const,
@@ -27,7 +30,7 @@ export const QuoteQueryKeys = {
 
     // Mutations
     create: (propType: string) => [...QuoteQueryKeys.all(), "create", { propType }] as const,
-    update: (id: string) => [...QuoteQueryKeys.all(), "update", { id }] as const,
+    update: (id: string, quote: Partial<TQuote>) => [...QuoteQueryKeys.all(), "update", id, { quote }] as const,
     delete: (id: string) => [...QuoteQueryKeys.all(), "delete", { id }] as const,
 
     // PropInfoRequest
@@ -61,6 +64,26 @@ export const getQuotesOpts = (filters: TQuoteFilters) =>
         queryKey: QuoteQueryKeys.filtered(filters),
         queryFn: getQuoteListing,
     });
+
+export const getSingleQuoteOpts = (id: string) =>
+    queryOptions({
+        queryKey: QuoteQueryKeys.byId(id),
+        queryFn: getSingleQuote,
+    });
+
+export async function getSingleQuote({
+    queryKey,
+}: QueryFunctionContext<QKQuotesById>): Promise<TQuoteDetailResult> {
+    const { id } = queryKey[3];
+    const response = await fetch(`/api/citas/${id}`);
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || "Error al obtener la solicitud");
+    }
+
+    return data;
+}
 
 export async function getQuoteListing({
     queryKey,
@@ -171,9 +194,68 @@ export async function createContactRequest({ contactRequest }: { contactRequest:
     return data;
 }
 
+export const updateQuoteOpts = (id: string, data: Partial<TQuote>) => mutationOptions({
+    mutationKey: QuoteQueryKeys.update(id, data),
+    mutationFn: updateQuote,
+    onSuccess: () => {
+        queryClient.invalidateQueries({
+            queryKey: QuoteQueryKeys.listing(),
+        })
+    },
+});
+
+export async function updateQuote({ id, quote }: { id: string, quote: Partial<TQuote> }): Promise<TQuoteUpdateResult> {
+    if (id === "") throw new Error("No se proporciono el id de la cita a actualizar");
+
+    const response = await fetch("/api/citas/" + id, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(quote),
+    });
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || "Error al enviar la solicitud");
+    }
+
+    return data;
+}
+
+export const setDoneQuoteOpts = (id: string) => mutationOptions({
+    mutationKey: QuoteQueryKeys.update(id, {}),
+    mutationFn: setDoneQuote,
+    onSuccess: () => {
+        queryClient.invalidateQueries({
+            queryKey: QuoteQueryKeys.listing(),
+        })
+    },
+});
+
+export async function setDoneQuote({ id }: { id: string }): Promise<TQuoteDeleteResult> {
+    if (id === "") throw new Error("No se proporciono el id de la cita a actualizar");
+
+    const response = await fetch("/api/citas/" + id + "/set-done", {
+        method: "PUT",
+    });
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || "Error al actualizar la solicitud");
+    }
+
+    return data;
+}
+
 export const deleteQuoteOpts = (id: string) => mutationOptions({
     mutationKey: QuoteQueryKeys.delete(id),
     mutationFn: deleteQuote,
+    onSuccess: () => {
+        queryClient.invalidateQueries({
+            queryKey: QuoteQueryKeys.listing(),
+        })
+    },
 });
 
 export async function deleteQuote({ id }: { id: string }): Promise<TQuoteDeleteResult> {

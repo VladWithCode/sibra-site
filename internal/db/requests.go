@@ -52,6 +52,35 @@ type Request struct {
 	UpdatedAt time.Time `json:"updatedAt" db:"updated_at"`
 }
 
+type RequestDTO struct {
+	Id        string `json:"id"`
+	Type      string `json:"type"`
+	Name      string `json:"name"`
+	Phone     string `json:"phone"`
+	Scheduled string `json:"scheduledDate"`
+	Status    string `json:"status"`
+	Agent     string `json:"agent"`
+	Property  string `json:"property"`
+	Project   string `json:"project"`
+}
+
+func (dto *RequestDTO) ToRequest() *Request {
+	loc := time.FixedZone("GTM-6", -6*60*60)
+	schDate, _ := time.ParseInLocation("2006-01-02T15:04", dto.Scheduled, loc)
+
+	return &Request{
+		Id:            dto.Id,
+		Type:          RequestType(dto.Type),
+		Name:          dto.Name,
+		Phone:         dto.Phone,
+		ScheduledDate: schDate,
+		Status:        RequestStatus(dto.Status),
+		Agent:         dto.Agent,
+		Property:      dto.Property,
+		Project:       dto.Project,
+	}
+}
+
 func NewRequest(reqType RequestType) *Request {
 	return &Request{
 		Id:        uuid.Must(uuid.NewV7()).String(),
@@ -354,30 +383,43 @@ func FindRequestById(id string) (*Request, error) {
 	var req Request
 	row := conn.QueryRow(
 		ctx,
-		`SELECT r.id, r.phone, r.name, r.date, r.scheduled_date, r.status, r.type,
-            r.project, r.property,
-			COALESCE(u.name || ' ' || u.lastname, '') AS agent
+		`SELECT r.id, r.phone, r.name, r.created_at, r.scheduled_date, r.status, r.type, r.property,
+			u.fullname AS agent
 		FROM requests r
 		LEFT JOIN users u ON r.agent = u.id
 		WHERE r.id = $1`,
 		id,
 	)
 
+	var (
+		scheduledDate sql.NullTime
+		property      sql.NullString
+		agent         sql.NullString
+	)
 	err = row.Scan(
 		&req.Id,
 		&req.Phone,
 		&req.Name,
 		&req.CreatedAt,
-		&req.ScheduledDate,
+		&scheduledDate,
 		&req.Status,
 		&req.Type,
-		&req.Project,
-		&req.Property,
-		&req.Agent,
+		&property,
+		&agent,
 	)
 
 	if err != nil {
 		return nil, err
+	}
+
+	if scheduledDate.Valid {
+		req.ScheduledDate = scheduledDate.Time
+	}
+	if property.Valid {
+		req.Property = property.String
+	}
+	if agent.Valid {
+		req.Agent = agent.String
 	}
 
 	return &req, nil
@@ -411,10 +453,6 @@ func UpdateRequest(ctx context.Context, req *Request) error {
 			String: req.Property,
 			Valid:  req.Property != "",
 		},
-		"project": sql.NullString{
-			String: req.Project,
-			Valid:  req.Project != "",
-		},
 	}
 
 	_, err = conn.Exec(
@@ -427,13 +465,39 @@ func UpdateRequest(ctx context.Context, req *Request) error {
 			scheduled_date = @scheduled_date,
 			agent = @agent,
 			property = @property,
-			project = @project,
 			updated_at = NOW()
 		WHERE id = @id`,
 		args,
 	)
 
 	return err
+}
+
+func SetDoneRequest(ctx context.Context, id string) error {
+	conn, err := GetPool()
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	args := pgx.NamedArgs{
+		"id":     id,
+		"status": RequestStatusDone,
+	}
+	_, err = conn.Exec(
+		ctx,
+		"UPDATE requests SET status = @status WHERE id = @id",
+		args,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func DeleteRequestById(id string) error {

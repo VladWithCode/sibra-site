@@ -1,4 +1,4 @@
-import type { TContactRequestType, TRequest } from "@/queries/type";
+import type { TContactRequestType, TQuote } from "@/queries/type";
 import { RequestStatusBadge } from "./RequestStatusBadge";
 
 const TYPE_LABEL: Record<TContactRequestType, string> = {
@@ -18,7 +18,7 @@ function formatDate(dateStr: string): string {
     });
 }
 
-export function RequestRowCard({ request }: { request: TRequest }) {
+export function RequestRowCard({ request }: { request: TQuote }) {
     return (
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant/30 p-4 flex flex-col gap-2">
             <div className="flex items-start justify-between gap-2">

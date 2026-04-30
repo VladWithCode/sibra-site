@@ -140,7 +140,7 @@ export type TQuoteListingResult = {
 };
 
 export type TQuoteDetailResult = {
-    quote: TQuote;
+    request: TQuote;
 };
 
 export type TQuoteCreateResult = TQuoteCreateError | TQuoteCreateSuccess;
@@ -157,6 +157,11 @@ type TQuoteCreateSuccess = {
 
 export type TQuoteDeleteResult = {
     success: true;
+};
+
+export type TQuoteUpdateResult = {
+    success: true;
+    request: TQuote;
 };
 
 export type TContactRequestType = "informacion" | "cita" | "venta" | "precalificacion" | "proyecto";
