@@ -1,4 +1,4 @@
-import type { TRequest, TPagination } from "@/queries/type";
+import type { TPagination, TQuote } from "@/queries/type";
 import { RequestRow } from "./RequestRow";
 import { RequestRowCard } from "./RequestRowCard";
 import { RequestsPaginator } from "./RequestsPaginator";
@@ -8,7 +8,7 @@ export function RequestsTable({
     pagination,
     isLoading,
 }: {
-    requests: TRequest[];
+    requests: TQuote[];
     pagination: TPagination;
     isLoading?: boolean;
 }) {

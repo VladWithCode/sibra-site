@@ -1,9 +1,9 @@
 import { RequestsFilters } from '@/components/panel/requests/RequestsFilters';
 import { RequestsHeader } from '@/components/panel/requests/RequestsHeader';
 import { RequestsTable } from '@/components/panel/requests/RequestsTable';
-import { getRequestFilteredListingOpts } from '@/queries/requests';
-import type { TRequestFilters } from '@/queries/type';
-import { useQuery } from '@tanstack/react-query';
+import { getQuotesOpts } from '@/queries/quotes';
+import type { TQuoteFilters } from '@/queries/type';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { motion } from 'motion/react';
 import { z } from 'zod';
@@ -27,7 +27,7 @@ const PanelRequestsSearchSchema = z.object({
 
 type PanelRequestsSearch = z.infer<typeof PanelRequestsSearchSchema>;
 
-function toFilters(search: PanelRequestsSearch): Partial<TRequestFilters> {
+function toFilters(search: PanelRequestsSearch): Partial<TQuoteFilters> {
     return {
         name: search.name || undefined,
         phone: search.phone || undefined,
@@ -45,7 +45,7 @@ export const Route = createFileRoute('/panel/citas/')({
     validateSearch: (search) => PanelRequestsSearchSchema.parse(search),
     loaderDeps: ({ search }) => toFilters(search),
     loader: async ({ context, deps }) => {
-        await context.queryClient.ensureQueryData(getRequestFilteredListingOpts(deps));
+        await context.queryClient.ensureQueryData(getQuotesOpts(deps));
     },
 });
 
@@ -58,9 +58,9 @@ const entrance = {
 function RouteComponent() {
     const search = Route.useSearch();
     const filters = toFilters(search);
-    const { data, isLoading } = useQuery(getRequestFilteredListingOpts(filters));
+    const { data } = useSuspenseQuery(getQuotesOpts(filters));
 
-    const requests = data?.requests ?? [];
+    const requests = data.requests ?? [];
     const pagination = data?.pagination ?? {
         total: 0,
         page: 1,
@@ -90,7 +90,6 @@ function RouteComponent() {
                 <RequestsTable
                     requests={requests}
                     pagination={pagination}
-                    isLoading={isLoading}
                 />
             </motion.div>
         </main>

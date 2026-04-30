@@ -1,5 +1,5 @@
 import { createQuote } from "@/queries/quotes";
-import type { TQuote, TQuoteCreateResult, TQuotePropType, TQuoteType } from "@/queries/type";
+import type { TQuote, TQuoteCreateResult, TQuotePropType } from "@/queries/type";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from "react";
@@ -19,10 +19,10 @@ export const ContactFormSchema = z.object({
         .date({ error: "La fecha de la cita no es válida" })
         .min(new Date(), "La fecha de la cita no puede ser anterior a hoy"),
     quoteType: z
-        .enum(["presencial", "whatsapp"], {
+        .enum(["informacion", "cita", "venta", "precalificacion", "proyecto"], {
             error: "Debes elegir una cita presencial o atención por whatsapp/llamada teléfonica",
         })
-        .default("presencial"),
+        .default("informacion"),
     propType: z
         .enum(["proyecto", "propiedad", "general"])
         .default("propiedad"),
@@ -58,7 +58,7 @@ export function ContactForm({
     const form = useForm({
         defaultValues: {
             quoteDate: new Date(),
-            quoteType: "presencial" as TQuoteType,
+            quoteType: "cita",
             propType: (propType || "propiedad") as "proyecto" | "propiedad" | "general",
             phone: "",
             name: isViewComplete ? "" : undefined,
@@ -165,17 +165,6 @@ export function ContactForm({
                     )}
                 />
             )}
-
-            <form.Field
-                name="quoteType"
-                children={(field) => (
-                    <Field>
-                        <FieldLabel>Tipo de cita</FieldLabel>
-                        <QuoteTypeSelector onChange={(t) => field.handleChange(t)} />
-                        <FieldError errors={field.state.meta.errors as unknown as Array<{ message?: string }>} />
-                    </Field>
-                )}
-            />
 
             <form.Field
                 name="phone"

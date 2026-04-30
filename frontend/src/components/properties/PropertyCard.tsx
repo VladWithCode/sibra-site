@@ -2,17 +2,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { ShareIcon, SqMtIcon } from "../icons/icons";
 import { FormatMetric, FormatMoney } from "@/lib/format";
 import { Button } from "../ui/button";
-import { Bath, Bed, Heart, Image, Map, MapPin } from "lucide-react";
+import { Bath, Bed, Image, Map, MapPin } from "lucide-react";
 import { PropertyLocationMap } from "@/maps/component";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import type { TProperty } from "@/queries/type";
 import { Link } from "@tanstack/react-router";
 import { LikeButton } from "./likeButton";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { PropertyImage } from "../Image";
 import { getPropertyAddress } from "@/lib/utils";
 import { Badge } from "../ui/badge";
-import { property } from "zod";
 
 export type TPropertyCardProps = {
     propData: TProperty;

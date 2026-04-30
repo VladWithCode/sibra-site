@@ -1,4 +1,4 @@
-import type { TContactRequestType, TRequest } from "@/queries/type";
+import type { TContactRequestType, TQuote } from "@/queries/type";
 import { RequestStatusBadge } from "./RequestStatusBadge";
 
 const TYPE_LABEL: Record<TContactRequestType, string> = {
@@ -18,7 +18,7 @@ function formatDate(dateStr: string): string {
     });
 }
 
-export function RequestRow({ request }: { request: TRequest }) {
+export function RequestRow({ request }: { request: TQuote }) {
     return (
         <tr className="hover:bg-surface-bright transition-colors duration-300">
             <td className="px-6 py-5">

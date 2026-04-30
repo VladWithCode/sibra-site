@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
+import type { TQuoteType } from "@/queries/type";
 
 export type TDatePickerItem = {
     value: Date;
@@ -91,15 +92,14 @@ export function DatePickerItem({
     );
 }
 
-export type TQuoteType = "presencial" | "whatsapp";
 export type TQuoteTypeItem = {
     type: TQuoteType;
     label: string;
 };
 
 const quoteTypeItems: TQuoteTypeItem[] = [
-    { type: "presencial", label: "Tour en Persona" },
-    { type: "whatsapp", label: "Whatsapp" },
+    { type: "cita", label: "Tour en Persona" },
+    { type: "informacion", label: "Whatsapp" },
 ];
 
 export function QuoteTypeSelector({
@@ -107,7 +107,7 @@ export function QuoteTypeSelector({
 }: {
     onChange?: (pickedType: TQuoteType) => void;
 }) {
-    const [quoteType, setQuoteType] = useState<TQuoteType>("presencial");
+    const [quoteType, setQuoteType] = useState<TQuoteType>("cita");
     const handleQuoteTypeChange = useCallback(
         (type: TQuoteType) => {
             setQuoteType(type);

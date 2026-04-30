@@ -113,7 +113,7 @@ export const deleteConqsQuoteOpts = (id: string) => mutationOptions({
 });
 
 export async function createQuote(newQuote: TQuote): Promise<TQuoteCreateResult> {
-    const response = await fetch("/api/citas", {
+    const response = await fetch("/api/contacto", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
