@@ -9,18 +9,18 @@ const STATUS_LABELS: Record<TQuoteStatus, string> = {
 };
 
 const STATUS_TONES: Record<TQuoteStatus, string> = {
-    pendiente: "bg-amber-50 text-amber-700 border-amber-100",
-    atendida: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    confirmada: "bg-blue-50 text-blue-700 border-blue-100",
-    "volver a atender": "bg-rose-50 text-rose-700 border-rose-100",
+    pendiente: "bg-amber-100/50 text-amber-700 border-amber-500",
+    atendida: "bg-emerald-100/50 text-emerald-700 border-emerald-500",
+    confirmada: "bg-blue-100/50 text-blue-700 border-blue-500",
+    "volver a atender": "bg-rose-100/50 text-rose-700 border-rose-500",
 };
 
 export function RequestStatusBadge({ status, className }: { status: TQuoteStatus; className?: string }) {
     return (
         <span
             className={cn(
-                "inline-flex items-center px-2.5 py-0.5 rounded-full text-tiny font-bold uppercase tracking-wide border",
                 STATUS_TONES[status],
+                "inline-flex items-center px-3 py-1 rounded-full text-[10px] uppercase tracking-wide border",
                 className,
             )}
         >
