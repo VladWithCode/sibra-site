@@ -1,5 +1,8 @@
 import type { TContactRequestType, TQuote } from "@/queries/type";
 import { RequestStatusBadge } from "./RequestStatusBadge";
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import { RequestDeleteDialog } from "./RequestDeleteDialog";
 
 const TYPE_LABEL: Record<TContactRequestType, string> = {
     informacion: "Información",
@@ -19,8 +22,10 @@ function formatDate(dateStr: string): string {
 }
 
 export function RequestRow({ request }: { request: TQuote }) {
+    const [deleteOpen, setDeleteOpen] = useState(false);
+
     return (
-        <tr className="hover:bg-surface-bright transition-colors duration-300">
+        <tr className="group hover:bg-surface-bright transition-colors duration-300">
             <td className="px-6 py-5">
                 <p className="text-sm font-bold text-on-surface">{request.name}</p>
             </td>
@@ -44,6 +49,24 @@ export function RequestRow({ request }: { request: TQuote }) {
                 <p className="text-sm text-on-surface-variant">
                     {formatDate(request.date)}
                 </p>
+            </td>
+            <td className="px-6 py-5 text-right">
+                <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                    <button
+                        type="button"
+                        onClick={() => setDeleteOpen(true)}
+                        aria-label="Eliminar solicitud"
+                        className="p-2 text-slate-400 hover:text-destructive hover:bg-destructive/5 rounded-lg transition-all"
+                    >
+                        <Trash2 className="size-4" />
+                    </button>
+                </div>
+                <RequestDeleteDialog
+                    requestId={request.id}
+                    requestLabel={request.name}
+                    open={deleteOpen}
+                    onOpenChange={setDeleteOpen}
+                />
             </td>
         </tr>
     );

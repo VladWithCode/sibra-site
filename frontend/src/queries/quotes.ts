@@ -8,6 +8,7 @@ import type {
     TQuote,
     TQuoteConquistadores,
     TQuoteCreateResult,
+    TQuoteDeleteResult,
     TQuoteFilters,
     TQuoteListingResult,
     TQuotePropType,
@@ -102,16 +103,6 @@ export const createContactRequestOpts = () => mutationOptions({
     mutationFn: createContactRequest,
 })
 
-export const updateConqsQuoteOpts = (id: string) => mutationOptions({
-    mutationKey: QuoteQueryKeys.updateConqsQuote(id),
-    // mutationFn: updateConqsQuote,
-});
-
-export const deleteConqsQuoteOpts = (id: string) => mutationOptions({
-    mutationKey: QuoteQueryKeys.deleteConqsQuote(id),
-    // mutationFn: deleteConqsQuote,
-});
-
 export async function createQuote(newQuote: TQuote): Promise<TQuoteCreateResult> {
     const response = await fetch("/api/contacto", {
         method: "POST",
@@ -175,6 +166,29 @@ export async function createContactRequest({ contactRequest }: { contactRequest:
 
     if (response.status < 200 || response.status >= 300) {
         throw new Error(data.error || "Error al enviar la solicitud");
+    }
+
+    return data;
+}
+
+export const deleteQuoteOpts = (id: string) => mutationOptions({
+    mutationKey: QuoteQueryKeys.delete(id),
+    mutationFn: deleteQuote,
+});
+
+export async function deleteQuote({ id }: { id: string }): Promise<TQuoteDeleteResult> {
+    if (id === "") throw new Error("No se proporciono el id de la cita a eliminar");
+
+    const response = await fetch("/api/citas/" + id, {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || "Error al eliminar la cita");
     }
 
     return data;

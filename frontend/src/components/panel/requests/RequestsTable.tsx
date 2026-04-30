@@ -57,6 +57,7 @@ export function RequestsTable({
                             <th className="px-6 py-4 text-tiny tracking-wider uppercase text-outline font-bold">
                                 Fecha de creación
                             </th>
+                            <th className="px-6 py-4"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-surface-container-low">

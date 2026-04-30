@@ -155,6 +155,10 @@ type TQuoteCreateSuccess = {
     quote: TQuote;
 };
 
+export type TQuoteDeleteResult = {
+    success: true;
+};
+
 export type TContactRequestType = "informacion" | "cita" | "venta" | "precalificacion" | "proyecto";
 
 export type TContactRequest = {
