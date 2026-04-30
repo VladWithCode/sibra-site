@@ -6,10 +6,10 @@ export function DashboardLayout({ children }: React.PropsWithChildren) {
     return (
         <>
             <DashboardSidebar />
-            <SidebarInset>
+            <SidebarInset className="mb-0! mr-0! pb-6">
                 <div
                     id="main-content"
-                    className="relative h-screen w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] z-0 bg-gray-50 overflow-x-hidden overflow-y-auto"
+                    className="relative h-full w-full grid grid-cols-1 grid-rows-[auto_1fr_auto] z-0 bg-gray-50 overflow-x-hidden overflow-y-auto space-y-3"
                 >
                     <DashboardHeader />
                     {children}

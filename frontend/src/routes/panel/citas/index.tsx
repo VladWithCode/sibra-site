@@ -70,7 +70,7 @@ function RouteComponent() {
     };
 
     return (
-        <main className="p-4 sm:p-6 lg:p-8">
+        <div className="px-6">
             <motion.div {...entrance}>
                 <RequestsHeader />
             </motion.div>
@@ -92,6 +92,6 @@ function RouteComponent() {
                     pagination={pagination}
                 />
             </motion.div>
-        </main>
+        </div>
     );
 }
