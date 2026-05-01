@@ -23,7 +23,7 @@ import type { TProperty } from "@/queries/type";
 import { useUIStore } from "@/stores/uiStore";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Bath, Bed, Home, XIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useState } from "react";
