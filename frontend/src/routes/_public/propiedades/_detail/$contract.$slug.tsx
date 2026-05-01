@@ -126,12 +126,6 @@ function HeroSection({ property }: { property: TProperty }) {
                                         "backgroundImage": "url(/static/properties/" + property.id + "/" + img + ")",
                                     }}
                                 >
-                                    {/* <PropertyImage */}
-                                    {/*     className="max-w-full max-h-full w-auto h-full object-contain" */}
-                                    {/*     propId={property.id} */}
-                                    {/*     propName={property.address} */}
-                                    {/*     src={img} */}
-                                    {/* /> */}
                                 </div>
                             </CarouselItem>
                         ))}
@@ -142,25 +136,6 @@ function HeroSection({ property }: { property: TProperty }) {
                 <p className="lg:absolute lg:top-6 lg:inset-x-0 text-center text-sm font-sans font-bold tracking-widest text-white/80 uppercase">
                     {current} / {property.imgs.length} Fotos
                 </p>
-                <div className="lg:absolute lg:bottom-0 lg:inset-x-0 flex justify-between gap-3 text-on-primary mt-auto p-4">
-                    <Button
-                        variant="outline"
-                        className="flex-1 bg-surface-container-low/30 backdrop-blur-md"
-                        onClick={() => setOpen(false)}
-                        asChild
-                    >
-                        {/* @ts-ignore */}
-                        <Link to="#formulario-contacto">Solicitar Precalificación</Link>
-                    </Button>
-                    <Button
-                        className="flex-1"
-                        onClick={() => setOpen(false)}
-                        asChild
-                    >
-                        {/* @ts-ignore */}
-                        <Link to="#formulario-cita">Agendar Cita</Link>
-                    </Button>
-                </div>
             </DialogContent>
         </Dialog>
     )
