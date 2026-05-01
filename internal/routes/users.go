@@ -17,6 +17,7 @@ import (
 
 func RegisterUserRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/usuarios", auth.WithAuthAccessLevelMiddleware(GetUsers, auth.AccessLevelAdmin))
+	router.HandleFunc("GET /api/usuarios/agentes", auth.WithAuthAccessLevelMiddleware(GetAgentListing, auth.AccessLevelAdmin))
 	router.HandleFunc("GET /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(GetUserByID, auth.AccessLevelAdmin))
 	router.HandleFunc("POST /api/usuario", auth.WithAuthAccessLevelMiddleware(CreateUser, auth.AccessLevelAdmin))
 	router.HandleFunc("PUT /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(UpdateUser, auth.AccessLevelAdmin))
@@ -78,6 +79,34 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 		"users":      users,
 		"pagination": pagination,
 	})
+}
+
+func GetAgentListing(w http.ResponseWriter, r *http.Request) {
+	users, err := db.FindAgents(r.Context())
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontraron agentes registrados",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
+		})
+		log.Printf("Error finding agents: %v\n", err)
+		return
+	}
+
+	var publicUsers []db.PublicUser
+	for _, u := range users {
+		publicUsers = append(publicUsers, u.ToPublicUser())
+	}
+
+	respondWithJSON(w, http.StatusOK, rmap{
+		"users": publicUsers,
+	})
+
 }
 
 func GetUserByID(w http.ResponseWriter, r *http.Request) {

@@ -326,6 +326,13 @@ export type TUser = {
     img: string;
 }
 
+export type TPublicUser = {
+    name: string;
+    email: string;
+    phone: string;
+    img: string;
+}
+
 export type TUserDetail = TUser & {
     emailVerified: boolean;
     phoneVerified: boolean;
@@ -356,6 +363,10 @@ export type TUserFilters = {
 export type TUserListingResult = {
     users: TUserDetail[];
     pagination: TPagination;
+};
+
+export type TAgentListingResult = {
+    users: TPublicUser[];
 };
 
 export type TUserDeleteResult = {

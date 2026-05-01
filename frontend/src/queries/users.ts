@@ -6,6 +6,7 @@ import type {
     TUserDetailResult,
     TUserCreateResult,
     TUserUpdateResult,
+    TAgentListingResult,
 } from "./type";
 import { queryClient } from "./queryClient";
 import { objectToQueryString } from "./util";
@@ -15,6 +16,7 @@ export const UserQueryKeys = {
     listing: () => [...UserQueryKeys.all(), "listing"] as const,
     filtered: (filters: TUserFilters) =>
         [...UserQueryKeys.listing(), "filtered", { filters }] as const,
+    agents: () => [...UserQueryKeys.listing(), "agents"] as const,
     detail: () => [...UserQueryKeys.all(), "detail"] as const,
     byId: (id: string) => [...UserQueryKeys.detail(), "byId", { id }] as const,
     delete: (id: string) => [...UserQueryKeys.all(), "delete", { id }] as const,
@@ -44,6 +46,15 @@ export async function getUserListing({ queryKey }: QueryFunctionContext<QKUsersF
     return data;
 }
 
+export async function getAgentListing(): Promise<TUserListingResult> {
+    const response = await fetch("/api/usuarios/agentes");
+    const data = await response.json();
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.message || "Error al obtener los usuarios");
+    }
+    return data;
+}
+
 async function getUserById({ queryKey }: QueryFunctionContext<QKUsersById>): Promise<TUserDetailResult> {
     const { id } = queryKey[3];
     const response = await fetch(`/api/usuarios/${id}`);
@@ -57,6 +68,23 @@ export const getUsersOpts = (filters: TUserFilters) =>
         queryKey: UserQueryKeys.filtered(filters),
         queryFn: getUserListing,
     });
+
+export const getAgentsOpts = () =>
+    queryOptions({
+        queryKey: UserQueryKeys.agents(),
+        queryFn: getAgents,
+    });
+
+export async function getAgents(): Promise<TAgentListingResult> {
+    const response = await fetch("/api/usuarios/agentes");
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.message || "Error al obtener los usuarios");
+    }
+
+    return data;
+}
 
 export const getUserByIdOpts = (id: string) =>
     queryOptions({

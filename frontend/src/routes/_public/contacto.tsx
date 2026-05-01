@@ -10,6 +10,9 @@ import { FacebookIcon } from "@/components/icons/facebook";
 import { Clock, MapPin, Phone, PhoneIcon } from "lucide-react";
 import { WhatsappIcon } from "@/components/icons/whatsapp";
 import { InfoForm } from "@/components/contact/InfoForm";
+import { getAgentsOpts } from "@/queries/users";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import type { TPublicUser } from "@/queries/type";
 
 export const Route = createFileRoute("/_public/contacto")({
     component: RouteComponent,
@@ -24,9 +27,13 @@ export const Route = createFileRoute("/_public/contacto")({
             fetchpriority: "high",
         }],
     }),
+    loader: async ({ context }) => {
+        await context.queryClient.ensureQueryData(getAgentsOpts());
+    },
 });
 
 function RouteComponent() {
+    const { data } = useSuspenseQuery(getAgentsOpts());
     const { setHeaderComplementProps, setHeaderFloating } = useUIStore();
     useEffect(() => {
         setHeaderFloating(true);
@@ -112,7 +119,7 @@ function RouteComponent() {
                     </div>
                 </div>
             </section>
-            <AgentsSection />
+            <AgentsSection agents={data.users} />
             <section className="relative z-0 bg-gray-200 px-6 lg:px-20 py-12 sm:py-6 lg:py-8 text-current/80">
                 <div className="text-center mb-4">
                     <ConnectIcon className="text-current/90 size-10 mx-auto" />
@@ -245,7 +252,7 @@ const offices = [
     }
 ]
 
-function AgentsSection() {
+function AgentsSection({ agents }: { agents: TPublicUser[] }) {
     return (
         <section className="bg-surface-container px-6 md:px-12 lg:px-20 py-12 md:py-16 lg:py-24">
             <div className="max-w-7xl space-y-8 mx-auto">
@@ -265,10 +272,10 @@ function AgentsSection() {
     );
 }
 
-function AgentCard({ agent }: { agent: typeof agents[0] }) {
+function AgentCard({ agent }: { agent: TPublicUser }) {
     return (
         <div className="flex flex-col items-center justify-center gap-2">
-            <div className="shrink-0 w-full aspect-square bg-surface-container-lowest rounded-xl overflow-hidden">
+            <div className="shrink-0 size-32 aspect-square bg-surface-container-lowest rounded-xl overflow-hidden">
                 <img className="w-full h-full object-cover" src={agent.img} alt={agent.name} />
             </div>
             <div className="text-center space-y-1">
@@ -281,30 +288,3 @@ function AgentCard({ agent }: { agent: typeof agents[0] }) {
         </div>
     );
 }
-
-const agents = [
-    {
-        name: "Alejandro Silva",
-        img: "https://lh3.googleusercontent.com/aida-public/AB6AXuAL8H2P6PwBOI4LENtqC6o7fWHGUmnmO4BXY4ABiFiuu82vdZELV6mLY3jpH99C524VFXHpjG-yY1WzB9pKJoxdMgWdKHYiMp55fJyp80l4j21nbNijZ_jNcnknaggsVHp6QOIjtAjrwgNfGytwewt6EC20JygWnSXs4U2bHyxNuiuI1hssnCLhactIl1OM4uZIlrsd3IIF9zvEo3as7HVzJyP6jP1VDTu1xa9nfACKeoDQxIY4N5i6pnJ2YMQee595GsTj-YKiBC0",
-        phone: "526181594681",
-        email: "alejandro@sibra.mx",
-    },
-    {
-        name: "Elena Martinez",
-        img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCnJibSTb1Xqx2DyjVCqTlU8RYbfgqCNPHP4ikljvT6OSc2eZd5s1sOdC1p8BuNloY3ngS6qwq9cz87nDWzS_fwDDXIjP7lAruZfPTGzk__cTAYxETihDjdZml0Ta4QoxOjMsCzwkOCH4FYqLGQ0UIXE5G7poK-_UFpgYKDlFlNZmItMnE_GQ9wSVsjfNnfmmvcIVAKFJ3gqwEv8Jz1CXus1Wx_OjlGhkyhgGKyPcqHYkbp6-Gi5WVIKL1N23uZ_8Juty1lhiO_IfU",
-        phone: "526181594681",
-        email: "elena@sibra.mx",
-    },
-    {
-        name: "Roberto Garcia",
-        img: "https://lh3.googleusercontent.com/aida-public/AB6AXuCIeUtMvWDpfdkIQyOxEpOz2cabSItpgbIWR8pY1iDL6eQtBxUOSXR4r_zfFncz1O96a8u0mxGGCXbXoQfP3pdNkCq90vphFyltGBkNT8UK6rhp5Etk1dIMJvc5WoF2EjOZSczvGae4DRvDJtE6MfMxRQrF_I3qFrz0jfA3JnRCJEFtfG_GXUDD_KaQKTpkLO_S0HGvGp8sJe7hjVesbTfbHkAhWMv4JIkrOfYIpL0OIjCZ4WpjEIFi9Tl0c1qHd5ZwqXYzEE6Whzw",
-        phone: "526181594681",
-        email: "roberto@sibra.mx",
-    },
-    {
-        name: "Sofia Ruiz",
-        img: "https://lh3.googleusercontent.com/aida-public/AB6AXuB7UpWN9mWPbSZyDxa4vUyLHRdP6xcHT-VT611U8D9u6wnZ9HjWbH-Vo49js29fxItQzpDVdcCzBbZhYvpxuua1VRYd8JdkTtasxlBIdkcJp8IbU2xWeN9GLKwM0U_2B-qdpYRGgz3az72EBa4xX7Lp7eX901QOuI4d15Q_OZQUkheikZ6b6dQ9orHxqz7EWa2DxOalWGzbvusFrcx4h_MvB0kJp00jy4tPmvocSZ6i2LXdStOJejflN5mfcVWinq4pG5EMZGxIw2o",
-        phone: "526181594681",
-        email: "sofia@sibra.mx",
-    },
-];

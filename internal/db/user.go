@@ -58,6 +58,22 @@ func (u *User) HashPass(pw string) error {
 	return nil
 }
 
+func (u *User) ToPublicUser() PublicUser {
+	return PublicUser{
+		Name:  u.Fullname,
+		Email: u.Email,
+		Phone: u.Phone,
+		Img:   u.Img,
+	}
+}
+
+type PublicUser struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+	Phone string `json:"phone"`
+	Img   string `json:"img"`
+}
+
 type UserFilters struct {
 	Search string `json:"search"`
 	Role   string `json:"role"`
@@ -129,7 +145,6 @@ func GetUsers(ctx context.Context, filters *UserFilters, limit, page int) (users
 	}
 
 	if len(args) > 0 {
-		fmt.Printf("len(args): %v\n", len(args))
 		baseQuery = baseQuery + " WHERE " + strings.Join(queryConditions, " AND ")
 	}
 
@@ -180,6 +195,50 @@ func GetUsers(ctx context.Context, filters *UserFilters, limit, page int) (users
 		}
 		if img.Valid {
 			user.Img = img.String
+		}
+
+		users = append(users, &user)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func FindAgents(ctx context.Context) ([]*User, error) {
+	conn, err := GetPool()
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	rows, err := conn.Query(ctx, `
+        SELECT fullname, email, phone, img FROM users
+        WHERE role = 'editor' OR role = 'admin'
+    `)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*User
+	for rows.Next() {
+		var user User
+		err = rows.Scan(
+			&user.Fullname,
+			&user.Email,
+			&user.Phone,
+			&user.Img,
+		)
+
+		if err != nil {
+			return nil, err
 		}
 
 		users = append(users, &user)
