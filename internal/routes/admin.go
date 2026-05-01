@@ -101,7 +101,7 @@ func GetUserProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := db.GetUserById(authData.Id)
+	user, err := db.GetUserById(r.Context(), authData.Id)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al obtener el perfil del usuario",

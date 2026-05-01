@@ -1,27 +1,82 @@
 package routes
 
 import (
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"html/template"
-	"io"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/vladwithcode/sibra-site/internal"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
 func RegisterUserRoutes(router *customServeMux) {
-	router.HandleFunc("POST /api/user", auth.WithAuthAccessLevelMiddleware(CreateUser, auth.AccessLevelAdmin))
-	router.HandleFunc("PUT /api/users/{id}", auth.WithAuthAccessLevelMiddleware(UpdateUser, auth.AccessLevelAdmin))
-	router.HandleFunc("PUT /api/users/{id}/password", auth.WithAuthAccessLevelMiddleware(UpdatePassword, auth.AccessLevelAdmin))
-	router.HandleFunc("DELETE /api/users/{id}/pic", auth.WithAuthAccessLevelMiddleware(DeleteUserPicture, auth.AccessLevelAdmin))
+	router.HandleFunc("GET /api/usuarios", auth.WithAuthAccessLevelMiddleware(GetUsers, auth.AccessLevelAdmin))
+	router.HandleFunc("POST /api/usuario", auth.WithAuthAccessLevelMiddleware(CreateUser, auth.AccessLevelAdmin))
+	router.HandleFunc("PUT /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(UpdateUser, auth.AccessLevelAdmin))
+	router.HandleFunc("PUT /api/usuarios/perfil", auth.WithAuthAccessLevelMiddleware(UpdateUserProfile, auth.AccessLevelUser))
+	router.HandleFunc("PUT /api/usuarios/password", auth.WithAuthAccessLevelMiddleware(UpdatePassword, auth.AccessLevelUser))
+	router.HandleFunc("DELETE /api/usuario/imagen", auth.WithAuthAccessLevelMiddleware(DeleteUserPicture, auth.AccessLevelUser))
+	router.HandleFunc("DELETE /api/usuario/{id}", auth.WithAuthAccessLevelMiddleware(DeleteUser, auth.AccessLevelAdmin))
+}
+
+func GetUsers(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	filters := db.NewUserFilters()
+
+	page, err := strconv.Atoi(params.Get("page"))
+	if err != nil || page <= 0 {
+		page = 1
+	}
+	limit, err := strconv.Atoi(params.Get("limit"))
+	if err != nil || limit <= 0 {
+		limit = db.DefaultPageSize
+	}
+
+	if params.Get("search") != "" {
+		filters.Search = params.Get("search")
+	}
+
+	users, err := db.GetUsers(r.Context(), filters, limit, page)
+	if err != nil {
+		if errors.Is(err, db.ErrUserFilterInvalid) {
+			respondWithError(w, http.StatusBadRequest, ErrorParams{
+				ErrorMessage: "La información proporcionada es inválida",
+			})
+			return
+		}
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "La información proporcionada es inválida",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
+		})
+		log.Printf("Error finding filtered users: %v\n", err)
+		return
+	}
+
+	pagination, err := db.GetUserPagination(filters, db.DefaultPageSize, page)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
+		})
+		log.Printf("Error finding filtered users: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, rmap{
+		"users":      users,
+		"pagination": pagination,
+	})
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -42,8 +97,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	_, err = db.CreateUser(&data)
 
 	if err != nil {
-		fmt.Printf("Create err: %v\n", err)
-
 		if strings.Contains(err.Error(), "duplicate key") {
 			respondWithError(w, http.StatusBadRequest, ErrorParams{
 				ErrorMessage: "No se pudo crear el usuario, el email y/o telefono ya estan registrados",
@@ -54,6 +107,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error inesperado",
 		})
+		log.Printf("Error creating user: %v\n", err)
 		return
 	}
 
@@ -64,396 +118,180 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	templ, err := template.New("user.html").Funcs(template.FuncMap{
-		"PrintRole": internal.PrintRole,
-	}).ParseFiles(
-		"web/templates/admin/user.html",
-	)
+	var data db.User
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
 
+	err := decoder.Decode(&data)
 	if err != nil {
-		fmt.Printf("Parse templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	id := r.PathValue("id")
-	user, err := db.GetUserById(id)
-
-	fullname := r.FormValue("fullname")
-	phone := r.FormValue("phone")
-	email := r.FormValue("email")
-
-	if err != nil {
-		fmt.Printf("Get err: %v\n", err)
-		w.WriteHeader(404)
-		err = templ.ExecuteTemplate(w, "edit-user-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "No se encontró al usuario con id " + id,
-			"User": map[string]any{
-				"Id": id,
-			},
-			"Data": map[string]any{
-				"fullname": fullname,
-				"email":    email,
-				"phone":    phone,
-			},
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "La información proporcionada es inválida",
 		})
-
-		if err != nil {
-			fmt.Printf("Exec error templ err: %v\n", err)
-			respondWithError(w, 500, ErrorParams{})
-			return
-		}
+		log.Printf("failed to parse json data: %v\n", err)
 		return
 	}
 
-	isFormInvalid := false
-	invalid := db.InvalidFields{}
+	user, err := db.GetUserById(r.Context(), data.Id)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "No se encontró el usuario",
+		})
+		log.Printf("Error finding user: %v\n", err)
+		return
+	}
 
-	if isFormInvalid {
-		w.WriteHeader(400)
-		templ.ExecuteTemplate(w, "edit-user-form", map[string]any{
-			"Invalid": invalid,
-			"User":    user,
-			"Data": map[string]any{
-				"fullname": fullname,
-				"email":    email,
-				"phone":    phone,
-			},
+	if auth.UserHasAccess(user, auth.AccessLevelAdmin) {
+		respondWithError(w, http.StatusForbidden, ErrorParams{
+			ErrorMessage: "No tienes permisos para realizar esta operación",
 		})
 		return
 	}
 
-	user.Fullname = fullname
-	user.Phone.String = phone
-	user.Phone.Valid = phone != ""
-	user.Email = email
-
-	err = db.UpdateUser(user)
-
+	err = db.UpdateUser(r.Context(), &data)
 	if err != nil {
-		fmt.Printf("Update user err: %v\n", err)
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "edit-user-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Ocurrió un error al actualizar al usuario",
-			"User": map[string]any{
-				"Id": id,
-			},
-			"Data": map[string]any{
-				"fullname": fullname,
-				"email":    email,
-				"phone":    phone,
-			},
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
 		})
+		log.Printf("Error updating user: %v\n", err)
 		return
 	}
 
-	templ.ExecuteTemplate(w, "edit-user-form", map[string]any{
-		"Success": true,
-		"User":    user,
+	respondWithJSON(w, http.StatusOK, rmap{
+		"success": true,
+		"user":    user,
+	})
+}
+
+func UpdateUserProfile(w http.ResponseWriter, r *http.Request) {
+	authData, err := auth.ExtractAuthDataFromRequest(r)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "No se pudo autenticar la sesión actual",
+		})
+		log.Printf("Error getting project auth token: %v\n", err)
+		return
+	}
+
+	var data struct {
+		Name  string `json:"name"`
+		Email string `json:"email"`
+		Phone string `json:"phone"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
+
+	err = decoder.Decode(&data)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "La información proporcionada es inválida",
+		})
+		log.Printf("failed to parse json data: %v\n", err)
+		return
+	}
+
+	user, err := db.GetUserById(r.Context(), authData.Id)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "No se encontró el usuario",
+		})
+		log.Printf("Error finding user: %v\n", err)
+		return
+	}
+
+	user.Fullname = data.Name
+	user.Email = data.Email
+	user.Phone = data.Phone
+
+	err = db.UpdateUser(r.Context(), user)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
+		})
+		log.Printf("Error updating user: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, rmap{
+		"success": true,
+		"user":    user,
 	})
 }
 
 func UpdatePassword(w http.ResponseWriter, r *http.Request) {
-	templ, err := template.New("user.html").Funcs(template.FuncMap{
-		"PrintRole": internal.PrintRole,
-	}).ParseFiles(
-		"web/templates/admin/user.html",
-	)
-
+	authData, err := auth.ExtractAuthDataFromRequest(r)
 	if err != nil {
-		fmt.Printf("Parse templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	id := r.PathValue("id")
-
-	var (
-		currentPass   string           = r.FormValue("pass")
-		newPass       string           = r.FormValue("new-pass")
-		confirmPass   string           = r.FormValue("confirm-pass")
-		isFormInvalid bool             = false
-		invalid       db.InvalidFields = db.InvalidFields{}
-	)
-
-	if currentPass == "" {
-		invalid["pass"] = true
-		isFormInvalid = true
-	}
-	if newPass == "" {
-		invalid["newPass"] = true
-		isFormInvalid = true
-	}
-	if confirmPass == "" {
-		invalid["confirmPass"] = true
-		isFormInvalid = true
-	}
-
-	if isFormInvalid {
-		w.WriteHeader(400)
-		templ.ExecuteTemplate(w, "change-pass", map[string]any{
-			"Invalid": invalid,
-			"User": map[string]any{
-				"Id": id,
-			},
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "No se pudo autenticar la sesión actual",
 		})
+		log.Printf("Error getting project auth token: %v\n", err)
 		return
 	}
 
-	user, err := db.GetUserById(id)
+	var data struct {
+		Password string `json:"password"`
+	}
+	decoder := json.NewDecoder(r.Body)
+	defer r.Body.Close()
 
+	err = decoder.Decode(&data)
 	if err != nil {
-		fmt.Printf("Get err: %v\n", err)
-		w.WriteHeader(404)
-		err = templ.ExecuteTemplate(w, "change-pass", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "No se encontró al usuario con id " + id,
-			"User": map[string]any{
-				"Id": id,
-			},
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "La información proporcionada es inválida",
 		})
-
-		if err != nil {
-			fmt.Printf("Exec error templ err: %v\n", err)
-			respondWithError(w, 500, ErrorParams{})
-			return
-		}
+		log.Printf("failed to parse json data: %v\n", err)
 		return
 	}
 
-	err = user.ValidatePass(currentPass)
-
+	user, err := db.GetUserById(r.Context(), authData.Id)
 	if err != nil {
-		w.WriteHeader(404)
-		templ.ExecuteTemplate(w, "change-pass", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "La contraseña actual es incorrecta",
-			"User": map[string]any{
-				"Id": id,
-			},
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "No se encontró el usuario",
 		})
+		log.Printf("Error finding user: %v\n", err)
 		return
 	}
 
-	if newPass != confirmPass {
-		w.WriteHeader(404)
-		templ.ExecuteTemplate(w, "change-pass", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Las contraseñas no coinciden",
-			"User": map[string]any{
-				"Id": id,
-			},
-		})
-		return
-	}
-
-	err = user.HashPass(newPass)
-
+	err = db.UpdateUserPassword(r.Context(), user)
 	if err != nil {
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "change-pass", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Ocurrio un error al cambiar la contraseña",
-			"User": map[string]any{
-				"Id": id,
-			},
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
 		})
+		log.Printf("Error updating user: %v\n", err)
 		return
 	}
 
-	err = db.UpdateUser(user)
-
-	if err != nil {
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "change-pass", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Ocurrio un error al cambiar la contraseña",
-			"User": map[string]any{
-				"Id": id,
-			},
-		})
-		return
-	}
-
-	templ.ExecuteTemplate(w, "change-pass", map[string]any{
-		"Success": true,
-		"User":    user,
+	respondWithJSON(w, http.StatusOK, rmap{
+		"success": true,
+		"user":    user,
 	})
 }
 
 func UpdateUserPicture(w http.ResponseWriter, r *http.Request) {
-	templ, err := template.New("user.html").Funcs(template.FuncMap{
-		"PrintRole": internal.PrintRole,
-	}).ParseFiles(
-		"web/templates/admin/user.html",
-	)
-
-	if err != nil {
-		fmt.Printf("Parse templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	id := r.PathValue("id")
-	user, err := db.GetUserById(id)
-
-	if err != nil {
-		fmt.Printf("Get err: %v\n", err)
-		w.WriteHeader(404)
-		err = templ.ExecuteTemplate(w, "edit-pic-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "No se encontró al usuario con id " + id,
-			"User": map[string]any{
-				"Id": id,
-			},
-		})
-
-		if err != nil {
-			fmt.Printf("Exec error templ err: %v\n", err)
-			respondWithError(w, 500, ErrorParams{})
-			return
-		}
-		return
-	}
-
-	mainPic, handle, err := r.FormFile("picture")
-	if err != nil {
-		fmt.Printf("Parse pic err: %v\n", err)
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "edit-pic-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Error al procesar la imagen",
-			"User": map[string]any{
-				"Id": id,
-			},
-		})
-		return
-	}
-	defer mainPic.Close()
-
-	filePath := "web/static/users"
-	mainFileName := user.Id + filepath.Ext(handle.Filename)
-	file, err := os.Create(filepath.Join(filePath, mainFileName))
-	if err != nil {
-		fmt.Printf("Create main file %v\n", err)
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "edit-pic-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Error al procesar la imagen",
-			"User": map[string]any{
-				"Id": id,
-			},
-		})
-		return
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, mainPic)
-	if err != nil {
-		fmt.Printf("Copy err: %v\n", err)
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "edit-pic-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Error al procesar la imagen",
-			"User": map[string]any{
-				"Id": id,
-			},
-		})
-		return
-	}
-	user.Img = mainFileName
-
-	err = db.UpdateUser(user)
-
-	if err != nil {
-		fmt.Printf("Update user err: %v\n", err)
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "edit-pic-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Error al procesar la imagen",
-			"User": map[string]any{
-				"Id": id,
-			},
-		})
-		return
-	}
-
-	w.WriteHeader(201)
-	templ.ExecuteTemplate(w, "edit-pic-form", map[string]any{
-		"Success": true,
-		"User":    user,
+	respondWithError(w, http.StatusNotImplemented, ErrorParams{
+		ErrorMessage: "Funcionalidad no disponible todavía",
 	})
 }
 
 func DeleteUserPicture(w http.ResponseWriter, r *http.Request) {
-	templ, err := template.New("user.html").Funcs(template.FuncMap{
-		"PrintRole": internal.PrintRole,
-	}).ParseFiles(
-		"web/templates/admin/user.html",
-	)
-
-	if err != nil {
-		fmt.Printf("Parse templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
-		return
-	}
-
-	id := r.PathValue("id")
-	user, err := db.GetUserById(id)
-
-	if err != nil {
-		fmt.Printf("Get err: %v\n", err)
-		w.WriteHeader(404)
-		err = templ.ExecuteTemplate(w, "del-pic-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "No se encontró al usuario con id " + id,
-		})
-
-		if err != nil {
-			fmt.Printf("Exec error templ err: %v\n", err)
-			respondWithError(w, 500, ErrorParams{})
-			return
-		}
-		return
-	}
-
-	fileName := filepath.Join("web/static/users", user.Img)
-	err = os.Remove(fileName)
-
-	if err != nil {
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "del-pic-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Error al eliminar la imagen",
-		})
-		log.Printf("Error deleting user picture: %v\n", err)
-		return
-	}
-	user.Img = ""
-
-	err = db.UpdateUser(user)
-
-	if err != nil {
-		fmt.Printf("Update user err: %v\n", err)
-		w.WriteHeader(500)
-		templ.ExecuteTemplate(w, "del-pic-form", map[string]any{
-			"Error":        true,
-			"ErrorMessage": "Error al eliminar la imagen",
-		})
-		return
-	}
-
-	w.WriteHeader(201)
-	err = templ.ExecuteTemplate(w, "del-pic-form", map[string]any{
-		"Success": true,
-		"User":    user,
+	respondWithError(w, http.StatusNotImplemented, ErrorParams{
+		ErrorMessage: "Funcionalidad no disponible todavía",
 	})
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	err := db.DeleteUser(r.Context(), id)
 
 	if err != nil {
-		fmt.Printf("Exec error templ err: %v\n", err)
-		respondWithError(w, 500, ErrorParams{})
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
+		})
+		fmt.Printf("Delete user err: %v\n", err)
 		return
 	}
+
+	respondWithJSON(w, http.StatusOK, rmap{
+		"success": true,
+	})
 }
