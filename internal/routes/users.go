@@ -17,6 +17,7 @@ import (
 
 func RegisterUserRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/usuarios", auth.WithAuthAccessLevelMiddleware(GetUsers, auth.AccessLevelAdmin))
+	router.HandleFunc("GET /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(GetUserByID, auth.AccessLevelAdmin))
 	router.HandleFunc("POST /api/usuario", auth.WithAuthAccessLevelMiddleware(CreateUser, auth.AccessLevelAdmin))
 	router.HandleFunc("PUT /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(UpdateUser, auth.AccessLevelAdmin))
 	router.HandleFunc("PUT /api/usuarios/perfil", auth.WithAuthAccessLevelMiddleware(UpdateUserProfile, auth.AccessLevelUser))
@@ -79,6 +80,31 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func GetUserByID(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+
+	user, err := db.GetUserById(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró el usuario",
+			})
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado",
+		})
+		log.Printf("Error finding user by id: %v\n", err)
+		return
+	}
+
+	user.Password = ""
+
+	respondWithJSON(w, http.StatusOK, rmap{
+		"user": user,
+	})
+}
+
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	data := db.User{}
 	decoder := json.NewDecoder(r.Body)
@@ -137,13 +163,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage: "No se encontró el usuario",
 		})
 		log.Printf("Error finding user: %v\n", err)
-		return
-	}
-
-	if auth.UserHasAccess(user, auth.AccessLevelAdmin) {
-		respondWithError(w, http.StatusForbidden, ErrorParams{
-			ErrorMessage: "No tienes permisos para realizar esta operación",
-		})
 		return
 	}
 

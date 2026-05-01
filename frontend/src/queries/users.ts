@@ -1,5 +1,12 @@
 import { mutationOptions, queryOptions, type QueryFunctionContext } from "@tanstack/react-query";
-import type { TUserFilters, TUserListingResult, TUserDeleteResult } from "./type";
+import type {
+    TUserFilters,
+    TUserListingResult,
+    TUserDeleteResult,
+    TUserDetailResult,
+    TUserCreateResult,
+    TUserUpdateResult,
+} from "./type";
 import { queryClient } from "./queryClient";
 import { objectToQueryString } from "./util";
 
@@ -37,17 +44,73 @@ export async function getUserListing({ queryKey }: QueryFunctionContext<QKUsersF
     return data;
 }
 
+async function getUserById({ queryKey }: QueryFunctionContext<QKUsersById>): Promise<TUserDetailResult> {
+    const { id } = queryKey[3];
+    const response = await fetch(`/api/usuarios/${id}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Error al obtener el usuario");
+    return data;
+}
+
 export const getUsersOpts = (filters: TUserFilters) =>
     queryOptions({
         queryKey: UserQueryKeys.filtered(filters),
         queryFn: getUserListing,
     });
 
+export const getUserByIdOpts = (id: string) =>
+    queryOptions({
+        queryKey: UserQueryKeys.byId(id),
+        queryFn: getUserById,
+    });
+
+export const createUserOpts = () =>
+    mutationOptions({
+        mutationKey: [...UserQueryKeys.all(), "create"],
+        mutationFn: async (payload: Record<string, unknown>): Promise<TUserCreateResult> => {
+            const response = await fetch("/api/usuario", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Error al crear el usuario");
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: UserQueryKeys.listing() });
+        },
+    });
+
+export const updateUserOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: UserQueryKeys.byId(id),
+        mutationFn: async (payload: Record<string, unknown>): Promise<TUserUpdateResult> => {
+            const response = await fetch(`/api/usuarios/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Error al actualizar el usuario");
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: UserQueryKeys.byId(id) });
+            queryClient.invalidateQueries({ queryKey: UserQueryKeys.listing() });
+        },
+    });
+
 export const deleteUserOpts = (id: string) =>
     mutationOptions({
         mutationKey: UserQueryKeys.delete(id),
         mutationFn: async (_vars: { id: string }): Promise<TUserDeleteResult> => {
-            throw new Error("Funcionalidad no disponible todavía");
+            const response = await fetch(`/api/usuario/${id}`, {
+                method: "DELETE",
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Error al eliminar el usuario");
+            return data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({

@@ -362,3 +362,17 @@ export type TUserDeleteResult = {
     success: true;
 };
 
+export type TUserDetailResult = {
+    user: TUserDetail;
+};
+
+export type TUserCreateResult = {
+    success: true;
+    user: TUser;
+};
+
+export type TUserUpdateResult = {
+    success: true;
+    user: TUser;
+};
+

@@ -405,7 +405,7 @@ func UpdateUser(ctx context.Context, user *User) error {
 
 	_, err = conn.Exec(
 		ctx,
-		"UPDATE users SET name = @name, username = @username, role = @role, email = @email, phone = @phone, img = @img WHERE id = @id",
+		"UPDATE users SET fullname = @name, username = @username, role = @role, email = @email, phone = @phone, img = @img WHERE id = @id",
 		args,
 	)
 

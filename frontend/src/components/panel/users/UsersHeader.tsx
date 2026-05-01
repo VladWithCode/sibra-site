@@ -1,3 +1,7 @@
+import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
+import { Plus } from "lucide-react";
+
 export function UsersHeader() {
     return (
         <div className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
@@ -9,6 +13,13 @@ export function UsersHeader() {
                     Usuarios
                 </h2>
             </div>
+            <Button asChild size="sm" className="gap-2">
+                <Link to="/panel/usuarios/nuevo">
+                    <Plus className="size-4" />
+                    <span className="hidden sm:inline">Nuevo usuario</span>
+                    <span className="sm:hidden">Nuevo</span>
+                </Link>
+            </Button>
         </div>
     );
 }

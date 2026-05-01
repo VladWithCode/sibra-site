@@ -31,6 +31,8 @@ import { Route as PanelPropiedadesIndexRouteImport } from './routes/panel/propie
 import { Route as PanelCitasIndexRouteImport } from './routes/panel/citas/index'
 import { Route as PanelAsociadosIndexRouteImport } from './routes/panel/asociados/index'
 import { Route as PublicProyectosIndexRouteImport } from './routes/_public/proyectos/index'
+import { Route as PanelUsuariosNuevoRouteImport } from './routes/panel/usuarios/nuevo'
+import { Route as PanelUsuariosIdRouteImport } from './routes/panel/usuarios/$id'
 import { Route as PanelProyectosNuevoRouteImport } from './routes/panel/proyectos/nuevo'
 import { Route as PanelPropiedadesNuevaRouteImport } from './routes/panel/propiedades/nueva'
 import { Route as PanelPropiedadesIdRouteImport } from './routes/panel/propiedades/$id'
@@ -157,6 +159,16 @@ const PublicProyectosIndexRoute = PublicProyectosIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublicProyectosRouteRoute,
 } as any)
+const PanelUsuariosNuevoRoute = PanelUsuariosNuevoRouteImport.update({
+  id: '/usuarios/nuevo',
+  path: '/usuarios/nuevo',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
+const PanelUsuariosIdRoute = PanelUsuariosIdRouteImport.update({
+  id: '/usuarios/$id',
+  path: '/usuarios/$id',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
 const PanelProyectosNuevoRoute = PanelProyectosNuevoRouteImport.update({
   id: '/proyectos/nuevo',
   path: '/proyectos/nuevo',
@@ -272,6 +284,8 @@ export interface FileRoutesByFullPath {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
+  '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
+  '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/proyectos/': typeof PublicProyectosIndexRoute
   '/panel/asociados': typeof PanelAsociadosIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
@@ -306,6 +320,8 @@ export interface FileRoutesByTo {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
+  '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
+  '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/proyectos': typeof PublicProyectosIndexRoute
   '/panel/asociados': typeof PanelAsociadosIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
@@ -345,6 +361,8 @@ export interface FileRoutesById {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
+  '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
+  '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/_public/proyectos/': typeof PublicProyectosIndexRoute
   '/panel/asociados/': typeof PanelAsociadosIndexRoute
   '/panel/citas/': typeof PanelCitasIndexRoute
@@ -384,6 +402,8 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/panel/proyectos/nuevo'
+    | '/panel/usuarios/$id'
+    | '/panel/usuarios/nuevo'
     | '/proyectos/'
     | '/panel/asociados'
     | '/panel/citas'
@@ -418,6 +438,8 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/panel/proyectos/nuevo'
+    | '/panel/usuarios/$id'
+    | '/panel/usuarios/nuevo'
     | '/proyectos'
     | '/panel/asociados'
     | '/panel/citas'
@@ -456,6 +478,8 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/panel/proyectos/nuevo'
+    | '/panel/usuarios/$id'
+    | '/panel/usuarios/nuevo'
     | '/_public/proyectos/'
     | '/panel/asociados/'
     | '/panel/citas/'
@@ -627,6 +651,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/proyectos/'
       preLoaderRoute: typeof PublicProyectosIndexRouteImport
       parentRoute: typeof PublicProyectosRouteRoute
+    }
+    '/panel/usuarios/nuevo': {
+      id: '/panel/usuarios/nuevo'
+      path: '/usuarios/nuevo'
+      fullPath: '/panel/usuarios/nuevo'
+      preLoaderRoute: typeof PanelUsuariosNuevoRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
+    '/panel/usuarios/$id': {
+      id: '/panel/usuarios/$id'
+      path: '/usuarios/$id'
+      fullPath: '/panel/usuarios/$id'
+      preLoaderRoute: typeof PanelUsuariosIdRouteImport
+      parentRoute: typeof PanelRouteRoute
     }
     '/panel/proyectos/nuevo': {
       id: '/panel/proyectos/nuevo'
@@ -886,6 +924,8 @@ interface PanelRouteRouteChildren {
   PanelPropiedadesIdRoute: typeof PanelPropiedadesIdRoute
   PanelPropiedadesNuevaRoute: typeof PanelPropiedadesNuevaRoute
   PanelProyectosNuevoRoute: typeof PanelProyectosNuevoRoute
+  PanelUsuariosIdRoute: typeof PanelUsuariosIdRoute
+  PanelUsuariosNuevoRoute: typeof PanelUsuariosNuevoRoute
   PanelAsociadosIndexRoute: typeof PanelAsociadosIndexRoute
   PanelCitasIndexRoute: typeof PanelCitasIndexRoute
   PanelPropiedadesIndexRoute: typeof PanelPropiedadesIndexRoute
@@ -900,6 +940,8 @@ const PanelRouteRouteChildren: PanelRouteRouteChildren = {
   PanelPropiedadesIdRoute: PanelPropiedadesIdRoute,
   PanelPropiedadesNuevaRoute: PanelPropiedadesNuevaRoute,
   PanelProyectosNuevoRoute: PanelProyectosNuevoRoute,
+  PanelUsuariosIdRoute: PanelUsuariosIdRoute,
+  PanelUsuariosNuevoRoute: PanelUsuariosNuevoRoute,
   PanelAsociadosIndexRoute: PanelAsociadosIndexRoute,
   PanelCitasIndexRoute: PanelCitasIndexRoute,
   PanelPropiedadesIndexRoute: PanelPropiedadesIndexRoute,

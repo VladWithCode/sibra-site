@@ -2,7 +2,7 @@ import type { TUserRole } from "@/queries/type";
 
 const ROLE_LABELS: Record<TUserRole, string> = {
     admin: "Administrador",
-    editor: "Editor",
+    editor: "Agente",
     user: "Usuario",
 };
 
@@ -14,7 +14,7 @@ const ROLE_TONES: Record<TUserRole, string> = {
 
 export const ROLE_OPTIONS = [
     { value: "admin", label: "Administrador" },
-    { value: "editor", label: "Editor" },
+    { value: "editor", label: "Agente" },
     { value: "user", label: "Usuario" },
 ] as const;
 
