@@ -346,3 +346,19 @@ export type TUserProfileResult = {
 
 export type TLoginResult = TUserProfileResult
 
+export type TUserFilters = {
+    search?: string;
+    role?: TUserRole;
+    page?: TPagination["page"];
+    perPage?: TPagination["perPage"];
+};
+
+export type TUserListingResult = {
+    users: TUserDetail[];
+    pagination: TPagination;
+};
+
+export type TUserDeleteResult = {
+    success: true;
+};
+

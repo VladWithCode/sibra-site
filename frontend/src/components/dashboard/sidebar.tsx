@@ -1,5 +1,5 @@
 import { Link, linkOptions } from "@tanstack/react-router";
-import { Calendar, ChevronRight, Home, LayoutDashboard, Map, Users } from "lucide-react";
+import { Calendar, ChevronRight, Home, LayoutDashboard, Map, User, Users } from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -20,6 +20,7 @@ const sidebarMenuItems = linkOptions([
     { label: "Terrenos y proyectos", to: "/panel/proyectos", icon: Map },
     { label: "Asociados", to: "/panel/asociados", icon: Users },
     { label: "Citas y contacto", to: "/panel/citas", icon: Calendar },
+    { label: "Usuarios", to: "/panel/usuarios", icon: User },
 ]);
 
 export function DashboardSidebar() {

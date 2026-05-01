@@ -25,6 +25,7 @@ import { Route as PublicIniciarSesionRouteImport } from './routes/_public/inicia
 import { Route as PublicFavoritosRouteImport } from './routes/_public/favoritos'
 import { Route as PublicContactoRouteImport } from './routes/_public/contacto'
 import { Route as PublicProyectosRouteRouteImport } from './routes/_public/proyectos/route'
+import { Route as PanelUsuariosIndexRouteImport } from './routes/panel/usuarios/index'
 import { Route as PanelProyectosIndexRouteImport } from './routes/panel/proyectos/index'
 import { Route as PanelPropiedadesIndexRouteImport } from './routes/panel/propiedades/index'
 import { Route as PanelCitasIndexRouteImport } from './routes/panel/citas/index'
@@ -125,6 +126,11 @@ const PublicProyectosRouteRoute = PublicProyectosRouteRouteImport.update({
   id: '/proyectos',
   path: '/proyectos',
   getParentRoute: () => PublicRouteRoute,
+} as any)
+const PanelUsuariosIndexRoute = PanelUsuariosIndexRouteImport.update({
+  id: '/usuarios/',
+  path: '/usuarios/',
+  getParentRoute: () => PanelRouteRoute,
 } as any)
 const PanelProyectosIndexRoute = PanelProyectosIndexRouteImport.update({
   id: '/proyectos/',
@@ -271,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/panel/citas': typeof PanelCitasIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
+  '/panel/usuarios': typeof PanelUsuariosIndexRoute
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/panel/proyectos/$id/asociados': typeof PanelProyectosIdAsociadosRouteWithChildren
   '/propiedades/': typeof PublicPropiedadesListingIndexRoute
@@ -304,6 +311,7 @@ export interface FileRoutesByTo {
   '/panel/citas': typeof PanelCitasIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
+  '/panel/usuarios': typeof PanelUsuariosIndexRoute
   '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/panel/proyectos/$id': typeof PanelProyectosIdIndexRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
@@ -342,6 +350,7 @@ export interface FileRoutesById {
   '/panel/citas/': typeof PanelCitasIndexRoute
   '/panel/propiedades/': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos/': typeof PanelProyectosIndexRoute
+  '/panel/usuarios/': typeof PanelUsuariosIndexRoute
   '/_public/propiedades/_listing/$contract': typeof PublicPropiedadesListingContractRoute
   '/panel/proyectos/$id/asociados': typeof PanelProyectosIdAsociadosRouteWithChildren
   '/_public/propiedades/_listing/': typeof PublicPropiedadesListingIndexRoute
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/panel/citas'
     | '/panel/propiedades'
     | '/panel/proyectos'
+    | '/panel/usuarios'
     | '/propiedades/$contract'
     | '/panel/proyectos/$id/asociados'
     | '/propiedades/'
@@ -413,6 +423,7 @@ export interface FileRouteTypes {
     | '/panel/citas'
     | '/panel/propiedades'
     | '/panel/proyectos'
+    | '/panel/usuarios'
     | '/propiedades/$contract'
     | '/panel/proyectos/$id'
     | '/propiedades/$contract/$slug'
@@ -450,6 +461,7 @@ export interface FileRouteTypes {
     | '/panel/citas/'
     | '/panel/propiedades/'
     | '/panel/proyectos/'
+    | '/panel/usuarios/'
     | '/_public/propiedades/_listing/$contract'
     | '/panel/proyectos/$id/asociados'
     | '/_public/propiedades/_listing/'
@@ -573,6 +585,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/proyectos'
       preLoaderRoute: typeof PublicProyectosRouteRouteImport
       parentRoute: typeof PublicRouteRoute
+    }
+    '/panel/usuarios/': {
+      id: '/panel/usuarios/'
+      path: '/usuarios'
+      fullPath: '/panel/usuarios'
+      preLoaderRoute: typeof PanelUsuariosIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
     }
     '/panel/proyectos/': {
       id: '/panel/proyectos/'
@@ -871,6 +890,7 @@ interface PanelRouteRouteChildren {
   PanelCitasIndexRoute: typeof PanelCitasIndexRoute
   PanelPropiedadesIndexRoute: typeof PanelPropiedadesIndexRoute
   PanelProyectosIndexRoute: typeof PanelProyectosIndexRoute
+  PanelUsuariosIndexRoute: typeof PanelUsuariosIndexRoute
 }
 
 const PanelRouteRouteChildren: PanelRouteRouteChildren = {
@@ -884,6 +904,7 @@ const PanelRouteRouteChildren: PanelRouteRouteChildren = {
   PanelCitasIndexRoute: PanelCitasIndexRoute,
   PanelPropiedadesIndexRoute: PanelPropiedadesIndexRoute,
   PanelProyectosIndexRoute: PanelProyectosIndexRoute,
+  PanelUsuariosIndexRoute: PanelUsuariosIndexRoute,
 }
 
 const PanelRouteRouteWithChildren = PanelRouteRoute._addFileChildren(
