@@ -1,3 +1,4 @@
+import { ProfileImageCard } from "@/components/dashboard/user/ProfileImageCard";
 import { UserFormFields } from "@/components/dashboard/user/UserFormFields";
 import {
     UserFormSchema,
@@ -99,6 +100,13 @@ function RouteComponent() {
                 >
                     <UserFormFields form={form} mode="edit" />
                 </motion.form>
+
+                <motion.div {...entrance} transition={{ delay: 0.2 }}>
+                    <ProfileImageCard
+                        userId={id}
+                        currentImg={user.img}
+                    />
+                </motion.div>
             </div>
         </main>
     );

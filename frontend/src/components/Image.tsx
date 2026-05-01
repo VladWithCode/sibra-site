@@ -1,4 +1,4 @@
-export function Image({ src, alt, ...props }: { src: string, alt: string } & React.ImgHTMLAttributes<HTMLImageElement>) {
+export function Image({ src, alt, ...props }: { src: string, alt?: string } & React.ImgHTMLAttributes<HTMLImageElement>) {
     const fullSrc = "/static" + src;
     const safeAlt = alt !== "" ? alt : "Imagen";
 

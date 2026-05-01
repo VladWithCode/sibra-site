@@ -13,6 +13,7 @@ import { InfoForm } from "@/components/contact/InfoForm";
 import { getAgentsOpts } from "@/queries/users";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { TPublicUser } from "@/queries/type";
+import { Image } from "@/components/Image";
 
 export const Route = createFileRoute("/_public/contacto")({
     component: RouteComponent,
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/_public/contacto")({
             rel: "preload",
             href: "/agent_showcase_2.webp",
             as: "image",
-            fetchpriority: "high",
+            fetchPriority: "high",
         }],
     }),
     loader: async ({ context }) => {
@@ -275,8 +276,11 @@ function AgentsSection({ agents }: { agents: TPublicUser[] }) {
 function AgentCard({ agent }: { agent: TPublicUser }) {
     return (
         <div className="flex flex-col items-center justify-center gap-2">
-            <div className="shrink-0 size-32 aspect-square bg-surface-container-lowest rounded-xl overflow-hidden">
-                <img className="w-full h-full object-cover" src={agent.img} alt={agent.name} />
+            <div className="shrink-0 size-32 aspect-square rounded-xl overflow-hidden">
+                <Image
+                    className="w-auto h-full object-cover m-auto"
+                    src={"/uploads/" + agent.img}
+                />
             </div>
             <div className="text-center space-y-1">
                 <p className="font-medium">{agent.name}</p>

@@ -7,12 +7,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
+	"github.com/vladwithcode/sibra-site/internal/uploads"
 )
 
 func RegisterUserRoutes(router *customServeMux) {
@@ -23,7 +25,8 @@ func RegisterUserRoutes(router *customServeMux) {
 	router.HandleFunc("PUT /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(UpdateUser, auth.AccessLevelAdmin))
 	router.HandleFunc("PUT /api/usuarios/perfil", auth.WithAuthAccessLevelMiddleware(UpdateUserProfile, auth.AccessLevelUser))
 	router.HandleFunc("PUT /api/usuarios/password", auth.WithAuthAccessLevelMiddleware(UpdatePassword, auth.AccessLevelUser))
-	router.HandleFunc("DELETE /api/usuario/imagen", auth.WithAuthAccessLevelMiddleware(DeleteUserPicture, auth.AccessLevelUser))
+	router.HandleFunc("PUT /api/usuarios/{id}/imagen", auth.WithAuthAccessLevelMiddleware(UpdateUserPicture, auth.AccessLevelAdmin))
+	router.HandleFunc("DELETE /api/usuarios/{id}/imagen", auth.WithAuthAccessLevelMiddleware(DeleteUserPicture, auth.AccessLevelAdmin))
 	router.HandleFunc("DELETE /api/usuario/{id}", auth.WithAuthAccessLevelMiddleware(DeleteUser, auth.AccessLevelAdmin))
 }
 
@@ -315,14 +318,110 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUserPicture(w http.ResponseWriter, r *http.Request) {
-	respondWithError(w, http.StatusNotImplemented, ErrorParams{
-		ErrorMessage: "Funcionalidad no disponible todavía",
+	id := r.PathValue("id")
+
+	err := r.ParseMultipartForm(uploads.MaxImageUploadSize)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "El archivo excede el tamaño máximo permitido (8MB)",
+		})
+		log.Printf("Error parsing multipart form: %v\n", err)
+		return
+	}
+
+	files := r.MultipartForm.File["file"]
+	if len(files) == 0 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "No se proporcionó un archivo",
+		})
+		return
+	}
+
+	user, err := db.GetUserById(r.Context(), id)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "No se encontró el usuario",
+		})
+		log.Printf("Error finding user: %v\n", err)
+		return
+	}
+
+	if user.Img != "" {
+		delErr := uploads.Delete(user.Img)
+		if delErr != nil && !os.IsNotExist(delErr) {
+			log.Printf("Error deleting old user image: %v\n", delErr)
+		}
+	}
+
+	filename, err := uploads.Upload(&uploads.FileData{
+		Filename: fmt.Sprintf("user-%s-profile", id),
+		File:     files[0],
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Error al guardar la imagen",
+		})
+		log.Printf("Error uploading user image: %v\n", err)
+		return
+	}
+
+	user.Img = filename
+	err = db.UpdateUser(r.Context(), user)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Error al actualizar el usuario",
+		})
+		log.Printf("Error updating user img: %v\n", err)
+		return
+	}
+
+	user.Password = ""
+	respondWithJSON(w, http.StatusOK, rmap{
+		"success": true,
+		"user":    user,
 	})
 }
 
 func DeleteUserPicture(w http.ResponseWriter, r *http.Request) {
-	respondWithError(w, http.StatusNotImplemented, ErrorParams{
-		ErrorMessage: "Funcionalidad no disponible todavía",
+	id := r.PathValue("id")
+
+	user, err := db.GetUserById(r.Context(), id)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, ErrorParams{
+			ErrorMessage: "No se encontró el usuario",
+		})
+		log.Printf("Error finding user: %v\n", err)
+		return
+	}
+
+	if user.Img == "" {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "El usuario no tiene imagen de perfil",
+		})
+		return
+	}
+
+	delErr := uploads.Delete(user.Img)
+	if delErr != nil && !os.IsNotExist(delErr) {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Error al eliminar la imagen",
+		})
+		log.Printf("Error deleting user image: %v\n", delErr)
+		return
+	}
+
+	user.Img = ""
+	err = db.UpdateUser(r.Context(), user)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Error al actualizar el usuario",
+		})
+		log.Printf("Error updating user img: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, rmap{
+		"success": true,
 	})
 }
 

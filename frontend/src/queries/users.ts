@@ -146,3 +146,40 @@ export const deleteUserOpts = (id: string) =>
             });
         },
     });
+
+export const uploadUserImageOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...UserQueryKeys.byId(id), "upload-image"],
+        mutationFn: async ({ file }: { file: File }): Promise<TUserUpdateResult> => {
+            const fd = new FormData();
+            fd.append("file", file);
+            const response = await fetch(`/api/usuarios/${id}/imagen`, {
+                method: "PUT",
+                body: fd,
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Error al subir la imagen");
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: UserQueryKeys.byId(id) });
+            queryClient.invalidateQueries({ queryKey: UserQueryKeys.listing() });
+        },
+    });
+
+export const deleteUserImageOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...UserQueryKeys.byId(id), "delete-image"],
+        mutationFn: async (): Promise<{ success: true }> => {
+            const response = await fetch(`/api/usuarios/${id}/imagen`, {
+                method: "DELETE",
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Error al eliminar la imagen");
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: UserQueryKeys.byId(id) });
+            queryClient.invalidateQueries({ queryKey: UserQueryKeys.listing() });
+        },
+    });
