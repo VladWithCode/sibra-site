@@ -25,6 +25,8 @@ func RegisterUserRoutes(router *customServeMux) {
 	router.HandleFunc("PUT /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(UpdateUser, auth.AccessLevelAdmin))
 	router.HandleFunc("PUT /api/usuarios/perfil", auth.WithAuthAccessLevelMiddleware(UpdateUserProfile, auth.AccessLevelUser))
 	router.HandleFunc("PUT /api/usuarios/password", auth.WithAuthAccessLevelMiddleware(UpdatePassword, auth.AccessLevelUser))
+	router.HandleFunc("PUT /api/usuarios/perfil/imagen", auth.WithAuthAccessLevelMiddleware(UpdateOwnPicture, auth.AccessLevelUser))
+	router.HandleFunc("DELETE /api/usuarios/perfil/imagen", auth.WithAuthAccessLevelMiddleware(DeleteOwnPicture, auth.AccessLevelUser))
 	router.HandleFunc("PUT /api/usuarios/{id}/imagen", auth.WithAuthAccessLevelMiddleware(UpdateUserPicture, auth.AccessLevelAdmin))
 	router.HandleFunc("DELETE /api/usuarios/{id}/imagen", auth.WithAuthAccessLevelMiddleware(DeleteUserPicture, auth.AccessLevelAdmin))
 	router.HandleFunc("DELETE /api/usuario/{id}", auth.WithAuthAccessLevelMiddleware(DeleteUser, auth.AccessLevelAdmin))
@@ -279,7 +281,8 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var data struct {
-		Password string `json:"password"`
+		CurrentPassword string `json:"currentPassword"`
+		Password        string `json:"password"`
 	}
 	decoder := json.NewDecoder(r.Body)
 	defer r.Body.Close()
@@ -293,6 +296,13 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(data.Password) < 6 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "La nueva contraseña debe tener al menos 6 caracteres",
+		})
+		return
+	}
+
 	user, err := db.GetUserById(r.Context(), authData.Id)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, ErrorParams{
@@ -302,6 +312,14 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := user.ValidatePass(data.CurrentPassword); err != nil {
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "La contraseña actual es incorrecta",
+		})
+		return
+	}
+
+	user.Password = data.Password
 	err = db.UpdateUserPassword(r.Context(), user)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
@@ -313,8 +331,35 @@ func UpdatePassword(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, rmap{
 		"success": true,
-		"user":    user,
 	})
+}
+
+func UpdateOwnPicture(w http.ResponseWriter, r *http.Request) {
+	authData, err := auth.ExtractAuthDataFromRequest(r)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "No se pudo autenticar la sesión actual",
+		})
+		log.Printf("Error getting auth data: %v\n", err)
+		return
+	}
+
+	r.SetPathValue("id", authData.Id)
+	UpdateUserPicture(w, r)
+}
+
+func DeleteOwnPicture(w http.ResponseWriter, r *http.Request) {
+	authData, err := auth.ExtractAuthDataFromRequest(r)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, ErrorParams{
+			ErrorMessage: "No se pudo autenticar la sesión actual",
+		})
+		log.Printf("Error getting auth data: %v\n", err)
+		return
+	}
+
+	r.SetPathValue("id", authData.Id)
+	DeleteUserPicture(w, r)
 }
 
 func UpdateUserPicture(w http.ResponseWriter, r *http.Request) {
