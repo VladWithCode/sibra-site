@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { motion } from "motion/react";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUIStore } from "@/stores/uiStore";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +36,6 @@ export const Route = createFileRoute("/_public/contacto")({
 });
 
 function RouteComponent() {
-    const { data } = useSuspenseQuery(getAgentsOpts());
     const { setHeaderComplementProps, setHeaderFloating } = useUIStore();
     useEffect(() => {
         setHeaderFloating(true);
@@ -120,7 +121,11 @@ function RouteComponent() {
                     </div>
                 </div>
             </section>
-            <AgentsSection agents={data.users} />
+            <ErrorBoundary fallback={<AgentsSectionError />}>
+                <Suspense fallback={<AgentsSectionSkeleton />}>
+                    <AgentsSection />
+                </Suspense>
+            </ErrorBoundary>
             <section className="relative z-0 bg-gray-200 px-6 lg:px-20 py-12 sm:py-6 lg:py-8 text-current/80">
                 <div className="text-center mb-4">
                     <ConnectIcon className="text-current/90 size-10 mx-auto" />
@@ -253,7 +258,49 @@ const offices = [
     }
 ]
 
-function AgentsSection({ agents }: { agents: TPublicUser[] }) {
+function AgentsSectionSkeleton() {
+    return (
+        <section className="bg-surface-container px-6 md:px-12 lg:px-20 py-12 md:py-16 lg:py-24">
+            <div className="max-w-7xl space-y-8 mx-auto">
+                <div className="space-y-2">
+                    <Skeleton className="h-8 w-64 rounded-md" />
+                    <Skeleton className="h-4 w-80 rounded-md" />
+                </div>
+                <div className="grid lg:flex grid-cols-2 gap-12">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="flex flex-col items-center justify-center gap-2">
+                            <Skeleton className="size-32 rounded-xl" />
+                            <Skeleton className="h-4 w-24 rounded-md" />
+                            <div className="flex gap-3">
+                                <Skeleton className="size-4 rounded-full" />
+                                <Skeleton className="size-4 rounded-full" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function AgentsSectionError() {
+    return (
+        <section className="bg-surface-container px-6 md:px-12 lg:px-20 py-12 md:py-16 lg:py-24">
+            <div className="max-w-7xl space-y-8 mx-auto">
+                <div className="space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-medium">Habla con un experto</h2>
+                </div>
+                <p className="text-sm text-current/60">
+                    Pronto agregaremos el listado de nuestros agentes.
+                </p>
+            </div>
+        </section>
+    );
+}
+
+function AgentsSection() {
+    const { data } = useSuspenseQuery(getAgentsOpts());
+
     return (
         <section className="bg-surface-container px-6 md:px-12 lg:px-20 py-12 md:py-16 lg:py-24">
             <div className="max-w-7xl space-y-8 mx-auto">
@@ -263,7 +310,7 @@ function AgentsSection({ agents }: { agents: TPublicUser[] }) {
                 </div>
                 <div className="grid lg:flex grid-cols-2 gap-12">
                     {
-                        agents.map((agent, idx) => (
+                        data.users.map((agent, idx) => (
                             <AgentCard key={idx} agent={agent} />
                         ))
                     }
