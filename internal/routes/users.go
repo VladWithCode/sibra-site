@@ -19,7 +19,7 @@ import (
 
 func RegisterUserRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/usuarios", auth.WithAuthAccessLevelMiddleware(GetUsers, auth.AccessLevelAdmin))
-	router.HandleFunc("GET /api/usuarios/agentes", auth.WithAuthAccessLevelMiddleware(GetAgentListing, auth.AccessLevelAdmin))
+	router.HandleFunc("GET /api/usuarios/agentes", GetAgentListing)
 	router.HandleFunc("GET /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(GetUserByID, auth.AccessLevelAdmin))
 	router.HandleFunc("POST /api/usuario", auth.WithAuthAccessLevelMiddleware(CreateUser, auth.AccessLevelAdmin))
 	router.HandleFunc("PUT /api/usuarios/{id}", auth.WithAuthAccessLevelMiddleware(UpdateUser, auth.AccessLevelAdmin))
