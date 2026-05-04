@@ -1,17 +1,14 @@
-import { getPropertyListingOpts } from "@/queries/properties";
+import { getPropertyFilteredListingOpts } from "@/queries/properties";
+import type { TPropertyFilters } from "@/queries/type";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { NewPropertyCard } from "./PropertyCard";
 import { Pagination } from "../Pagination";
 import { LoadingCircles } from "../icons/loadingCircles";
 
 
-export function PropertyListing({ contract, filters }: { contract: string, filters: Partial<TPropertyFilters> }) {
+export function PropertyListing({ filters }: { filters: Partial<TPropertyFilters> }) {
     const { data } = useSuspenseQuery(
-        getPropertyListingOpts({
-            ...filters,
-            // @ts-ignore
-            contract,
-        }),
+        getPropertyFilteredListingOpts(filters),
     );
 
     return (
@@ -23,7 +20,6 @@ export function PropertyListing({ contract, filters }: { contract: string, filte
                             <p>No se encontraron propiedades para la búsqueda ingresada.</p>
                         </div> : data.properties.map((prop) => (
                             <div className="w-full max-w-lg" key={prop.id}>
-                                {/* <PropertyCard key={prop.id} propData={prop} withMap={!!prop.lat && !!prop.lon} /> */}
                                 <NewPropertyCard property={prop} />
                             </div>
                         ))
@@ -42,4 +38,3 @@ export function PropertyListingLoading() {
         </div>
     );
 }
-

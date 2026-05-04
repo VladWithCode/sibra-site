@@ -101,7 +101,7 @@ function FeaturedListings({ properties }: { properties: TProperty[]; }) {
                         <span className="text-label-md text-primary mb-3 block">Oportunidades únicas</span>
                         <h2 className="text-headline-lg">Últimas propiedades en oferta</h2>
                     </div>
-                    <Link to="/propiedades/venta" className="flex items-center gap-1 text-sm text-sbr-blue-dark leading-0">
+                    <Link to="/propiedades" className="flex items-center gap-1 text-sm text-sbr-blue-dark leading-0">
                         <span>Ver todas las propiedades</span>
                         <ArrowRight className="size-4" />
                     </Link>
@@ -222,7 +222,7 @@ const serviceList = [
         icon: HomeIcon,
         title: "Comprar",
         description: "¿Buscas una casa, apartamento o alguna vivienda para ti y tu familia? ¡En SIBRA tenemos las mejores opciones para que encuentres la casa de tus sueños!",
-        link: "/propiedades/venta",
+        link: "/propiedades",
     },
     {
         icon: SellHomeIcon,

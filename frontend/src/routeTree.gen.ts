@@ -44,7 +44,6 @@ import { Route as PublicPropiedadesDetailRouteRouteImport } from './routes/_publ
 import { Route as PanelProyectosIdIndexRouteImport } from './routes/panel/proyectos/$id/index'
 import { Route as PublicPropiedadesListingIndexRouteImport } from './routes/_public/propiedades/_listing/index'
 import { Route as PanelProyectosIdAsociadosRouteImport } from './routes/panel/proyectos/$id/asociados'
-import { Route as PublicPropiedadesListingContractRouteImport } from './routes/_public/propiedades/_listing/$contract'
 import { Route as PanelProyectosIdAsociadosIndexRouteImport } from './routes/panel/proyectos/$id/asociados.index'
 import { Route as PanelProyectosIdAsociadosVincularRouteImport } from './routes/panel/proyectos/$id/asociados.vincular'
 import { Route as PanelProyectosIdAsociadosNuevoRouteImport } from './routes/panel/proyectos/$id/asociados.nuevo'
@@ -226,12 +225,6 @@ const PanelProyectosIdAsociadosRoute =
     path: '/asociados',
     getParentRoute: () => PanelProyectosIdRouteRoute,
   } as any)
-const PublicPropiedadesListingContractRoute =
-  PublicPropiedadesListingContractRouteImport.update({
-    id: '/$contract',
-    path: '/$contract',
-    getParentRoute: () => PublicPropiedadesListingRouteRoute,
-  } as any)
 const PanelProyectosIdAsociadosIndexRoute =
   PanelProyectosIdAsociadosIndexRouteImport.update({
     id: '/',
@@ -292,7 +285,6 @@ export interface FileRoutesByFullPath {
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
   '/panel/usuarios': typeof PanelUsuariosIndexRoute
-  '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/panel/proyectos/$id/asociados': typeof PanelProyectosIdAsociadosRouteWithChildren
   '/propiedades/': typeof PublicPropiedadesListingIndexRoute
   '/panel/proyectos/$id/': typeof PanelProyectosIdIndexRoute
@@ -328,7 +320,6 @@ export interface FileRoutesByTo {
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
   '/panel/usuarios': typeof PanelUsuariosIndexRoute
-  '/propiedades/$contract': typeof PublicPropiedadesListingContractRoute
   '/panel/proyectos/$id': typeof PanelProyectosIdIndexRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
   '/panel/proyectos/$id/asociados/$associateId': typeof PanelProyectosIdAsociadosAssociateIdRoute
@@ -369,7 +360,6 @@ export interface FileRoutesById {
   '/panel/propiedades/': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos/': typeof PanelProyectosIndexRoute
   '/panel/usuarios/': typeof PanelUsuariosIndexRoute
-  '/_public/propiedades/_listing/$contract': typeof PublicPropiedadesListingContractRoute
   '/panel/proyectos/$id/asociados': typeof PanelProyectosIdAsociadosRouteWithChildren
   '/_public/propiedades/_listing/': typeof PublicPropiedadesListingIndexRoute
   '/panel/proyectos/$id/': typeof PanelProyectosIdIndexRoute
@@ -410,7 +400,6 @@ export interface FileRouteTypes {
     | '/panel/propiedades'
     | '/panel/proyectos'
     | '/panel/usuarios'
-    | '/propiedades/$contract'
     | '/panel/proyectos/$id/asociados'
     | '/propiedades/'
     | '/panel/proyectos/$id/'
@@ -446,7 +435,6 @@ export interface FileRouteTypes {
     | '/panel/propiedades'
     | '/panel/proyectos'
     | '/panel/usuarios'
-    | '/propiedades/$contract'
     | '/panel/proyectos/$id'
     | '/propiedades/$contract/$slug'
     | '/panel/proyectos/$id/asociados/$associateId'
@@ -486,7 +474,6 @@ export interface FileRouteTypes {
     | '/panel/propiedades/'
     | '/panel/proyectos/'
     | '/panel/usuarios/'
-    | '/_public/propiedades/_listing/$contract'
     | '/panel/proyectos/$id/asociados'
     | '/_public/propiedades/_listing/'
     | '/panel/proyectos/$id/'
@@ -743,13 +730,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelProyectosIdAsociadosRouteImport
       parentRoute: typeof PanelProyectosIdRouteRoute
     }
-    '/_public/propiedades/_listing/$contract': {
-      id: '/_public/propiedades/_listing/$contract'
-      path: '/$contract'
-      fullPath: '/propiedades/$contract'
-      preLoaderRoute: typeof PublicPropiedadesListingContractRouteImport
-      parentRoute: typeof PublicPropiedadesListingRouteRoute
-    }
     '/panel/proyectos/$id/asociados/': {
       id: '/panel/proyectos/$id/asociados/'
       path: '/'
@@ -817,14 +797,11 @@ const PublicPropiedadesDetailRouteRouteWithChildren =
   )
 
 interface PublicPropiedadesListingRouteRouteChildren {
-  PublicPropiedadesListingContractRoute: typeof PublicPropiedadesListingContractRoute
   PublicPropiedadesListingIndexRoute: typeof PublicPropiedadesListingIndexRoute
 }
 
 const PublicPropiedadesListingRouteRouteChildren: PublicPropiedadesListingRouteRouteChildren =
   {
-    PublicPropiedadesListingContractRoute:
-      PublicPropiedadesListingContractRoute,
     PublicPropiedadesListingIndexRoute: PublicPropiedadesListingIndexRoute,
   }
 

@@ -13,6 +13,7 @@ import type { TPropertyFilters } from "@/queries/type";
 
 export const PropertyListingSearchSchema = z.object({
     q: z.string().optional().catch(""),
+    contract: z.enum(["venta", "renta"]).optional().catch(undefined),
     minPrice: z.coerce.number().positive().optional().catch(undefined),
     maxPrice: z.coerce.number().positive().optional().catch(undefined),
     beds: z.coerce.number().int().nonnegative().optional().catch(undefined),
@@ -36,6 +37,7 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
 
     const form = useForm({
         defaultValues: {
+            contract: filters.contract ?? "",
             minPrice: filters.minPrice?.toString() ?? "",
             maxPrice: filters.maxPrice?.toString() ?? "",
             beds: filters.beds?.toString() ?? "",
@@ -53,6 +55,7 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
                 return s !== "" && Number.isFinite(n) && n > 0 ? n : undefined;
             };
             const next: Partial<TListingSearch> = {
+                contract: (value.contract || undefined) as TListingSearch["contract"],
                 minPrice: toNumOrUndef(value.minPrice),
                 maxPrice: toNumOrUndef(value.maxPrice),
                 beds: toNumOrUndef(value.beds),
@@ -65,6 +68,7 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
                 propType: (value.propType || undefined) as TListingSearch["propType"],
             };
             navigate({
+                // @ts-ignore
                 search: (prev) => ({ ...prev, ...next, page: undefined }),
                 replace: true,
             });
@@ -75,6 +79,7 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
     const clearAll = () => {
         form.reset();
         navigate({
+            // @ts-ignore
             search: (prev) => ({ q: prev.q }),
             replace: true,
         });
@@ -280,6 +285,27 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
 
                     <div className="grid grid-cols-2 gap-3">
                         <form.Field
+                            name="contract"
+                            children={(field) => (
+                                <div className="space-y-1">
+                                    <Label htmlFor={field.name} className={labelClass}>Contrato</Label>
+                                    <Select
+                                        value={field.state.value}
+                                        onValueChange={(v) => field.handleChange(v === "any" ? "" : v)}
+                                    >
+                                        <SelectTrigger id={field.name} className={selectTriggerClass}>
+                                            <SelectValue placeholder="Cualquiera" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="any">Cualquiera</SelectItem>
+                                            <SelectItem value="venta">Venta</SelectItem>
+                                            <SelectItem value="renta">Renta</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
+                        />
+                        <form.Field
                             name="propType"
                             children={(field) => (
                                 <div className="space-y-1">
@@ -301,6 +327,9 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
                                 </div>
                             )}
                         />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
                         <form.Field
                             name="minYearBuilt"
                             children={(field) => (
@@ -359,6 +388,7 @@ export function FilterSection({ filters }: { filters: Partial<TPropertyFilters> 
         if (debounceRef.current) clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(() => {
             navigate({
+                // @ts-ignore
                 search: (prev) => ({ ...prev, q: value || undefined, page: undefined }),
                 replace: true,
             });
@@ -394,6 +424,7 @@ export function FilterSection({ filters }: { filters: Partial<TPropertyFilters> 
 
 export function propertyListingSearchToFilters(search: TListingSearch): Partial<TPropertyFilters> {
     return {
+        contract: search.contract,
         textSearch: search.q ?? "",
         minPrice: search.minPrice,
         maxPrice: search.maxPrice,

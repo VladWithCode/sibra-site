@@ -67,7 +67,7 @@ export type TProperty = {
 
 export type TPropertyFilters = Partial<TProperty> & {
     ids?: string[];
-    contract: string;
+    contract?: string;
     textSearch?: string;
     propType?: TPropertyType;
     minPrice?: number;

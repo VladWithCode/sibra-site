@@ -22,7 +22,7 @@ export const PropertyQueryKeys = {
     featured: () => [...PropertyQueryKeys.listing(), "featured"] as const,
     filtered: (filters: Partial<TPropertyQueryFilters>) =>
         [...PropertyQueryKeys.listing(), "filtered", { filters }] as const,
-    byContract: (contract: string, filters: TPropertyQueryFilters) =>
+    byContract: (contract: string | undefined, filters: TPropertyQueryFilters) =>
         [...PropertyQueryKeys.listing(), "byContract", { contract, filters }] as const,
     nearby: (id: string, nearbyDistance: number) =>
         [...PropertyQueryKeys.listing(), "nearby", { id, nearbyDistance }] as const,

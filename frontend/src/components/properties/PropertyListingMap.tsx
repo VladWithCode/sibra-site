@@ -1,4 +1,4 @@
-import { getPropertyListingOpts } from "@/queries/properties";
+import { getPropertyFilteredListingOpts } from "@/queries/properties";
 import type { TProperty, TPropertyFilters, TPropertyType } from "@/queries/type";
 import { MapsAPIProvider } from "@/maps/component";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -28,18 +28,12 @@ const DEFAULT_ZOOM = 12;
 type PropertyWithCoords = TProperty & { lat: number; lon: number };
 
 export function PropertyListingMap({
-    contract,
     filters,
 }: {
-    contract: string;
     filters: Partial<TPropertyFilters>;
 }) {
     const { data } = useSuspenseQuery(
-        getPropertyListingOpts({
-            ...filters,
-            // @ts-ignore
-            contract,
-        }),
+        getPropertyFilteredListingOpts(filters),
     );
 
     const properties = useMemo(
@@ -62,7 +56,7 @@ export function PropertyListingMap({
                     mapTypeControl={false}
                     streetViewControl={false}
                 >
-                    <MapContents contract={contract} properties={properties} />
+                    <MapContents properties={properties} />
                 </Map>
                 {properties.length === 0 && (
                     <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-surface-container-highest border border-outline-variant text-on-surface text-sm rounded-full px-4 py-2 shadow-md pointer-events-none">
@@ -75,10 +69,8 @@ export function PropertyListingMap({
 }
 
 function MapContents({
-    contract,
     properties,
 }: {
-    contract: string;
     properties: PropertyWithCoords[];
 }) {
     const map = useMap();
@@ -174,7 +166,6 @@ function MapContents({
                     zIndex={2000}
                 >
                     <PropertyPopup
-                        contract={contract}
                         property={selected}
                         onClose={() => setSelectedId(null)}
                     />
@@ -197,11 +188,9 @@ function PropertyPin({ type }: { type: TPropertyType }) {
 }
 
 function PropertyPopup({
-    contract,
     property,
     onClose,
 }: {
-    contract: string;
     property: PropertyWithCoords;
     onClose: () => void;
 }) {
@@ -218,7 +207,7 @@ function PropertyPopup({
                 </button>
                 <Link
                     to="/propiedades/$contract/$slug"
-                    params={{ contract, slug: property.slug }}
+                    params={{ contract: property.contract, slug: property.slug }}
                     className="block"
                 >
                     {property.mainImg ? (
@@ -235,7 +224,7 @@ function PropertyPopup({
                 <div className="p-3 space-y-1.5">
                     <Link
                         to="/propiedades/$contract/$slug"
-                        params={{ contract, slug: property.slug }}
+                        params={{ contract: property.contract, slug: property.slug }}
                         className="block text-sm font-semibold text-on-surface hover:text-sbr-blue line-clamp-2 sm:line-clamp-1"
                     >
                         {getPropertyAddress(property)}
