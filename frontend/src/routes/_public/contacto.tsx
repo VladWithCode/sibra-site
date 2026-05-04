@@ -93,7 +93,7 @@ function RouteComponent() {
                             Puedes encontrar nuestras oficinas en los siguientes domicilios:
                         </p>
                     </div>
-                    <div className="md:flex lg:grid lg:grid-cols-2 lg:grid-rows-2 md:gap-6 lg:gap-12 *:basis-1/2 *:grow-0" >
+                    <div className="flex flex-col md:flex-row lg:grid lg:grid-cols-2 lg:grid-rows-2 gap-6 lg:gap-12 *:basis-1/2 *:grow-0" >
                         <motion.div
                             className="hidden lg:block lg:row-span-2 *:bg-sbr-blue"
                             initial={{ y: 20, opacity: 0 }}

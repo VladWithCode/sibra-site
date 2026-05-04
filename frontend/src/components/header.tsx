@@ -18,7 +18,7 @@ import {
     SidebarTrigger,
     useSidebar,
 } from "./ui/sidebar";
-import { FilterIcon, HomeIcon, Infonavit, ProjectsIcon } from "./icons/icons";
+import { FilterIcon, HomeIcon, ProjectsIcon } from "./icons/icons";
 import { Link, linkOptions } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
@@ -611,11 +611,6 @@ const mainNavigationItems = linkOptions([
         label: "Terrenos y proyectos",
         to: "/proyectos",
         icon: ProjectsIcon,
-    },
-    {
-        label: "Créditos Infonavit",
-        to: "#",
-        icon: ({ }: { className: string }) => <Infonavit className="size-4" />,
     },
 ]);
 
