@@ -229,16 +229,31 @@ func FindAgents(ctx context.Context) ([]*User, error) {
 
 	var users []*User
 	for rows.Next() {
-		var user User
+		var (
+			user  User
+			email sql.NullString
+			img   sql.NullString
+			phone sql.NullString
+		)
 		err = rows.Scan(
 			&user.Fullname,
-			&user.Email,
-			&user.Phone,
-			&user.Img,
+			&email,
+			&phone,
+			&img,
 		)
 
 		if err != nil {
 			return nil, err
+		}
+
+		if email.Valid {
+			user.Email = email.String
+		}
+		if phone.Valid {
+			user.Phone = phone.String
+		}
+		if img.Valid {
+			user.Img = img.String
 		}
 
 		users = append(users, &user)
