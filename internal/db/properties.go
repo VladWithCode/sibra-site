@@ -322,6 +322,9 @@ func CreateProperty(prop *Property) error {
 	// Ensure coords are set from lat/lon
 	prop.SetCoords()
 
+	// Ensure slug is set
+	prop.SetSlug()
+
 	tx, err := conn.Begin(ctx)
 	if err != nil {
 		return err
