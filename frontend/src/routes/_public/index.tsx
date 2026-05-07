@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_public/")({
             rel: "preload",
             href: "/hero.webp",
             as: "image",
-            fetchpriority: "high",
+            fetchPriority: "high",
         }],
     }),
 });
