@@ -30,8 +30,10 @@ import { Route as PanelProyectosIndexRouteImport } from './routes/panel/proyecto
 import { Route as PanelPropiedadesIndexRouteImport } from './routes/panel/propiedades/index'
 import { Route as PanelPerfilIndexRouteImport } from './routes/panel/perfil/index'
 import { Route as PanelCitasIndexRouteImport } from './routes/panel/citas/index'
+import { Route as PanelBlogIndexRouteImport } from './routes/panel/blog/index'
 import { Route as PanelAsociadosIndexRouteImport } from './routes/panel/asociados/index'
 import { Route as PublicProyectosIndexRouteImport } from './routes/_public/proyectos/index'
+import { Route as PublicBlogIndexRouteImport } from './routes/_public/blog/index'
 import { Route as PanelUsuariosNuevoRouteImport } from './routes/panel/usuarios/nuevo'
 import { Route as PanelUsuariosIdRouteImport } from './routes/panel/usuarios/$id'
 import { Route as PanelProyectosNuevoRouteImport } from './routes/panel/proyectos/nuevo'
@@ -40,7 +42,10 @@ import { Route as PanelPropiedadesIdRouteImport } from './routes/panel/propiedad
 import { Route as PanelPerfilEditarRouteImport } from './routes/panel/perfil/editar'
 import { Route as PanelPerfilContrasenaRouteImport } from './routes/panel/perfil/contrasena'
 import { Route as PanelCitasIdRouteImport } from './routes/panel/citas/$id'
+import { Route as PanelBlogNuevoRouteImport } from './routes/panel/blog/nuevo'
+import { Route as PanelBlogIdRouteImport } from './routes/panel/blog/$id'
 import { Route as PublicProyectosProjectRouteImport } from './routes/_public/proyectos/$project'
+import { Route as PublicBlogSlugRouteImport } from './routes/_public/blog/$slug'
 import { Route as PanelProyectosIdRouteRouteImport } from './routes/panel/proyectos/$id/route'
 import { Route as PublicPropiedadesListingRouteRouteImport } from './routes/_public/propiedades/_listing/route'
 import { Route as PublicPropiedadesDetailRouteRouteImport } from './routes/_public/propiedades/_detail/route'
@@ -156,6 +161,11 @@ const PanelCitasIndexRoute = PanelCitasIndexRouteImport.update({
   path: '/citas/',
   getParentRoute: () => PanelRouteRoute,
 } as any)
+const PanelBlogIndexRoute = PanelBlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
 const PanelAsociadosIndexRoute = PanelAsociadosIndexRouteImport.update({
   id: '/asociados/',
   path: '/asociados/',
@@ -165,6 +175,11 @@ const PublicProyectosIndexRoute = PublicProyectosIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => PublicProyectosRouteRoute,
+} as any)
+const PublicBlogIndexRoute = PublicBlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PanelUsuariosNuevoRoute = PanelUsuariosNuevoRouteImport.update({
   id: '/usuarios/nuevo',
@@ -206,10 +221,25 @@ const PanelCitasIdRoute = PanelCitasIdRouteImport.update({
   path: '/citas/$id',
   getParentRoute: () => PanelRouteRoute,
 } as any)
+const PanelBlogNuevoRoute = PanelBlogNuevoRouteImport.update({
+  id: '/blog/nuevo',
+  path: '/blog/nuevo',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
+const PanelBlogIdRoute = PanelBlogIdRouteImport.update({
+  id: '/blog/$id',
+  path: '/blog/$id',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
 const PublicProyectosProjectRoute = PublicProyectosProjectRouteImport.update({
   id: '/$project',
   path: '/$project',
   getParentRoute: () => PublicProyectosRouteRoute,
+} as any)
+const PublicBlogSlugRoute = PublicBlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => PublicRouteRoute,
 } as any)
 const PanelProyectosIdRouteRoute = PanelProyectosIdRouteRouteImport.update({
   id: '/proyectos/$id',
@@ -290,7 +320,10 @@ export interface FileRoutesByFullPath {
   '/panel/': typeof PanelIndexRoute
   '/propiedades': typeof PublicPropiedadesListingRouteRouteWithChildren
   '/panel/proyectos/$id': typeof PanelProyectosIdRouteRouteWithChildren
+  '/blog/$slug': typeof PublicBlogSlugRoute
   '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/panel/blog/$id': typeof PanelBlogIdRoute
+  '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
   '/panel/perfil/contrasena': typeof PanelPerfilContrasenaRoute
   '/panel/perfil/editar': typeof PanelPerfilEditarRoute
@@ -299,8 +332,10 @@ export interface FileRoutesByFullPath {
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
   '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
+  '/blog': typeof PublicBlogIndexRoute
   '/proyectos/': typeof PublicProyectosIndexRoute
   '/panel/asociados': typeof PanelAsociadosIndexRoute
+  '/panel/blog': typeof PanelBlogIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
   '/panel/perfil': typeof PanelPerfilIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
@@ -328,7 +363,10 @@ export interface FileRoutesByTo {
   '/conquistadores': typeof ConquistadoresIndexRoute
   '/panel': typeof PanelIndexRoute
   '/propiedades': typeof PublicPropiedadesListingIndexRoute
+  '/blog/$slug': typeof PublicBlogSlugRoute
   '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/panel/blog/$id': typeof PanelBlogIdRoute
+  '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
   '/panel/perfil/contrasena': typeof PanelPerfilContrasenaRoute
   '/panel/perfil/editar': typeof PanelPerfilEditarRoute
@@ -337,8 +375,10 @@ export interface FileRoutesByTo {
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
   '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
+  '/blog': typeof PublicBlogIndexRoute
   '/proyectos': typeof PublicProyectosIndexRoute
   '/panel/asociados': typeof PanelAsociadosIndexRoute
+  '/panel/blog': typeof PanelBlogIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
   '/panel/perfil': typeof PanelPerfilIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
@@ -371,7 +411,10 @@ export interface FileRoutesById {
   '/_public/propiedades/_detail': typeof PublicPropiedadesDetailRouteRouteWithChildren
   '/_public/propiedades/_listing': typeof PublicPropiedadesListingRouteRouteWithChildren
   '/panel/proyectos/$id': typeof PanelProyectosIdRouteRouteWithChildren
+  '/_public/blog/$slug': typeof PublicBlogSlugRoute
   '/_public/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/panel/blog/$id': typeof PanelBlogIdRoute
+  '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
   '/panel/perfil/contrasena': typeof PanelPerfilContrasenaRoute
   '/panel/perfil/editar': typeof PanelPerfilEditarRoute
@@ -380,8 +423,10 @@ export interface FileRoutesById {
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
   '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
+  '/_public/blog/': typeof PublicBlogIndexRoute
   '/_public/proyectos/': typeof PublicProyectosIndexRoute
   '/panel/asociados/': typeof PanelAsociadosIndexRoute
+  '/panel/blog/': typeof PanelBlogIndexRoute
   '/panel/citas/': typeof PanelCitasIndexRoute
   '/panel/perfil/': typeof PanelPerfilIndexRoute
   '/panel/propiedades/': typeof PanelPropiedadesIndexRoute
@@ -414,7 +459,10 @@ export interface FileRouteTypes {
     | '/panel/'
     | '/propiedades'
     | '/panel/proyectos/$id'
+    | '/blog/$slug'
     | '/proyectos/$project'
+    | '/panel/blog/$id'
+    | '/panel/blog/nuevo'
     | '/panel/citas/$id'
     | '/panel/perfil/contrasena'
     | '/panel/perfil/editar'
@@ -423,8 +471,10 @@ export interface FileRouteTypes {
     | '/panel/proyectos/nuevo'
     | '/panel/usuarios/$id'
     | '/panel/usuarios/nuevo'
+    | '/blog'
     | '/proyectos/'
     | '/panel/asociados'
+    | '/panel/blog'
     | '/panel/citas'
     | '/panel/perfil'
     | '/panel/propiedades'
@@ -452,7 +502,10 @@ export interface FileRouteTypes {
     | '/conquistadores'
     | '/panel'
     | '/propiedades'
+    | '/blog/$slug'
     | '/proyectos/$project'
+    | '/panel/blog/$id'
+    | '/panel/blog/nuevo'
     | '/panel/citas/$id'
     | '/panel/perfil/contrasena'
     | '/panel/perfil/editar'
@@ -461,8 +514,10 @@ export interface FileRouteTypes {
     | '/panel/proyectos/nuevo'
     | '/panel/usuarios/$id'
     | '/panel/usuarios/nuevo'
+    | '/blog'
     | '/proyectos'
     | '/panel/asociados'
+    | '/panel/blog'
     | '/panel/citas'
     | '/panel/perfil'
     | '/panel/propiedades'
@@ -494,7 +549,10 @@ export interface FileRouteTypes {
     | '/_public/propiedades/_detail'
     | '/_public/propiedades/_listing'
     | '/panel/proyectos/$id'
+    | '/_public/blog/$slug'
     | '/_public/proyectos/$project'
+    | '/panel/blog/$id'
+    | '/panel/blog/nuevo'
     | '/panel/citas/$id'
     | '/panel/perfil/contrasena'
     | '/panel/perfil/editar'
@@ -503,8 +561,10 @@ export interface FileRouteTypes {
     | '/panel/proyectos/nuevo'
     | '/panel/usuarios/$id'
     | '/panel/usuarios/nuevo'
+    | '/_public/blog/'
     | '/_public/proyectos/'
     | '/panel/asociados/'
+    | '/panel/blog/'
     | '/panel/citas/'
     | '/panel/perfil/'
     | '/panel/propiedades/'
@@ -668,6 +728,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelCitasIndexRouteImport
       parentRoute: typeof PanelRouteRoute
     }
+    '/panel/blog/': {
+      id: '/panel/blog/'
+      path: '/blog'
+      fullPath: '/panel/blog'
+      preLoaderRoute: typeof PanelBlogIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
     '/panel/asociados/': {
       id: '/panel/asociados/'
       path: '/asociados'
@@ -681,6 +748,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/proyectos/'
       preLoaderRoute: typeof PublicProyectosIndexRouteImport
       parentRoute: typeof PublicProyectosRouteRoute
+    }
+    '/_public/blog/': {
+      id: '/_public/blog/'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof PublicBlogIndexRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/panel/usuarios/nuevo': {
       id: '/panel/usuarios/nuevo'
@@ -738,12 +812,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelCitasIdRouteImport
       parentRoute: typeof PanelRouteRoute
     }
+    '/panel/blog/nuevo': {
+      id: '/panel/blog/nuevo'
+      path: '/blog/nuevo'
+      fullPath: '/panel/blog/nuevo'
+      preLoaderRoute: typeof PanelBlogNuevoRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
+    '/panel/blog/$id': {
+      id: '/panel/blog/$id'
+      path: '/blog/$id'
+      fullPath: '/panel/blog/$id'
+      preLoaderRoute: typeof PanelBlogIdRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
     '/_public/proyectos/$project': {
       id: '/_public/proyectos/$project'
       path: '/$project'
       fullPath: '/proyectos/$project'
       preLoaderRoute: typeof PublicProyectosProjectRouteImport
       parentRoute: typeof PublicProyectosRouteRoute
+    }
+    '/_public/blog/$slug': {
+      id: '/_public/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof PublicBlogSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
     }
     '/panel/proyectos/$id': {
       id: '/panel/proyectos/$id'
@@ -894,6 +989,8 @@ interface PublicRouteRouteChildren {
   PublicVendeTuCasaRoute: typeof PublicVendeTuCasaRoute
   PublicIndexRoute: typeof PublicIndexRoute
   PublicPropiedadesRoute: typeof PublicPropiedadesRouteWithChildren
+  PublicBlogSlugRoute: typeof PublicBlogSlugRoute
+  PublicBlogIndexRoute: typeof PublicBlogIndexRoute
 }
 
 const PublicRouteRouteChildren: PublicRouteRouteChildren = {
@@ -908,6 +1005,8 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicVendeTuCasaRoute: PublicVendeTuCasaRoute,
   PublicIndexRoute: PublicIndexRoute,
   PublicPropiedadesRoute: PublicPropiedadesRouteWithChildren,
+  PublicBlogSlugRoute: PublicBlogSlugRoute,
+  PublicBlogIndexRoute: PublicBlogIndexRoute,
 }
 
 const PublicRouteRouteWithChildren = PublicRouteRoute._addFileChildren(
@@ -954,6 +1053,8 @@ const PanelProyectosIdRouteRouteWithChildren =
 interface PanelRouteRouteChildren {
   PanelIndexRoute: typeof PanelIndexRoute
   PanelProyectosIdRouteRoute: typeof PanelProyectosIdRouteRouteWithChildren
+  PanelBlogIdRoute: typeof PanelBlogIdRoute
+  PanelBlogNuevoRoute: typeof PanelBlogNuevoRoute
   PanelCitasIdRoute: typeof PanelCitasIdRoute
   PanelPerfilContrasenaRoute: typeof PanelPerfilContrasenaRoute
   PanelPerfilEditarRoute: typeof PanelPerfilEditarRoute
@@ -963,6 +1064,7 @@ interface PanelRouteRouteChildren {
   PanelUsuariosIdRoute: typeof PanelUsuariosIdRoute
   PanelUsuariosNuevoRoute: typeof PanelUsuariosNuevoRoute
   PanelAsociadosIndexRoute: typeof PanelAsociadosIndexRoute
+  PanelBlogIndexRoute: typeof PanelBlogIndexRoute
   PanelCitasIndexRoute: typeof PanelCitasIndexRoute
   PanelPerfilIndexRoute: typeof PanelPerfilIndexRoute
   PanelPropiedadesIndexRoute: typeof PanelPropiedadesIndexRoute
@@ -973,6 +1075,8 @@ interface PanelRouteRouteChildren {
 const PanelRouteRouteChildren: PanelRouteRouteChildren = {
   PanelIndexRoute: PanelIndexRoute,
   PanelProyectosIdRouteRoute: PanelProyectosIdRouteRouteWithChildren,
+  PanelBlogIdRoute: PanelBlogIdRoute,
+  PanelBlogNuevoRoute: PanelBlogNuevoRoute,
   PanelCitasIdRoute: PanelCitasIdRoute,
   PanelPerfilContrasenaRoute: PanelPerfilContrasenaRoute,
   PanelPerfilEditarRoute: PanelPerfilEditarRoute,
@@ -982,6 +1086,7 @@ const PanelRouteRouteChildren: PanelRouteRouteChildren = {
   PanelUsuariosIdRoute: PanelUsuariosIdRoute,
   PanelUsuariosNuevoRoute: PanelUsuariosNuevoRoute,
   PanelAsociadosIndexRoute: PanelAsociadosIndexRoute,
+  PanelBlogIndexRoute: PanelBlogIndexRoute,
   PanelCitasIndexRoute: PanelCitasIndexRoute,
   PanelPerfilIndexRoute: PanelPerfilIndexRoute,
   PanelPropiedadesIndexRoute: PanelPropiedadesIndexRoute,

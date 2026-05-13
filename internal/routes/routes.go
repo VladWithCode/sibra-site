@@ -20,13 +20,29 @@ func NewRouter() http.Handler {
 	RegisterProjectRoutes(router)
 	RegisterFeatureRoutes(router)
 	RegisterAmenityRoutes(router)
+	RegisterBlogRoutes(router)
 
-	// Serve static
+	// Serve static assets from Go templates/legacy web dir
 	// *Might change it to serve static files through nginx
 	fs := http.FileServer(http.Dir("web/static/"))
 	router.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
-	router.NotFoundHandleFunc(respondWith404)
+	// Serve built React SPA assets (JS/CSS chunks produced by `npm run build`)
+	distFS := http.FileServer(http.Dir(frontendDistDir()))
+	router.Handle("GET /assets/", distFS)
+	// Root-level dist files that must not be caught by the SPA fallback
+	router.Handle("GET /favicon.ico", distFS)
+	router.Handle("GET /manifest.json", distFS)
+	router.Handle("GET /robots.txt", distFS)
+	router.Handle("GET /sibra_logo_256.webp", distFS)
+
+	// Blog post page with Open Graph / Twitter Card meta injection for bots.
+	// Must be registered before the SPA fallback so it takes priority.
+	router.HandleFunc("GET /blog/{slug}", handleBlogPostOG)
+
+	// SPA fallback: all other non-API paths get the React index.html so
+	// client-side routing (/, /blog, /propiedades, /panel/*, etc.) works.
+	router.NotFoundHandleFunc(spaFallback)
 
 	return router
 }

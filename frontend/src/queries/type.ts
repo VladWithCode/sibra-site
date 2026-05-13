@@ -387,3 +387,110 @@ export type TUserUpdateResult = {
     user: TUser;
 };
 
+// ── Blog ──────────────────────────────────────────────────────────────────────
+
+export type TBlogPostStatus = "draft" | "published" | "archived";
+
+export type TBlogTag = {
+    id: string;
+    name: string;
+    slug: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type TBlogPost = {
+    id: string;
+    slug: string;
+    title: string;
+    snippet: string;
+    status: TBlogPostStatus;
+    readingTime: number;
+    authorId: string;
+    contentPath: string;
+    coverImage: string;
+    publishedAt: string;
+    archivedAt: string;
+    createdAt: string;
+    updatedAt: string;
+    tags: TBlogTag[];
+};
+
+export type TBlogPostFilters = {
+    status?: TBlogPostStatus;
+    author?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+};
+
+export type TBlogPostListingResult = {
+    posts: TBlogPost[];
+    pagination: TPagination;
+};
+
+export type TBlogPostDetailResult = {
+    post: TBlogPost;
+    content: string;
+};
+
+export type TBlogTagListingResult = {
+    tags: TBlogTag[];
+};
+
+export type TBlogPostCreatePayload = {
+    title: string;
+    snippet?: string;
+    content: string;
+    coverImage?: string;
+    tagIds?: string[];
+};
+
+export type TBlogPostUpdatePayload = {
+    title: string;
+    snippet?: string;
+    content: string;
+    coverImage?: string;
+    tagIds?: string[];
+};
+
+export type TBlogPostStatusPayload = {
+    status: TBlogPostStatus;
+};
+
+export type TBlogPostCreateResult = {
+    success: true;
+    post: TBlogPost;
+};
+
+export type TBlogPostUpdateResult = {
+    success: true;
+    post: TBlogPost;
+};
+
+export type TBlogPostStatusResult = {
+    success: true;
+    id: string;
+    status: TBlogPostStatus;
+};
+
+export type TBlogPostDeleteResult = {
+    success: true;
+    id: string;
+};
+
+export type TBlogTagCreateResult = {
+    success: true;
+    tag: TBlogTag;
+};
+
+export type TBlogTagDeleteResult = {
+    success: true;
+    id: string;
+};
+
+export type TBlogImageUploadResult = {
+    url: string;
+    markdown: string;
+};
+

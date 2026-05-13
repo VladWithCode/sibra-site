@@ -1,4 +1,4 @@
-import { Heart, Home, LucideX } from "lucide-react";
+import { Heart, Home, LucideX, Newspaper } from "lucide-react";
 import { Button } from "./ui/button";
 import {
     NavigationMenu,
@@ -586,6 +586,10 @@ const desktopNavigationItems = linkOptions([
         to: "/proyectos",
     },
     {
+        label: "Blog",
+        to: "/blog",
+    },
+    {
         label: "Contacto",
         to: "/contacto",
     },
@@ -611,6 +615,11 @@ const mainNavigationItems = linkOptions([
         label: "Terrenos y proyectos",
         to: "/proyectos",
         icon: ProjectsIcon,
+    },
+    {
+        label: "Blog",
+        to: "/blog",
+        icon: Newspaper,
     },
 ]);
 
