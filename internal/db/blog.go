@@ -462,7 +462,7 @@ func UpdateBlogPostStatus(ctx context.Context, id string, newStatus BlogPostStat
 
 	tag, err := conn.Exec(ctx, `
 		UPDATE blog_posts SET
-            status = @newStatus::text,
+			status = @newStatus,
 			published_at = CASE
 				WHEN @newStatus = 'published' AND published_at IS NULL THEN NOW()
 				ELSE published_at
@@ -603,6 +603,40 @@ func collectBlogPostRows(rows pgx.Rows) ([]*BlogPost, error) {
 		return nil, err
 	}
 	return posts, nil
+}
+
+// ── Blog image reference queries (used by cleanup tools) ─────────────────────
+
+// BlogImageRef holds the cover_image and content_path for a single post.
+type BlogImageRef struct {
+	CoverImage  string
+	ContentPath string
+}
+
+// ListBlogImageRefs returns cover_image and content_path for every blog post
+// (all statuses). Used by the orphan image cleanup tool to determine which
+// images are still referenced.
+func ListBlogImageRefs(ctx context.Context) ([]BlogImageRef, error) {
+	conn, err := GetPoolWithCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	rows, err := conn.Query(ctx,
+		`SELECT COALESCE(cover_image, ''), content_path FROM blog_posts`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var refs []BlogImageRef
+	for rows.Next() {
+		var r BlogImageRef
+		if err := rows.Scan(&r.CoverImage, &r.ContentPath); err != nil {
+			return nil, err
+		}
+		refs = append(refs, r)
+	}
+	return refs, rows.Err()
 }
 
 // ── Blog Tags ─────────────────────────────────────────────────────────────────

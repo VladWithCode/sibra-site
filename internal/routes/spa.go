@@ -15,19 +15,29 @@ func frontendDistDir() string {
 }
 
 // spaCache holds the raw bytes of frontend/dist/index.html after the first
-// successful read. The sync.Once ensures concurrent requests never race.
+// successful read. Errors are NOT cached so the server recovers automatically
+// once the frontend build becomes available (e.g. after a delayed npm run build).
 var (
-	spaOnce  sync.Once
+	spaMu    sync.Mutex
 	spaBytes []byte
-	spaErr   error
 )
 
-// readSPAHTML returns the cached index.html bytes, loading from disk once.
+// readSPAHTML returns the cached index.html bytes. On the first successful read
+// the result is cached for all subsequent calls. If the read fails (e.g.
+// frontend/dist not built yet), the error is returned but NOT cached — the next
+// call will retry.
 func readSPAHTML() ([]byte, error) {
-	spaOnce.Do(func() {
-		spaBytes, spaErr = os.ReadFile(frontendDistDir() + "/index.html")
-	})
-	return spaBytes, spaErr
+	spaMu.Lock()
+	defer spaMu.Unlock()
+	if spaBytes != nil {
+		return spaBytes, nil
+	}
+	data, err := os.ReadFile(frontendDistDir() + "/index.html")
+	if err != nil {
+		return nil, err
+	}
+	spaBytes = data
+	return spaBytes, nil
 }
 
 // serveSPA writes the built React SPA index.html as-is.

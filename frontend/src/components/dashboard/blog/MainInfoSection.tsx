@@ -1,3 +1,4 @@
+import { CoverImageUpload } from "./CoverImageUpload";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -26,7 +27,7 @@ export function MainInfoSection({ form, readonlySlug }: { form: any; readonlySlu
                             disabled
                             className="font-mono text-sm bg-surface-container"
                         />
-                        <p className="text-xs text-outline">El slug no puede modificarse después de crear el post.</p>
+                        <p className="text-xs text-on-surface-variant">El slug no puede modificarse después de crear el post.</p>
                     </Field>
                 )}
 
@@ -63,44 +64,41 @@ export function MainInfoSection({ form, readonlySlug }: { form: any; readonlySlu
                     )}
                 </form.Field>
 
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <form.Field name="coverImage">
-                        {(field: any) => (
-                            <Field>
-                                <FieldLabel htmlFor="coverImage">Imagen de portada (URL)</FieldLabel>
-                                <Input
-                                    id="coverImage"
-                                    value={field.state.value ?? ""}
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) => field.handleChange(e.target.value)}
-                                    placeholder="/static/uploads/blog/imagen.jpg"
-                                />
-                                <FieldError errors={errsOf(field)} />
-                            </Field>
-                        )}
-                    </form.Field>
+                {/* Cover image — file upload control */}
+                <form.Field name="coverImage">
+                    {(field: any) => (
+                        <Field>
+                            <FieldLabel>Imagen de portada</FieldLabel>
+                            <CoverImageUpload
+                                value={field.state.value ?? ""}
+                                onChange={(url) => field.handleChange(url)}
+                            />
+                            <FieldError errors={errsOf(field)} />
+                        </Field>
+                    )}
+                </form.Field>
 
-                    <form.Field name="readingTime">
-                        {(field: any) => (
-                            <Field>
-                                <FieldLabel htmlFor="readingTime">Tiempo de lectura (min)</FieldLabel>
-                                <Input
-                                    id="readingTime"
-                                    type="number"
-                                    min={1}
-                                    value={field.state.value ?? ""}
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) => {
-                                        const v = e.target.value;
-                                        field.handleChange(v === "" ? undefined : Number(v));
-                                    }}
-                                    placeholder="Auto-calculado si se deja vacío"
-                                />
-                                <FieldError errors={errsOf(field)} />
-                            </Field>
-                        )}
-                    </form.Field>
-                </div>
+                <form.Field name="readingTime">
+                    {(field: any) => (
+                        <Field>
+                            <FieldLabel htmlFor="readingTime">Tiempo de lectura (min)</FieldLabel>
+                            <Input
+                                id="readingTime"
+                                type="number"
+                                min={1}
+                                value={field.state.value ?? ""}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => {
+                                    const v = e.target.value;
+                                    field.handleChange(v === "" ? undefined : Number(v));
+                                }}
+                                placeholder="Auto-calculado si se deja vacío"
+                                className="max-w-xs"
+                            />
+                            <FieldError errors={errsOf(field)} />
+                        </Field>
+                    )}
+                </form.Field>
             </CardContent>
         </Card>
     );

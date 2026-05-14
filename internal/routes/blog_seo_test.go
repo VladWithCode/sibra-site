@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"net/http"
 	"net/url"
 	"strings"
 	"testing"
@@ -186,6 +187,41 @@ func TestCanonicalSlug_inOGInjection(t *testing.T) {
 	wantCanonical := `href="https://sibrainmobiliaria.com/blog/mi-articulo-2024"`
 	if !strings.Contains(enriched, wantCanonical) {
 		t.Errorf("canonical href not found or incorrect in enriched HTML; want %q", wantCanonical)
+	}
+}
+
+// ── siteBaseURL ──────────────────────────────────────────────────────────────
+
+func TestSiteBaseURL_envOverride(t *testing.T) {
+	t.Setenv("SITE_URL", "https://sibrainmobiliaria.com")
+	r, _ := http.NewRequest("GET", "/blog/test", nil)
+	r.Host = "evil.com"
+	r.Header.Set("X-Forwarded-Host", "also-evil.com")
+	got := siteBaseURL(r)
+	if got != "https://sibrainmobiliaria.com" {
+		t.Errorf("SITE_URL should take priority, got %q", got)
+	}
+}
+
+func TestSiteBaseURL_forwardedHost(t *testing.T) {
+	t.Setenv("SITE_URL", "")
+	r, _ := http.NewRequest("GET", "/blog/test", nil)
+	r.Host = "127.0.0.1:8080"
+	r.Header.Set("X-Forwarded-Host", "sibrainmobiliaria.com")
+	r.Header.Set("X-Forwarded-Proto", "https")
+	got := siteBaseURL(r)
+	if got != "https://sibrainmobiliaria.com" {
+		t.Errorf("expected X-Forwarded-Host, got %q", got)
+	}
+}
+
+func TestSiteBaseURL_fallbackToHost(t *testing.T) {
+	t.Setenv("SITE_URL", "")
+	r, _ := http.NewRequest("GET", "/blog/test", nil)
+	r.Host = "localhost:8080"
+	got := siteBaseURL(r)
+	if got != "http://localhost:8080" {
+		t.Errorf("expected r.Host fallback, got %q", got)
 	}
 }
 

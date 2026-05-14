@@ -22,6 +22,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
+	github.com/yuin/goldmark v1.8.2 // indirect
 	golang.org/x/sync v0.13.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 )
