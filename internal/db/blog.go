@@ -462,7 +462,7 @@ func UpdateBlogPostStatus(ctx context.Context, id string, newStatus BlogPostStat
 
 	tag, err := conn.Exec(ctx, `
 		UPDATE blog_posts SET
-			status = @newStatus,
+            status = @newStatus::text,
 			published_at = CASE
 				WHEN @newStatus = 'published' AND published_at IS NULL THEN NOW()
 				ELSE published_at
