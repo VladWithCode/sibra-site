@@ -48,11 +48,11 @@ function RouteComponent() {
 
     return (
         <main className="relative">
-            <section className="max-w-7xl mx-auto p-6 py-8 animate-fade-up">
-                <h2 className="font-headline text-4xl font-extrabold tracking-tight text-on-surface mb-3">
+            <section className="max-w-7xl mx-auto p-3 pt-12 pb-6 animate-fade-up">
+                <h2 className="font-headline text-4xl font-extrabold tracking-tight text-on-surface xl:mb-3">
                     Propiedades
                 </h2>
-                <p className="font-body text-on-surface-variant text-sm leading-relaxed max-w-[90%]">
+                <p className="hidden xl:block font-body text-on-surface-variant text-sm leading-relaxed max-w-[90%]">
                     Explora nuestra colección de propiedades arquitectónicas, donde diseño sofisticado y lujoso se
                     muestran en un mundo de lujo.
                 </p>
@@ -62,29 +62,33 @@ function RouteComponent() {
                 className="sticky top-0 inset-x-0 z-30 translate-y-0 data-[stuck=true]:translate-y-(--header-height) bg-surface-container-high/0 data-[stuck=true]:bg-surface-container-high transition-[transform,translate,background] group data-[stuck=true]:shadow-md"
                 data-stuck={!isSentinelInView}
             >
-                <div className="max-w-7xl mx-auto bg-surface-container/0 group-data-[sticky=true]:bg-surface-container px-6 py-3 space-y-4">
-                    <FilterSection filters={filters} />
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2 p-1 bg-surface-container-high group-data-[stuck=true]:bg-surface-container-highest border border-surface-container-high group-data-[stuck=true]:border-outline-variant rounded-xl">
-                            <button
-                                type="button"
-                                onClick={() => setView("list")}
-                                data-active={view === "list"}
-                                className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all data-[active=true]:bg-white data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
-                            >
-                                <List />
-                                List
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setView("map")}
-                                data-active={view === "map"}
-                                className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all data-[active=true]:bg-white data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
-                            >
-                                <MapIcon />
-                                Map
-                            </button>
-                        </div>
+                <div className="max-w-7xl mx-auto bg-surface-container/0 group-data-[sticky=true]:bg-surface-container p-3">
+                    <FilterSection
+                        filters={filters}
+                        leading={
+                            <div className="flex items-center gap-2 p-1 bg-surface-container-high group-data-[stuck=true]:bg-surface-container-highest border border-surface-container-high group-data-[stuck=true]:border-outline-variant rounded-xl">
+                                <button
+                                    type="button"
+                                    onClick={() => setView("list")}
+                                    data-active={view === "list"}
+                                    className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all data-[active=true]:bg-white data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
+                                >
+                                    <List />
+                                    List
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setView("map")}
+                                    data-active={view === "map"}
+                                    className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all data-[active=true]:bg-white data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
+                                >
+                                    <MapIcon />
+                                    Map
+                                </button>
+                            </div>
+                        }
+                    />
+                    <div className="flex items-end justify-end mt-6">
                         <Suspense fallback={<ResultCountLoading />}>
                             <ResultCount filters={filters} />
                         </Suspense>

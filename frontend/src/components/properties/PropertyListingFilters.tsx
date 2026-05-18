@@ -1,8 +1,9 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import z from "zod";
 import { useForm } from "@tanstack/react-form";
+import { AnimatePresence, motion } from "motion/react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
@@ -376,8 +377,9 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
     );
 }
 
-export function FilterSection({ filters }: { filters: Partial<TPropertyFilters> }) {
+export function FilterSection({ filters, leading }: { filters: Partial<TPropertyFilters>; leading?: ReactNode; }) {
     const navigate = useNavigate();
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     const [search, setSearch] = useState(filters.textSearch ?? "");
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -401,24 +403,58 @@ export function FilterSection({ filters }: { filters: Partial<TPropertyFilters> 
         };
     }, []);
 
+    const hasQuery = !!filters.textSearch;
+
     return (
-        <>
-            <div className="grid grid-cols-[auto_1fr_auto] grid-rows-1 gap-3">
-                <Label htmlFor="main-property-search" className="relative z-10 inline-block col-start-1 row-start-1 my-auto px-3">
-                    <Search className="size-4.5 stroke-3" style={{ color: "var(--color-outline-variant)" }} />
-                </Label>
-                <Input
-                    className="col-start-1 row-start-1 col-span-2 w-full h-12 pl-10 pr-4 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
-                    placeholder="Colonia, Codigo Postal, etc."
-                    type="text"
-                    id="main-property-search"
-                    name="search"
-                    value={search}
-                    onChange={(e) => onInputChange(e.target.value)}
-                />
-                <FiltersDialog filters={filters} />
+        <div className="space-y-0">
+            <div className="flex items-center justify-between gap-3">
+                <div className="">
+                    {leading}
+                </div>
+                <div className="flex items-center gap-3">
+                    <Button
+                        type="button"
+                        onClick={() => setIsSearchOpen((prev) => !prev)}
+                        data-active={isSearchOpen}
+                        className="aspect-square h-12 relative px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all bg-surface-container-lowest border border-outline-variant rounded-xl data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
+                        variant="ghost"
+                    >
+                        <Search className="size-4" />
+                        {hasQuery && (
+                            <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-primary" />
+                        )}
+                    </Button>
+                    <FiltersDialog filters={filters} />
+                </div>
             </div>
-        </>
+            <AnimatePresence>
+                {isSearchOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="px-1 py-3 grid grid-cols-[auto_1fr] grid-rows-1">
+                            <Label htmlFor="main-property-search" className="relative z-10 inline-block col-start-1 row-start-1 my-auto px-3">
+                                <Search className="size-4.5 stroke-3" style={{ color: "var(--color-outline-variant)" }} />
+                            </Label>
+                            <Input
+                                className="col-start-1 row-start-1 col-span-2 w-full h-12 pl-10 pr-4 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                                placeholder="Colonia, Codigo Postal, etc."
+                                type="text"
+                                id="main-property-search"
+                                name="search"
+                                value={search}
+                                onChange={(e) => onInputChange(e.target.value)}
+                                autoFocus
+                            />
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }
 
