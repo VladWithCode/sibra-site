@@ -6,7 +6,7 @@ import { getPropertyFilteredListingOpts } from "@/queries/properties";
 import type { TPropertyFilters } from "@/queries/type";
 import { useUIStore } from "@/stores/uiStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { List, MapIcon } from "lucide-react";
 import { useInView } from "motion/react";
 import { Suspense, useEffect, useRef } from "react";
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_public/propiedades/_listing/")({
 });
 
 function RouteComponent() {
-    const { setHeaderFloating, setHeaderComplementProps, setHeaderQuickStick } = useUIStore();
+    const { setHeaderQuickStick, setHeaderHidden, setHeaderComplementProps } = useUIStore();
     const filters = Route.useSearch();
     const navigate = useNavigate();
     const view = filters.view ?? "list";
@@ -33,10 +33,24 @@ function RouteComponent() {
     });
 
     useEffect(() => {
-        setHeaderFloating(false);
-        setHeaderComplementProps({ complementType: "search" });
-        setHeaderQuickStick(true);
+        setHeaderComplementProps({ complementType: "none" })
     }, []);
+
+    useEffect(() => {
+        if (view === "map") {
+            setHeaderHidden(true);
+            document.body.style.overflow = "hidden";
+        } else {
+            setHeaderHidden(false);
+            document.body.style.overflow = "";
+            setHeaderQuickStick(true);
+        }
+
+        return () => {
+            setHeaderHidden(false);
+            document.body.style.overflow = "";
+        };
+    }, [view]);
 
     const setView = (next: "list" | "map") => {
         navigate({
@@ -48,60 +62,83 @@ function RouteComponent() {
 
     return (
         <main className="relative">
-            <section className="max-w-7xl mx-auto p-3 pt-12 pb-6 animate-fade-up">
-                <h2 className="font-headline text-4xl font-extrabold tracking-tight text-on-surface xl:mb-3">
-                    Propiedades
-                </h2>
-                <p className="hidden xl:block font-body text-on-surface-variant text-sm leading-relaxed max-w-[90%]">
-                    Explora nuestra colección de propiedades arquitectónicas, donde diseño sofisticado y lujoso se
-                    muestran en un mundo de lujo.
-                </p>
-            </section>
-            <div ref={sentinelRef} className="relative h-0 overflow-hidden pointer-events-none" aria-hidden />
-            <section
-                className="sticky top-0 inset-x-0 z-30 translate-y-0 data-[stuck=true]:translate-y-(--header-height) bg-surface-container-high/0 data-[stuck=true]:bg-surface-container-high transition-[transform,translate,background] group data-[stuck=true]:shadow-md"
-                data-stuck={!isSentinelInView}
-            >
-                <div className="max-w-7xl mx-auto bg-surface-container/0 group-data-[sticky=true]:bg-surface-container p-3">
-                    <FilterSection
-                        filters={filters}
-                        leading={
-                            <div className="flex items-center gap-2 p-1 bg-surface-container-high group-data-[stuck=true]:bg-surface-container-highest border border-surface-container-high group-data-[stuck=true]:border-outline-variant rounded-xl">
-                                <button
-                                    type="button"
-                                    onClick={() => setView("list")}
-                                    data-active={view === "list"}
-                                    className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all data-[active=true]:bg-white data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
-                                >
-                                    <List />
-                                    List
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setView("map")}
-                                    data-active={view === "map"}
-                                    className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all data-[active=true]:bg-white data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
-                                >
-                                    <MapIcon />
-                                    Map
-                                </button>
-                            </div>
-                        }
-                    />
-                    <div className="flex items-end justify-end mt-6">
-                        <Suspense fallback={<ResultCountLoading />}>
-                            <ResultCount filters={filters} />
-                        </Suspense>
+            <div className={view === "map" ? "hidden" : undefined}>
+                <section className="max-w-7xl mx-auto p-3 pt-12 pb-6 animate-fade-up">
+                    <h2 className="font-headline text-4xl font-extrabold tracking-tight text-on-surface xl:mb-3">
+                        Propiedades
+                    </h2>
+                    <p className="hidden xl:block font-body text-on-surface-variant text-sm leading-relaxed max-w-[90%]">
+                        Explora nuestra colección de propiedades arquitectónicas, donde diseño sofisticado y lujoso se
+                        muestran en un mundo de lujo.
+                    </p>
+                </section>
+                <div ref={sentinelRef} className="relative h-0 overflow-hidden pointer-events-none" aria-hidden />
+                <section
+                    className="sticky top-0 inset-x-0 z-30 translate-y-0 data-[stuck=true]:translate-y-(--header-height) bg-surface-container-high/0 data-[stuck=true]:bg-surface-container-high transition-[transform,translate,background] group data-[stuck=true]:shadow-md"
+                    data-stuck={!isSentinelInView}
+                >
+                    <div className="max-w-7xl mx-auto bg-surface-container/0 group-data-[stuck=true]:bg-surface-container p-3">
+                        <FilterSection
+                            filters={filters}
+                            leading={
+                                <div className="flex items-center gap-2 p-1 bg-surface-container-high group-data-[stuck=true]:bg-surface-container-highest border border-surface-container-high group-data-[stuck=true]:border-outline-variant rounded-xl">
+                                    <button
+                                        type="button"
+                                        onClick={() => setView("list")}
+                                        data-active={view === "list"}
+                                        className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all data-[active=true]:bg-white data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
+                                    >
+                                        <List />
+                                        Lista
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setView("map")}
+                                        data-active={false}
+                                        className="px-4 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-all data-[active=true]:bg-white data-[active=true]:text-primary data-[active=true]:font-bold data-[active=true]:shadow-sm data-[active=false]:text-on-surface-variant data-[active=false]:hover:bg-white/50"
+                                    >
+                                        <MapIcon />
+                                        Mapa
+                                    </button>
+                                </div>
+                            }
+                        />
+                        <div className="flex items-end justify-end mt-6">
+                            <Suspense fallback={<ResultCountLoading />}>
+                                <ResultCount filters={filters} />
+                            </Suspense>
+                        </div>
                     </div>
-                </div>
-            </section>
-            {view === "map" ? (
-                <Suspense fallback={<PropertyListingMapLoading />}>
-                    <PropertyListingMap filters={propertyListingSearchToFilters(filters)} />
-                </Suspense>
-            ) : (
+                </section>
                 <Suspense fallback={<PropertyListingLoading />}>
                     <PropertyListing filters={propertyListingSearchToFilters(filters)} />
+                </Suspense>
+            </div>
+            <section className={`bg-sbr-blue-dark py-24 px-8 text-white ${view === "map" ? "hidden" : ""}`}>
+                <div className="max-w-5xl mx-auto text-center">
+                    <h2 className="font-headline text-4xl md:text-5xl font-extrabold mb-6 tracking-tighter">
+                        ¿Quieres vender tu propiedad?
+                    </h2>
+                    <p className="text-primary-fixed text-lg mb-12 max-w-2xl mx-auto">
+                        En Sibra te ayudamos a vender tu casa de forma rápida y al mejor precio.
+                        Nuestro equipo de expertos se encarga de todo el proceso por ti.
+                    </p>
+                    <Link
+                        className="bg-white text-primary px-10 py-4 rounded-lg font-headline font-bold hover:bg-primary-fixed transition-all"
+                        to="/vende-tu-casa"
+                    >
+                        Vende tu casa
+                    </Link>
+                </div>
+            </section>
+            {view === "map" && (
+                <Suspense fallback={<PropertyListingMapLoading fullscreen />}>
+                    <PropertyListingMap
+                        filters={propertyListingSearchToFilters(filters)}
+                        fullscreen
+                        onSwitchToList={() => setView("list")}
+                        searchFilters={filters}
+                    />
                 </Suspense>
             )}
         </main>

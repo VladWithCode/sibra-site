@@ -2,7 +2,7 @@ import { getPropertyFilteredListingOpts } from "@/queries/properties";
 import type { TProperty, TPropertyFilters, TPropertyType } from "@/queries/type";
 import { MapsAPIProvider } from "@/maps/component";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import {
     AdvancedMarker,
     Map,
@@ -13,12 +13,17 @@ import {
     type Marker,
     type Renderer,
 } from "@googlemaps/markerclusterer";
-import { Bath, Bed, Building2, Home, Ruler, Trees, X } from "lucide-react";
+import { Bath, Bed, Building2, Home, List, Ruler, Search, Trees, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LoadingCircles } from "../icons/loadingCircles";
 import { PropertyImage } from "../Image";
 import { getPropertyAddress } from "@/lib/utils";
 import { FormatMetric, FormatMoney } from "@/lib/format";
+import { FiltersDialog } from "./PropertyListingFilters";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
+import type z from "zod";
+import type { PropertyListingSearchSchema } from "./PropertyListingFilters";
 
 const PROPERTY_LOCATION_ID = import.meta.env.VITE_MAPS_PROPERTY_LOCATION_ID;
 
@@ -29,8 +34,14 @@ type PropertyWithCoords = TProperty & { lat: number; lon: number };
 
 export function PropertyListingMap({
     filters,
+    fullscreen,
+    onSwitchToList,
+    searchFilters,
 }: {
     filters: Partial<TPropertyFilters>;
+    fullscreen?: boolean;
+    onSwitchToList?: () => void;
+    searchFilters?: z.infer<typeof PropertyListingSearchSchema>;
 }) {
     const { data } = useSuspenseQuery(
         getPropertyFilteredListingOpts(filters),
@@ -44,9 +55,18 @@ export function PropertyListingMap({
         [data.properties],
     );
 
+    const propertyCount = data?.pagination?.total ?? 0;
+
     return (
         <MapsAPIProvider>
-            <div className="relative w-full h-[calc(100svh-var(--header-height,64px))] bg-surface-container">
+            <div className={`relative w-full bg-surface-container ${fullscreen ? "h-svh" : "h-[calc(100svh-var(--header-height,64px))]"}`}>
+                {fullscreen && searchFilters && (
+                    <MapOverlayControls
+                        onSwitchToList={onSwitchToList!}
+                        searchFilters={searchFilters}
+                        propertyCount={propertyCount}
+                    />
+                )}
                 <Map
                     mapId={PROPERTY_LOCATION_ID}
                     defaultCenter={DURANGO_CENTER}
@@ -59,12 +79,99 @@ export function PropertyListingMap({
                     <MapContents properties={properties} />
                 </Map>
                 {properties.length === 0 && (
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-surface-container-highest border border-outline-variant text-on-surface text-sm rounded-full px-4 py-2 shadow-md pointer-events-none">
+                    <div className={`absolute left-1/2 -translate-x-1/2 bg-surface-container-highest border border-outline-variant text-on-surface text-sm rounded-full px-4 py-2 shadow-md pointer-events-none ${fullscreen ? "top-20" : "top-4"}`}>
                         No se encontraron propiedades para la búsqueda ingresada.
                     </div>
                 )}
             </div>
         </MapsAPIProvider>
+    );
+}
+
+function MapOverlayControls({
+    onSwitchToList,
+    searchFilters,
+    propertyCount,
+}: {
+    onSwitchToList: () => void;
+    searchFilters: z.infer<typeof PropertyListingSearchSchema>;
+    propertyCount: number;
+}) {
+    const navigate = useNavigate();
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [search, setSearch] = useState(searchFilters.q ?? "");
+    const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+    const onInputChange = useCallback((value: string) => {
+        setSearch(value);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+            navigate({
+                // @ts-ignore
+                search: (prev) => ({ ...prev, q: value || undefined, page: undefined }),
+                replace: true,
+            });
+        }, 400);
+    }, [navigate]);
+
+    useEffect(() => {
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+    }, []);
+
+    const hasQuery = !!searchFilters.q;
+
+    return (
+        <div className="absolute top-0 inset-x-0 z-10 p-3 flex flex-col gap-2 pointer-events-none">
+            <div className="flex items-center gap-2 pointer-events-auto">
+                <button
+                    type="button"
+                    onClick={onSwitchToList}
+                    className="h-11 px-4 bg-white border border-outline-variant text-on-surface rounded-xl flex items-center gap-2 text-sm font-semibold shadow-md transition-all active:scale-95 hover:bg-surface-container"
+                >
+                    <List className="size-4" />
+                    Lista
+                </button>
+
+                <div className="flex-1" />
+
+                <span className="text-[10px] uppercase tracking-widest text-on-surface font-bold bg-white/90 border border-outline-variant rounded-full px-3 py-1.5 shadow-sm">
+                    {propertyCount} Propiedades
+                </span>
+
+                <button
+                    type="button"
+                    onClick={() => setIsSearchOpen((prev) => !prev)}
+                    className="h-11 w-11 relative bg-white border border-outline-variant text-on-surface rounded-xl flex items-center justify-center shadow-md transition-all active:scale-95 hover:bg-surface-container"
+                >
+                    <Search className="size-4" />
+                    {hasQuery && (
+                        <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-primary" />
+                    )}
+                </button>
+
+                <FiltersDialog filters={searchFilters} />
+            </div>
+
+            {isSearchOpen && (
+                <div className="pointer-events-auto relative">
+                    <Label htmlFor="map-property-search" className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+                        <Search className="size-4.5 stroke-3 text-outline-variant" />
+                    </Label>
+                    <Input
+                        className="w-full h-11 pl-10 pr-4 bg-white border border-outline-variant rounded-xl shadow-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                        placeholder="Colonia, Codigo Postal, etc."
+                        type="text"
+                        id="map-property-search"
+                        name="search"
+                        value={search}
+                        onChange={(e) => onInputChange(e.target.value)}
+                        autoFocus
+                    />
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -278,9 +385,9 @@ const clusterRenderer: Renderer = {
     },
 };
 
-export function PropertyListingMapLoading() {
+export function PropertyListingMapLoading({ fullscreen }: { fullscreen?: boolean }) {
     return (
-        <div className="flex flex-col items-center justify-center w-full h-[calc(100svh-var(--header-height,64px))] bg-surface-container">
+        <div className={`flex flex-col items-center justify-center w-full bg-surface-container ${fullscreen ? "h-svh" : "h-[calc(100svh-var(--header-height,64px))]"}`}>
             <LoadingCircles className="text-primary-container" />
         </div>
     );

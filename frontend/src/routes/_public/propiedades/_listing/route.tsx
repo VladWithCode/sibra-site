@@ -7,10 +7,9 @@ export const Route = createFileRoute("/_public/propiedades/_listing")({
 });
 
 function RouteComponent() {
-    const { setHeaderFloating, setHeaderComplementProps } = useUIStore();
+    const { setHeaderFloating } = useUIStore();
     useEffect(() => {
         setHeaderFloating(false);
-        setHeaderComplementProps({ complementType: "search" });
     }, []);
 
     return (

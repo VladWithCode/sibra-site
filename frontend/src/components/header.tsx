@@ -41,7 +41,7 @@ import {
 } from "./ui/dialog";
 
 export function Header() {
-    const { headerFloating, headerComplementProps, headerQuickStick } = useUIStore();
+    const { headerFloating, headerComplementProps, headerQuickStick, headerHidden } = useUIStore();
     const header = useRef<HTMLDivElement>(null);
     const pageTop = useRef<HTMLDivElement>(null);
     const { contextSafe } = useGSAP({ scope: header, dependencies: [pageTop.current] });
@@ -113,7 +113,10 @@ export function Header() {
     return (
         <>
             <div
-                className="col-start-1 col-span-1 absolute top-(--sentinel-offset) inset-x-0 z-0 h-0"
+                className={cn(
+                    "col-start-1 col-span-1 absolute top-(--sentinel-offset) inset-x-0 z-0 h-0",
+                    headerHidden && "hidden",
+                )}
                 ref={pageTop}
                 data-page-top
                 style={{
@@ -126,6 +129,7 @@ export function Header() {
                     !headerFloating
                         ? "relative bg-top-normal data-[in-view=false]:bg-top-normal shadow-sm"
                         : "absolute data-[inView=false]:bg-top-floating",
+                    headerHidden && "!hidden",
                 )}
                 ref={header}
                 style={
