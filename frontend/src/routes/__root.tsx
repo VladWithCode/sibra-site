@@ -8,10 +8,19 @@ import { Toaster } from "@/components/ui/sonner";
 import { useUIStore } from "@/stores/uiStore";
 import { useEffect } from "react";
 import { PublicLayout } from "@/components/layout/publicLayout";
+import { usePageTracking } from "@/hooks/usePageTracking";
 import { Button } from "@/components/ui/button";
 
 export const Route = createRootRouteWithContext<IRouteContext>()({
-    component: () => (
+    component: RootComponent,
+    errorComponent: GlobalErrorComponent,
+    notFoundComponent: GlobalNotFound,
+});
+
+function RootComponent() {
+    usePageTracking();
+
+    return (
         <QueryClientProvider client={queryClient}>
             <SidebarProvider defaultOpen={true}>
                 <MapsAPIProvider>
@@ -21,10 +30,8 @@ export const Route = createRootRouteWithContext<IRouteContext>()({
                 <Toaster />
             </SidebarProvider>
         </QueryClientProvider>
-    ),
-    errorComponent: GlobalErrorComponent,
-    notFoundComponent: GlobalNotFound,
-});
+    );
+}
 
 function GlobalNotFound() {
     const { setHeaderFloating, setHeaderComplementProps } = useUIStore();

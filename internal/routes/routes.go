@@ -22,6 +22,7 @@ func NewRouter() http.Handler {
 	RegisterAmenityRoutes(router)
 	RegisterBlogRoutes(router)
 	RegisterTeamRoutes(router)
+	RegisterAnalyticsRoutes(router)
 
 	// Serve static assets from Go templates/legacy web dir
 	// *Might change it to serve static files through nginx

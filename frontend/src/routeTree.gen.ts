@@ -33,6 +33,7 @@ import { Route as PanelEquipoIndexRouteImport } from './routes/panel/equipo/inde
 import { Route as PanelCitasIndexRouteImport } from './routes/panel/citas/index'
 import { Route as PanelBlogIndexRouteImport } from './routes/panel/blog/index'
 import { Route as PanelAsociadosIndexRouteImport } from './routes/panel/asociados/index'
+import { Route as PanelAnaliticasIndexRouteImport } from './routes/panel/analiticas/index'
 import { Route as PublicProyectosIndexRouteImport } from './routes/_public/proyectos/index'
 import { Route as PublicBlogIndexRouteImport } from './routes/_public/blog/index'
 import { Route as PanelUsuariosNuevoRouteImport } from './routes/panel/usuarios/nuevo'
@@ -177,6 +178,11 @@ const PanelBlogIndexRoute = PanelBlogIndexRouteImport.update({
 const PanelAsociadosIndexRoute = PanelAsociadosIndexRouteImport.update({
   id: '/asociados/',
   path: '/asociados/',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
+const PanelAnaliticasIndexRoute = PanelAnaliticasIndexRouteImport.update({
+  id: '/analiticas/',
+  path: '/analiticas/',
   getParentRoute: () => PanelRouteRoute,
 } as any)
 const PublicProyectosIndexRoute = PublicProyectosIndexRouteImport.update({
@@ -354,6 +360,7 @@ export interface FileRoutesByFullPath {
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/blog': typeof PublicBlogIndexRoute
   '/proyectos/': typeof PublicProyectosIndexRoute
+  '/panel/analiticas': typeof PanelAnaliticasIndexRoute
   '/panel/asociados': typeof PanelAsociadosIndexRoute
   '/panel/blog': typeof PanelBlogIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
@@ -400,6 +407,7 @@ export interface FileRoutesByTo {
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/blog': typeof PublicBlogIndexRoute
   '/proyectos': typeof PublicProyectosIndexRoute
+  '/panel/analiticas': typeof PanelAnaliticasIndexRoute
   '/panel/asociados': typeof PanelAsociadosIndexRoute
   '/panel/blog': typeof PanelBlogIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
@@ -451,6 +459,7 @@ export interface FileRoutesById {
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/_public/blog/': typeof PublicBlogIndexRoute
   '/_public/proyectos/': typeof PublicProyectosIndexRoute
+  '/panel/analiticas/': typeof PanelAnaliticasIndexRoute
   '/panel/asociados/': typeof PanelAsociadosIndexRoute
   '/panel/blog/': typeof PanelBlogIndexRoute
   '/panel/citas/': typeof PanelCitasIndexRoute
@@ -502,6 +511,7 @@ export interface FileRouteTypes {
     | '/panel/usuarios/nuevo'
     | '/blog'
     | '/proyectos/'
+    | '/panel/analiticas'
     | '/panel/asociados'
     | '/panel/blog'
     | '/panel/citas'
@@ -548,6 +558,7 @@ export interface FileRouteTypes {
     | '/panel/usuarios/nuevo'
     | '/blog'
     | '/proyectos'
+    | '/panel/analiticas'
     | '/panel/asociados'
     | '/panel/blog'
     | '/panel/citas'
@@ -598,6 +609,7 @@ export interface FileRouteTypes {
     | '/panel/usuarios/nuevo'
     | '/_public/blog/'
     | '/_public/proyectos/'
+    | '/panel/analiticas/'
     | '/panel/asociados/'
     | '/panel/blog/'
     | '/panel/citas/'
@@ -783,6 +795,13 @@ declare module '@tanstack/react-router' {
       path: '/asociados'
       fullPath: '/panel/asociados'
       preLoaderRoute: typeof PanelAsociadosIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
+    '/panel/analiticas/': {
+      id: '/panel/analiticas/'
+      path: '/analiticas'
+      fullPath: '/panel/analiticas'
+      preLoaderRoute: typeof PanelAnaliticasIndexRouteImport
       parentRoute: typeof PanelRouteRoute
     }
     '/_public/proyectos/': {
@@ -1122,6 +1141,7 @@ interface PanelRouteRouteChildren {
   PanelProyectosNuevoRoute: typeof PanelProyectosNuevoRoute
   PanelUsuariosIdRoute: typeof PanelUsuariosIdRoute
   PanelUsuariosNuevoRoute: typeof PanelUsuariosNuevoRoute
+  PanelAnaliticasIndexRoute: typeof PanelAnaliticasIndexRoute
   PanelAsociadosIndexRoute: typeof PanelAsociadosIndexRoute
   PanelBlogIndexRoute: typeof PanelBlogIndexRoute
   PanelCitasIndexRoute: typeof PanelCitasIndexRoute
@@ -1147,6 +1167,7 @@ const PanelRouteRouteChildren: PanelRouteRouteChildren = {
   PanelProyectosNuevoRoute: PanelProyectosNuevoRoute,
   PanelUsuariosIdRoute: PanelUsuariosIdRoute,
   PanelUsuariosNuevoRoute: PanelUsuariosNuevoRoute,
+  PanelAnaliticasIndexRoute: PanelAnaliticasIndexRoute,
   PanelAsociadosIndexRoute: PanelAsociadosIndexRoute,
   PanelBlogIndexRoute: PanelBlogIndexRoute,
   PanelCitasIndexRoute: PanelCitasIndexRoute,
