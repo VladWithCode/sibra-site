@@ -32,7 +32,7 @@ function RouteComponent() {
                         alt="Architectural perspective of modern development"
                         className="w-full h-full object-cover object-center brightness-75"
                         data-alt="wide angle shot of modern glass skyscrapers reflecting a clear blue sky with architectural symmetry and clean lines"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNDdf3krlI0L-hgyR_7Mwc69FIb9E1nmXqLpTqA3Ke5ftUXjDiPwm4Y5jrgLcf1APU1ktJTWtaCGNguBuIibljk-5jO9RM9xDePwrhiVzwN706LZ65I-RzDtQu7BtKTZS-7vqyR24tdVDmEJm71nUehrHKlzZy0KxqHSOa7oTNz3AsQFIuxmbTgaOFrl9esetGp-ciMF0MssBpJoMggWxtj9VZxQR9G9bAju1E8keBpBguXnlE1t15Y2w3Wm4z3ye05IraUDpVjGk"
+                        src="/proyectos.jpg"
                         loading="eager"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>

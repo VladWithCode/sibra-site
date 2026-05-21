@@ -78,7 +78,7 @@ function RouteComponent() {
                     <img
                         alt="Cinematic Architectural View"
                         className="w-full h-full object-cover"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCSwiwxIVUW9inGz2VYo-_u9-JTOILleZ2w74962wfnOapv4iOblkrJS8-LC87J5vqIGS1gJqNa2ReMLB5w97HQbpV-KodwF-DG6Opz2gMBO0ORRwksI1sUaho7HoEKNylr6RzrTYvDbK0o35Vourq0imsFGn8yY3-DdcbH7SzC9ORZ1sTjCTlu6SsN6qYo1fPGgHeZxqtsS35SvcptISYD0EYQ-QHV2CmTVMdr4C2wWy2E9GwjmnHRhe9jrqMM3hc-HDdV5pbACxw"
+                        src="/acercadenosotrosimg.webp"
                         loading="eager"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-on-background/80 via-on-background/30 to-transparent"></div>

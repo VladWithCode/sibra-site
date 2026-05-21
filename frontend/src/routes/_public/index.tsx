@@ -159,9 +159,8 @@ function AboutSection() {
                         className="relative z-10 rounded-lg overflow-hidden shadow-[0_48px_100px_-24px_rgba(0,0,0,0.3)]"
                     >
                         <img
-                            src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&q=80&w=1200"
+                            src="/masquemetroscuadrados.jpg"
                             alt="Our Team"
-                            className="w-full h-[650px] object-cover"
                             referrerPolicy="no-referrer" />
                     </motion.div>
                     <div className="absolute -bottom-10 -right-10 glass p-10 rounded-xl z-20 shadow-2xl hidden md:block">
