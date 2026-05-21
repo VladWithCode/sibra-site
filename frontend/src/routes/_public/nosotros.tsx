@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { createFileRoute } from "@tanstack/react-router";
 import { Gem, Mountain, Pen } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { getTeamMembersOpts, type TTeamMember } from "@/queries/team";
 
 export const Route = createFileRoute("/_public/nosotros")({
     component: RouteComponent,
@@ -27,22 +29,6 @@ const philosophyItems = [
     },
 ];
 
-const teamMembers: { name: string; role: string; bio: string; src: string; reverse?: boolean }[] = [
-    {
-        name: "Elena Rostova",
-        role: "Curadora Principal",
-        bio: "Con más de dos décadas dando forma a paisajes urbanos, Elena posee un ojo inigualable para el detalle. Su enfoque equilibra el pragmatismo arquitectónico con una sensibilidad refinada por la estética espacial, garantizando que cada propiedad de SIBRA sea una obra maestra del habitar contemporáneo.",
-        src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAjLBceZ-JAgoguZyUcL-NetH9R0nnUNYm2V1D0VpmHzBeLqTrAj2E52jXYPSAkVjxHbhMyhTFvJurJpo7MLq1NLYPeEAv_6wOY7DfiL1wKyrG60TtIVOmapur6uHMC54wxZM6BkWhkI10jswQ_Lc_vuz6RK3Ho3HeUieZsjnYB6wz847AWZTfOoU5YWF3t1E4pw_XzL7dpRYy0OJcLVNQPPKN2B2_3jcSib02mYDd2WjzXMxCXhdk4Eg0OBYRJJnEnQQy9cZNOr3Q",
-    },
-    {
-        name: "Marcus Chen",
-        role: "Director de Adquisiciones",
-        bio: "Marcus supervisa la incorporación selectiva a nuestro portafolio. Su visión estratégica y su profundo conocimiento de la dinámica del mercado solo son superados por su compromiso de preservar la integridad arquitectónica de cada activo que adquirimos.",
-        src: "https://lh3.googleusercontent.com/aida-public/AB6AXuAqREqXAFcltVAaBzmSnMUfqLdrrS-h2tqs4AecOZSHzo5glfmtfJS5lfpF-YWaeUWyCSeGuh-4K7UsyHhZJSx9POBJSbDuA5_mpoBvwNMWuh0LRNNjDq7TEDfMpN3gTVmWhhyOtjpKT0ambz4own-j5LY3MZWSadCgcP4e4Iwc2YCFuG5k7JXhEb_3tb5Tz3a0JJkZ83yngwdIR3SB1hLjX8t5gLF0WMzafQJDx6ov8vp4VLlrzb5WLdW3Zz5KdOvogKTWhzyYJSE",
-        reverse: true,
-    },
-];
-
 function PhilosophyCard({ icon: Icon, title, description }: (typeof philosophyItems)[number]) {
     return (
         <div className="bg-surface-container-lowest p-8 rounded-lg transition-transform hover:scale-[1.02] duration-300 flex flex-col items-start border border-outline-variant/15 shadow-[0_32px_64px_rgba(26,28,28,0.04)]">
@@ -55,7 +41,7 @@ function PhilosophyCard({ icon: Icon, title, description }: (typeof philosophyIt
     );
 }
 
-function TeamMemberRow({ name, role, bio, src, reverse }: (typeof teamMembers)[number]) {
+function TeamMemberRow({ name, role, bio, src, reverse }: { name: string; role: string; bio: string; src: string; reverse?: boolean }) {
     return (
         <div className={`flex flex-col gap-8 items-center ${reverse ? "md:flex-row-reverse" : "md:flex-row"}`}>
             <div className="w-full md:w-1/3 aspect-[3/4] overflow-hidden rounded-lg">
@@ -66,6 +52,33 @@ function TeamMemberRow({ name, role, bio, src, reverse }: (typeof teamMembers)[n
                 <p className="text-on-surface-variant/80 uppercase tracking-widest mb-6">{role}</p>
                 <p className="text-on-surface-variant/60 leading-relaxed max-w-xl">{bio}</p>
             </div>
+        </div>
+    );
+}
+
+function TeamMembersList() {
+    const { data: teamMembers, isLoading } = useQuery(getTeamMembersOpts);
+
+    if (isLoading) {
+        return <div className="text-center py-8 text-on-surface-variant/60">Cargando...</div>;
+    }
+
+    if (!teamMembers || teamMembers.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="flex flex-col gap-16">
+            {teamMembers.map((member: TTeamMember, idx: number) => (
+                <TeamMemberRow
+                    key={member.id}
+                    name={member.name}
+                    role={member.role}
+                    bio={member.bio}
+                    src={member.photoUrl}
+                    reverse={idx % 2 === 1}
+                />
+            ))}
         </div>
     );
 }
@@ -130,11 +143,7 @@ function RouteComponent() {
             <section className="bg-surface">
                 <div className="max-w-7xl mx-auto px-6 md:px-12 xl:px-24 2xl:px-0 py-12 md:py-24 lg:py-32">
                     <h2 className="font-headline text-3xl font-bold mb-16">Los Visionarios</h2>
-                    <div className="flex flex-col gap-16">
-                        {teamMembers.map((member) => (
-                            <TeamMemberRow key={member.name} {...member} />
-                        ))}
-                    </div>
+                    <TeamMembersList />
                 </div>
             </section>
 
