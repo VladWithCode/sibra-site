@@ -21,8 +21,8 @@ export function CreatePropertyForm({ }: {}) {
     const form = useForm<TPropertyFormData>({
         resolver: zodResolver(propertyFormSchema),
         defaultValues: {
+            title: "",
             address: "",
-            nbHood: "",
             description: "",
             city: "",
             state: "",
@@ -71,15 +71,15 @@ export function CreatePropertyForm({ }: {}) {
                 <div className="flex gap-3">
                     <FormField
                         control={form.control}
-                        name="address"
+                        name="title"
                         render={({ field }) => (
                             <FormItem className="basis-1/2">
-                                <FormLabel>Calle y número</FormLabel>
+                                <FormLabel>Título</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="text"
                                         className="bg-card"
-                                        placeholder="Gral. Anaya #101 int 4"
+                                        placeholder="Casa moderna con jardín"
                                         {...field}
                                     />
                                 </FormControl>
@@ -89,15 +89,15 @@ export function CreatePropertyForm({ }: {}) {
                     />
                     <FormField
                         control={form.control}
-                        name="nbHood"
+                        name="address"
                         render={({ field }) => (
                             <FormItem className="basis-1/2">
-                                <FormLabel>Colonia/Fracc.</FormLabel>
+                                <FormLabel>Dirección</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="text"
                                         className="bg-card"
-                                        placeholder="Gral. Anaya #101 int 4"
+                                        placeholder="Gral. Anaya #101, Col. Centro"
                                         {...field}
                                     />
                                 </FormControl>
@@ -493,15 +493,15 @@ export function EditPropertyForm({ property }: { property: TProperty }) {
                 <div className="flex gap-3">
                     <FormField
                         control={form.control}
-                        name="address"
+                        name="title"
                         render={({ field }) => (
                             <FormItem className="basis-1/2">
-                                <FormLabel>Calle y número</FormLabel>
+                                <FormLabel>Título</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="text"
                                         className="bg-card"
-                                        placeholder="Gral. Anaya #101 int 4"
+                                        placeholder="Casa moderna con jardín"
                                         {...field}
                                     />
                                 </FormControl>
@@ -511,15 +511,15 @@ export function EditPropertyForm({ property }: { property: TProperty }) {
                     />
                     <FormField
                         control={form.control}
-                        name="nbHood"
+                        name="address"
                         render={({ field }) => (
                             <FormItem className="basis-1/2">
-                                <FormLabel>Colonia/Fracc.</FormLabel>
+                                <FormLabel>Dirección</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="text"
                                         className="bg-card"
-                                        placeholder="Gral. Anaya #101 int 4"
+                                        placeholder="Gral. Anaya #101, Col. Centro"
                                         {...field}
                                     />
                                 </FormControl>
@@ -888,9 +888,8 @@ export function EditPropertyForm({ property }: { property: TProperty }) {
 }
 
 const propertyFormSchema = z.object({
-    // id: z.uuid({ version: "v7", error: "El id de la propiedad no es válido" }).optional().or(z.literal("")),
+    title: z.string(),
     address: z.string().min(1, "La dirección no puede ser vacía"),
-    nbHood: z.string().min(1, "La colonia/fracc. no puede estar vacía"),
     description: z.string().min(1, "La descripción no puede estar vacía").optional().or(z.literal("")),
     city: z.string().min(1, "La ciudad no puede estar vacío"),
     state: z.string().min(1, "El estado no puede estar vacío"),

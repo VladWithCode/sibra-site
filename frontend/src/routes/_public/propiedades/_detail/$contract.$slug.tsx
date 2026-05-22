@@ -153,7 +153,7 @@ function TitlePriceBlock({ property }: { property: TProperty }) {
                 <div className="flex flex-col gap-2 p-6">
                     <span className="text-primary font-sans text-[11px] uppercase tracking-[0.2em] font-bold">{property.state}, {property.city}</span>
                     <h1 className="text-3xl font-sans font-extrabold text-on-surface tracking-tight leading-tight">
-                        {property.address} {property.nbHood}, {property.zip}
+                        {property.address}, {property.zip}
                     </h1>
                     <p className="text-2xl font-sans font-bold text-primary-container mt-2">{FormatMoney(property.price)}</p>
                 </div>

@@ -38,8 +38,8 @@ export const AmenityInputSchema = z.object({
 });
 
 export const PropertyFormSchema = z.object({
+    title: z.string(),
     address: z.string().min(1, "La dirección es obligatoria"),
-    nbHood: z.string(),
     city: z.string().min(1, "La ciudad es obligatoria"),
     state: z.string().min(1, "El estado es obligatorio"),
     zip: z.string(),
@@ -72,8 +72,8 @@ export const PropertyFormSchema = z.object({
 export type PropertyFormValues = z.infer<typeof PropertyFormSchema>;
 
 export const propertyFormDefaults: PropertyFormValues = {
+    title: "",
     address: "",
-    nbHood: "",
     city: "",
     state: "",
     zip: "",
@@ -121,8 +121,8 @@ export { PROPERTY_STATUSES, PROPERTY_TYPES, PROPERTY_CONTRACTS };
 
 export function buildPropertyPayload(v: PropertyFormValues): Partial<TProperty> {
     const payload: Partial<TProperty> = {
+        title: v.title,
         address: v.address,
-        nbHood: v.nbHood,
         city: v.city,
         state: v.state,
         zip: v.zip,
@@ -148,8 +148,8 @@ export function buildPropertyPayload(v: PropertyFormValues): Partial<TProperty> 
 
 export function propertyToFormValues(p: TProperty): PropertyFormValues {
     return {
+        title: p.title ?? "",
         address: p.address ?? "",
-        nbHood: p.nbHood ?? "",
         city: p.city ?? "",
         state: p.state ?? "",
         zip: p.zip ?? "",

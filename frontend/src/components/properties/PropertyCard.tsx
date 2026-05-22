@@ -59,7 +59,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
                             </div>
                         </div>
                         <p className="line-clamp-1 font-medium">
-                            {property.address}, {property.nbHood}. C.P. {property.zip}
+                            {property.address}. C.P. {property.zip}
                         </p>
                     </Link>
                 </CardDescription>
@@ -79,7 +79,7 @@ export function PropertyCardHeader({ property }: { property: TProperty }) {
                                 ? `/static/properties/${property.id}/${property.mainImg}`
                                 : undefined
                         }
-                        alt={`Imagen mostrando la propiedad ubicada en ${property.address}, ${property.nbHood}. C.P. ${property.zip}`}
+                            alt={`Imagen mostrando la propiedad ubicada en ${property.address}. C.P. ${property.zip}`}
                         className="w-full h-full object-cover rounded-t-lg"
                     />
                 </Link>
@@ -120,7 +120,7 @@ export function PropertyCardHeaderWithMap({ property }: { property: TProperty })
                                     ? `/static/properties/${property.id}/${property.mainImg}`
                                     : undefined
                             }
-                            alt={`Imagen mostrando la propiedad ubicada en ${property.address}, ${property.nbHood}. C.P. ${property.zip}`}
+                        alt={`Imagen mostrando la propiedad ubicada en ${property.address}. C.P. ${property.zip}`}
                             className="w-full h-full object-cover rounded-t-lg"
                         />
                     </Link>

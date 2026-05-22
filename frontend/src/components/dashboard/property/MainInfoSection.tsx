@@ -41,6 +41,22 @@ export function MainInfoSection({ form }: { form: any }) {
                 <CardTitle className="text-xl">Información básica</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+                <form.Field name="title">
+                    {(field: any) => (
+                        <Field>
+                            <FieldLabel htmlFor="title">Título</FieldLabel>
+                            <Input
+                                id="title"
+                                value={field.state.value ?? ""}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="Casa moderna con jardín en Mérida"
+                            />
+                            <FieldError errors={errsOf(field)} />
+                        </Field>
+                    )}
+                </form.Field>
+
                 <form.Field name="address">
                     {(field: any) => (
                         <Field>
@@ -50,7 +66,7 @@ export function MainInfoSection({ form }: { form: any }) {
                                 value={field.state.value ?? ""}
                                 onBlur={field.handleBlur}
                                 onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="Calle y número"
+                                placeholder="Calle y número, Colonia"
                             />
                             <FieldError errors={errsOf(field)} />
                         </Field>
@@ -58,20 +74,6 @@ export function MainInfoSection({ form }: { form: any }) {
                 </form.Field>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <form.Field name="nbHood">
-                        {(field: any) => (
-                            <Field>
-                                <FieldLabel htmlFor="nbHood">Colonia / Fraccionamiento</FieldLabel>
-                                <Input
-                                    id="nbHood"
-                                    value={field.state.value ?? ""}
-                                    onBlur={field.handleBlur}
-                                    onChange={(e) => field.handleChange(e.target.value)}
-                                />
-                                <FieldError errors={errsOf(field)} />
-                            </Field>
-                        )}
-                    </form.Field>
                     <form.Field name="zip">
                         {(field: any) => (
                             <Field>

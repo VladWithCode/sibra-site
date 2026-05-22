@@ -101,7 +101,7 @@ type Property struct {
 	City              string            `json:"city" db:"city"`
 	State             string            `json:"state" db:"state"`
 	Zip               string            `json:"zip" db:"zip"`
-	NbHood            string            `json:"nbHood" db:"nb_hood"`
+	Title             string            `json:"title" db:"title"`
 	Country           string            `json:"country" db:"country"`
 	Price             float64           `json:"price" db:"price"`
 	PropertyType      string            `json:"propertyType" db:"property_type"`
@@ -148,11 +148,11 @@ type AgentData struct {
 }
 
 func (p *Property) GetFullAddress() string {
-	return fmt.Sprintf("%s %s, %s, %s, %s", p.Address, p.NbHood, p.City, p.State, p.Zip)
+	return fmt.Sprintf("%s, %s, %s, %s", p.Address, p.City, p.State, p.Zip)
 }
 
 func (p *Property) SetSlug() {
-	p.Slug = internal.Slugify(p.Contract + " " + p.Address + " " + p.NbHood + " " + p.Zip + " " + p.City + " " + p.State + " " + fmt.Sprint(p.YearBuilt))
+	p.Slug = internal.Slugify(p.Contract + " " + p.Address + " " + p.Zip + " " + p.City + " " + p.State + " " + fmt.Sprint(p.YearBuilt))
 }
 
 func (p *Property) SetCoords() {
@@ -211,7 +211,6 @@ type PropertyFilter struct {
 	Contract       *string         `json:"contract"`
 	PropType       *string         `json:"propType"`
 	Zip            *string         `json:"zip"`
-	NbHood         *string         `json:"nbHood"`
 	Status         *PropertyStatus `json:"status"`
 	Featured       *bool           `json:"featured"`
 	OrderBy        *string         `json:"orderBy"`
@@ -356,7 +355,7 @@ func CreateProperty(prop *Property) error {
 		"earth_coords": prop.Coords,
 		"lat":          prop.Lat,
 		"lon":          prop.Lon,
-		"nb_hood":      prop.NbHood,
+		"title":        prop.Title,
 		"agent":        prop.Agent,
 		"slug":         prop.Slug,
 		"main_img":     prop.MainImg,
@@ -367,11 +366,11 @@ func CreateProperty(prop *Property) error {
 		`INSERT INTO properties (
 			id, address, description, city, state, zip, country, price, property_type,
 			contract, beds, baths, square_mt, lot_size, year_built, listing_date,
-			status, earth_coords, lat, lon, nb_hood, agent, slug, main_img, imgs
+			status, earth_coords, lat, lon, title, agent, slug, main_img, imgs
 		) VALUES (
             @id, @address, @description, @city, @state, @zip, @country, @price, @property_type,
             @contract, @beds, @baths, @square_mt, @lot_size, @year_built, @listing_date,
-            @status, @earth_coords, @lat, @lon, @nb_hood, @agent, @slug, @main_img, @imgs
+            @status, @earth_coords, @lat, @lon, @title, @agent, @slug, @main_img, @imgs
         )`,
 		args,
 	)
@@ -445,7 +444,7 @@ func UpdateProperty(property *Property) error {
 		"earth_coords": property.Coords,
 		"lat":          property.Lat,
 		"lon":          property.Lon,
-		"nb_hood":      property.NbHood,
+		"title":        property.Title,
 		"slug":         property.Slug,
 	}
 	_, err = tx.Exec(
@@ -470,7 +469,7 @@ func UpdateProperty(property *Property) error {
             earth_coords = @earth_coords,
             lat = @lat,
             lon = @lon,
-            nb_hood = @nb_hood,
+            title = @title,
             slug = @slug,
             updated_at = NOW()
         WHERE id = @id`,
@@ -605,37 +604,11 @@ func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
 		nextParamIdx++
 	}
 
-	if filter.NbHood != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`nb_hood = $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.NbHood)
-		nextParamIdx++
-	}
-
-	if filter.Status != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`status = $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Status)
-		nextParamIdx++
-	}
-
-	if filter.Featured != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`featured = $%d`, nextParamIdx))
-		queryParams = append(queryParams, *filter.Featured)
-		nextParamIdx++
-	}
-
-	// Location-based filtering using earthdistance
-	if filter.NearLat != nil && filter.NearLon != nil && filter.WithinMeters != nil {
-		queryConditions = append(queryConditions, fmt.Sprintf(`earth_coords <@> point($%d, $%d) <= $%d`, nextParamIdx, nextParamIdx+1, nextParamIdx+2))
-		queryParams = append(queryParams, *filter.NearLon, *filter.NearLat, *filter.WithinMeters)
-		nextParamIdx += 3
-	}
-
-	// Full-text search
 	if filter.TextSearch != nil && *filter.TextSearch != "" {
 		queryConditions = append(queryConditions, fmt.Sprintf(`
 			to_tsvector('spanish',
 				address || ' ' || description || ' ' || city || ' ' || state || ' ' ||
-				zip || ' ' || property_type || ' ' || contract || ' ' || nb_hood || ' ' ||
+				zip || ' ' || property_type || ' ' || contract || ' ' || title || ' ' ||
 				CAST(year_built AS TEXT) || ' ' || CAST(beds AS TEXT) || ' ' || CAST(baths AS TEXT)
 			) @@ plainto_tsquery('spanish', $%d)`, nextParamIdx))
 		queryParams = append(queryParams, *filter.TextSearch)
@@ -723,7 +696,7 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 				JOIN amenities a ON a.id = pa.amenity_id
 				WHERE pa.property_id = p.id
 			), '[]'::jsonb) AS amenities,
-			p.lat, p.lon, p.contract, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
+			p.lat, p.lon, p.contract, p.title, p.main_img, p.imgs, p.agent, p.slug,
 			p.earth_coords
 		FROM properties p WHERE 1=1 AND p.deleted_at IS NULL
 	`
@@ -790,7 +763,7 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 			&prop.Lat,
 			&prop.Lon,
 			&prop.Contract,
-			&prop.NbHood,
+			&prop.Title,
 			&prop.MainImg,
 			&imgs,
 			&prop.Agent,
@@ -857,8 +830,8 @@ func FindFeaturedProperties() ([]*Property, error) {
 	rows, err := conn.Query(
 		ctx,
 		`SELECT
-            id, address, city, state, zip, nb_hood, price, property_type, contract,
-            beds, baths, square_mt, lot_size, listing_date, main_img, imgs, slug,
+            id, address, city, state, zip, price, property_type, contract,
+            beds, baths, square_mt, lot_size, listing_date, main_img, imgs, slug, title,
             lat, lon
         FROM properties
         WHERE featured = true AND deleted_at IS NULL
@@ -879,7 +852,6 @@ func FindFeaturedProperties() ([]*Property, error) {
 			&property.City,
 			&property.State,
 			&property.Zip,
-			&property.NbHood,
 			&property.Price,
 			&property.PropertyType,
 			&property.Contract,
@@ -891,6 +863,7 @@ func FindFeaturedProperties() ([]*Property, error) {
 			&property.MainImg,
 			&imgs,
 			&property.Slug,
+			&property.Title,
 			&property.Lat,
 			&property.Lon,
 		)
@@ -931,7 +904,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 		ctx,
 		`SELECT
 			p2.id, p2.address, p2.city, p2.state, p2.zip, p2.price,
-			p2.beds, p2.baths, p2.square_mt, p2.main_img, p2.contract, p2.nb_hood,
+			p2.beds, p2.baths, p2.square_mt, p2.main_img, p2.contract, p2.title,
 			(p1.earth_coords <@> p2.earth_coords) as distance
 		FROM properties p1
 		CROSS JOIN properties p2
@@ -970,7 +943,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 			&prop.SqMt,
 			&prop.MainImg,
 			&prop.Contract,
-			&prop.NbHood,
+			&prop.Title,
 			&distance,
 		)
 
@@ -1025,7 +998,7 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 				WHERE pa.property_id = p.id
 			), '[]'::jsonb) AS amenities,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at,
-            p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
+            p.title, p.main_img, p.imgs, p.agent, p.slug,
 			u.fullname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
@@ -1068,7 +1041,7 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		&property.Contract,
 		&property.Featured,
 		&featuredExpiresAt,
-		&property.NbHood,
+		&property.Title,
 		&property.MainImg,
 		&property.Images,
 		&property.Agent,
@@ -1150,7 +1123,7 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 				JOIN amenities a ON a.id = pa.amenity_id
 				WHERE pa.property_id = p.id
 			), '[]'::jsonb) AS amenities,
-			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
+			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.title, p.main_img, p.imgs, p.agent, p.slug,
 			u.fullname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
@@ -1193,7 +1166,7 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 		&property.Contract,
 		&property.Featured,
 		&featuredExpiresAt,
-		&property.NbHood,
+		&property.Title,
 		&property.MainImg,
 		&property.Images,
 		&property.Agent,
@@ -1212,12 +1185,6 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 
 	if featsJSON != nil {
 		if err = json.Unmarshal(featsJSON, &property.Features); err != nil {
-			log.Printf("failed to unmarshal features for property with slug %s: %v\n", slug, err)
-		}
-	}
-
-	if amsJSON != nil {
-		if err = json.Unmarshal(amsJSON, &property.Amenities); err != nil {
 			log.Printf("failed to unmarshal amenities for property with slug %s: %v\n", slug, err)
 		}
 	}

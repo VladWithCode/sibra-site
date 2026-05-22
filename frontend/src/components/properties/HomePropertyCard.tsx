@@ -27,7 +27,7 @@ export function HomePropertyCard({ propData, className }: TPropertyCardProps) {
                             <div className="flex gap-2 items-center font-normal">
                                 <MapPin className="size-3.5" />
                                 <p className="line-clamp-1 font-medium">
-                                    {propData.address}, {propData.nbHood}. C.P. {propData.zip}
+                                    {propData.address}. C.P. {propData.zip}
                                 </p>
                             </div>
                             <ul className="flex gap-4 items-center">

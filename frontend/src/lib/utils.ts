@@ -8,9 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 // Property utils
 export type TPropertyAddressOpts = {
-    /** Refers to the street name and lot number */
     includeAddress?: boolean;
-    includeNbHood?: boolean;
     includeCity?: boolean;
     includeState?: boolean;
     includeZip?: boolean;
@@ -18,7 +16,6 @@ export type TPropertyAddressOpts = {
 
 const DefaultPropertyAddressOpts: TPropertyAddressOpts = {
     includeAddress: true,
-    includeNbHood: true,
     includeCity: true,
     includeState: true,
     includeZip: true,
@@ -27,13 +24,10 @@ const DefaultPropertyAddressOpts: TPropertyAddressOpts = {
 export function getPropertyAddress(property: TProperty, opts?: TPropertyAddressOpts) {
     opts = Object.assign({}, DefaultPropertyAddressOpts, opts || {});
     let result = "";
-    let streetAndNbHood = "";
 
     if (opts.includeAddress) {
-        streetAndNbHood = property.address;
-        if (opts.includeNbHood) streetAndNbHood += ` ${property.nbHood}`;
+        result += `${property.address}`;
     }
-    result += `${streetAndNbHood}`;
 
     if (opts.includeCity) {
         result += `, ${property.city}`;

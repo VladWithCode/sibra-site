@@ -39,7 +39,7 @@ export function PropertyCard({ propData }: { propData: TProperty }) {
                     <div>
                         <Link to={`/panel/propiedades/${propData.id}`} className="mt-auto space-y-2">
                             <h3 className="text-xl font-bold line-clamp-2">
-                                {propData.address}, {propData.nbHood}. C.P. {propData.zip}
+                                {propData.address}. C.P. {propData.zip}
                             </h3>
                             <p className="text-lg font-medium text-current/80">
                                 {FormatMoney(propData.price)}

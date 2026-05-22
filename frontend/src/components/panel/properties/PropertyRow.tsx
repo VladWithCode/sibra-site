@@ -79,9 +79,6 @@ export function PropertyRow({ property }: { property: TProperty }) {
                     {property.city}
                     {property.state ? `, ${property.state}` : ""}
                 </p>
-                {property.nbHood ? (
-                    <p className="text-[11px] text-outline line-clamp-1">{property.nbHood}</p>
-                ) : null}
             </td>
             <td className="px-6 py-5">
                 <p className="text-sm font-bold text-sbr-blue">{FormatMoney(property.price)}</p>

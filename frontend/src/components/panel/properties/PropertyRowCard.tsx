@@ -75,7 +75,6 @@ export function PropertyRowCard({ property }: { property: TProperty }) {
                 <p className="text-sm text-on-surface-variant line-clamp-1">
                     {property.city}
                     {property.state ? `, ${property.state}` : ""}
-                    {property.nbHood ? ` · ${property.nbHood}` : ""}
                 </p>
                 <div className="mt-auto flex items-center justify-between gap-2 pt-2">
                     <p className="text-base font-bold text-sbr-blue">{FormatMoney(property.price)}</p>

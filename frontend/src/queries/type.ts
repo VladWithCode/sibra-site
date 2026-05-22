@@ -31,11 +31,11 @@ export type TPropertyAmenity = {
 export type TProperty = {
     id: string;
     address: string;
+    title: string;
     description: string;
     city: string;
     state: string;
     zip: string;
-    nbHood: string;
     country: string;
     price: number;
     propertyType: TPropertyType;

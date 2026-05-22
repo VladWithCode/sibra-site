@@ -29,7 +29,7 @@ function numberFromInput(value: string): number | undefined {
 
 function buildAddress(form: any): string {
     const s = form.state.values;
-    return [s.address, s.nbHood, s.city, s.state, s.zip, s.country]
+    return [s.address, s.city, s.state, s.zip, s.country]
         .filter((v) => v && String(v).trim() !== "")
         .join(", ");
 }
