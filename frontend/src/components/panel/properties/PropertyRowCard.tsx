@@ -25,14 +25,18 @@ export function PropertyRowCard({ property }: { property: TProperty }) {
     const detailHref = { to: "/panel/propiedades/$id", params: { id: property.id } } as const;
     const imgSrc = property.mainImg ? `/static/properties/${property.id}/${property.mainImg}` : undefined;
 
-    const onCardClick = () => navigate(detailHref);
+    const INTERACTIVE = "a, button, [role='button']";
+    const onCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if ((e.target as HTMLElement).closest(INTERACTIVE)) return;
+        navigate(detailHref);
+    };
     const onCardKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if ((e.target as HTMLElement).closest(INTERACTIVE)) return;
         if (e.key === "Enter") {
             e.preventDefault();
             navigate(detailHref);
         }
     };
-    const stop = (e: React.MouseEvent | React.KeyboardEvent) => e.stopPropagation();
 
     return (
         <div
@@ -59,7 +63,6 @@ export function PropertyRowCard({ property }: { property: TProperty }) {
                 <div className="flex items-start justify-between gap-2">
                     <Link
                         {...detailHref}
-                        onClick={stop}
                         className="text-sm font-bold text-on-surface line-clamp-1 hover:text-sbr-blue"
                     >
                         {property.address || "Sin dirección"}
@@ -79,7 +82,6 @@ export function PropertyRowCard({ property }: { property: TProperty }) {
                     <div className="flex items-center gap-1">
                         <Link
                             {...detailHref}
-                            onClick={stop}
                             aria-label="Editar propiedad"
                             className="p-2 text-slate-400 hover:text-sbr-blue hover:bg-sbr-blue/5 rounded-lg transition-all"
                         >
@@ -87,10 +89,7 @@ export function PropertyRowCard({ property }: { property: TProperty }) {
                         </Link>
                         <button
                             type="button"
-                            onClick={(e) => {
-                                stop(e);
-                                setDeleteOpen(true);
-                            }}
+                            onClick={() => setDeleteOpen(true)}
                             aria-label="Eliminar propiedad"
                             className="p-2 text-slate-400 hover:text-destructive hover:bg-destructive/5 rounded-lg transition-all"
                         >

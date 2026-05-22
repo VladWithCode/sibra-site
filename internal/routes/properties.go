@@ -356,6 +356,7 @@ func DeletePropertyById(w http.ResponseWriter, r *http.Request) {
 
 	err := db.DeletePropertyById(id)
 	if err != nil {
+		log.Printf("Error deleting property: %v\n", err)
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al eliminar la propiedad",
 		})
