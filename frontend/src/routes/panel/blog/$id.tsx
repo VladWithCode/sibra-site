@@ -22,10 +22,11 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/panel/blog/$id")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        await Promise.all([
+        const [postData] = await Promise.all([
             context.queryClient.ensureQueryData(getAdminBlogPostByIdOpts(params.id)),
             context.queryClient.ensureQueryData(getBlogTagsOpts),
         ]);
+        return { postTitle: postData.post.title };
     },
 });
 

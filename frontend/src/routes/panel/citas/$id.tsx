@@ -15,9 +15,10 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/panel/citas/$id")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        await context.queryClient.ensureQueryData(
+        const data = await context.queryClient.ensureQueryData(
             getSingleQuoteOpts(params.id),
         );
+        return { clientName: data.request.name };
     },
 });
 

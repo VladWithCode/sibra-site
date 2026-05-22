@@ -44,11 +44,12 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/panel/proyectos/$id/")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        await Promise.all([
+        const [projectData] = await Promise.all([
             context.queryClient.ensureQueryData(getProjectOpts(params.id)),
             context.queryClient.ensureQueryData(getProjectDocsOpts(params.id)),
             context.queryClient.ensureQueryData(getAppealItemsOpts),
         ]);
+        return { projectName: projectData.project.name };
     },
 });
 

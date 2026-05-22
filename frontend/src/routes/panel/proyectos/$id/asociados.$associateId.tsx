@@ -42,9 +42,10 @@ export const Route = createFileRoute(
 )({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        await context.queryClient.ensureQueryData(
+        const data = await context.queryClient.ensureQueryData(
             getProjectAssociateDetailOpts(params.id, params.associateId),
         );
+        return { associateName: data.name };
     },
 });
 

@@ -18,7 +18,8 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/panel/equipo/$id")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        await context.queryClient.ensureQueryData(getTeamMemberOpts(params.id));
+        const data = await context.queryClient.ensureQueryData(getTeamMemberOpts(params.id));
+        return { memberName: data.name };
     },
 });
 

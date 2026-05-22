@@ -30,11 +30,12 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/panel/propiedades/$id")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        await Promise.all([
+        const [propertyData] = await Promise.all([
             context.queryClient.ensureQueryData(getSinglePropertyOpts(params.id)),
             context.queryClient.ensureQueryData(getFeaturesOpts),
             context.queryClient.ensureQueryData(getAmenitiesOpts),
         ]);
+        return { propertyTitle: propertyData.property.title };
     },
 });
 
