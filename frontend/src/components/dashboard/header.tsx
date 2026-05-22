@@ -3,12 +3,14 @@ import { DashboardBreadcrumbs } from "./breadcrumbs";
 
 export function DashboardHeader() {
     return (
-        <header className="flex flex-col gap-1.5 px-3 py-1.5">
+        <header className="flex flex-col gap-1.5 px-3 py-3">
             <div className="flex items-center gap-3">
                 <SidebarTrigger className="md:hidden" />
-                <h1 className="basis-full text-2xl font-medium">Panel de Administración</h1>
+                <div className="flex flex-col gap-1">
+                    <h1 className="basis-full text-2xl font-medium">Panel de Administración</h1>
+                    <DashboardBreadcrumbs />
+                </div>
             </div>
-            <DashboardBreadcrumbs />
         </header>
     );
 }

@@ -116,6 +116,8 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
 
     for (let i = 0; i < matches.length; i++) {
         const match = matches[i];
+        if (match.routeId === "__root__") continue;
+
         const config = BREADCRUMB_CONFIG[match.routeId];
 
         if (config?.skip) continue;

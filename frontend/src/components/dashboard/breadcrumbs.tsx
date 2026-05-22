@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { Link } from "@tanstack/react-router";
 import {
     Breadcrumb,
@@ -18,10 +19,10 @@ export function DashboardBreadcrumbs() {
         <Breadcrumb>
             <BreadcrumbList>
                 {items.map((item, index) => (
-                    <React.Fragment key={`${item.label}-${index}`}>
+                    <Fragment key={`${item.label}-${index}`}>
                         <BreadcrumbItem>
                             {item.isCurrent ? (
-                                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                                <BreadcrumbPage className="capitalize">{item.label}</BreadcrumbPage>
                             ) : item.to ? (
                                 <BreadcrumbLink asChild>
                                     <Link
@@ -39,7 +40,7 @@ export function DashboardBreadcrumbs() {
                         {index < items.length - 1 && (
                             <BreadcrumbSeparator />
                         )}
-                    </React.Fragment>
+                    </Fragment>
                 ))}
             </BreadcrumbList>
         </Breadcrumb>
