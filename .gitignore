@@ -33,3 +33,13 @@ count.txt
 .nitro
 .tanstack
 .vite
+
+# Ignore agent related files
+/tmp/
+/stitch-export/
+
+# Ignore static uploads
+/web/static/uploads/*
+!/web/static/uploads/.keep
+/web/static/team/*
+!/web/static/team/.keep
