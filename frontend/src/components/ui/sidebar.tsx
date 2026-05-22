@@ -154,6 +154,7 @@ function Sidebar({
     collapsible = "offcanvas",
     className,
     children,
+    style,
     ...props
 }: React.ComponentProps<"div"> & {
     side?: "left" | "right";
@@ -170,6 +171,7 @@ function Sidebar({
                     "bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col",
                     className,
                 )}
+                style={style}
                 {...props}
             >
                 {children}
@@ -184,10 +186,11 @@ function Sidebar({
                     data-sidebar="sidebar"
                     data-slot="sidebar"
                     data-mobile="true"
-                    className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+                    className={cn("bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden", className)}
                     style={
                         {
                             "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+                            ...style,
                         } as React.CSSProperties
                     }
                     side={side}
@@ -236,6 +239,7 @@ function Sidebar({
                         : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l",
                     className,
                 )}
+                style={style}
                 {...props}
             >
                 <div
