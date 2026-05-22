@@ -125,6 +125,7 @@ type Property struct {
 	Agent             string            `json:"agent" db:"agent"`
 	Slug              string            `json:"slug" db:"slug"`
 	AgentData         *AgentData        `json:"agentData" db:"agent_data"`
+	DeletedAt         *time.Time        `json:"deletedAt,omitzero" db:"deleted_at"`
 }
 
 type PropertyFeature struct {
@@ -654,7 +655,7 @@ func GetPaginationData(filter *PropertyFilter, limit, page int) (paginationData 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	baseQuery := "SELECT count(*) FROM properties WHERE 1=1"
+	baseQuery := "SELECT count(*) FROM properties WHERE 1=1 AND deleted_at IS NULL"
 	queryConditions, queryParams, _ := buildFilterConditions(filter)
 
 	var query string
@@ -724,7 +725,7 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 			), '[]'::jsonb) AS amenities,
 			p.lat, p.lon, p.contract, p.nb_hood, p.main_img, p.imgs, p.agent, p.slug,
 			p.earth_coords
-		FROM properties p WHERE 1=1
+		FROM properties p WHERE 1=1 AND p.deleted_at IS NULL
 	`
 
 	queryConditions, queryParams, _ := buildFilterConditions(filter)
@@ -860,7 +861,7 @@ func FindFeaturedProperties() ([]*Property, error) {
             beds, baths, square_mt, lot_size, listing_date, main_img, imgs, slug,
             lat, lon
         FROM properties
-        WHERE featured = true
+        WHERE featured = true AND deleted_at IS NULL
         ORDER BY listing_date DESC
         LIMIT 10`,
 	)
@@ -936,6 +937,8 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 		CROSS JOIN properties p2
 		WHERE p1.id = $1
 		    AND p2.id != $1
+		    AND p1.deleted_at IS NULL
+		    AND p2.deleted_at IS NULL
 		    AND p2.contract = p1.contract
             AND p1.earth_coords IS NOT NULL
 		    AND p2.earth_coords IS NOT NULL
@@ -1028,7 +1031,7 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 			u.img AS agent_img
 		FROM properties p
 		LEFT JOIN users u ON p.agent = u.id
-		WHERE p.id = $1
+		WHERE p.id = $1 AND p.deleted_at IS NULL
 	`, propId)
 
 	var featsJSON []byte
@@ -1153,7 +1156,7 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 			u.img AS agent_img
 		FROM properties p
 		LEFT JOIN users u ON p.agent = u.id
-		WHERE p.slug = $1
+		WHERE p.slug = $1 AND p.deleted_at IS NULL
 	`, slug)
 
 	var featsJSON []byte
@@ -1313,7 +1316,7 @@ func DeletePropertyById(id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	_, err = conn.Exec(ctx, "DELETE FROM properties WHERE id = $1", id)
+	_, err = conn.Exec(ctx, "UPDATE properties SET deleted_at = NOW() WHERE id = $1", id)
 
 	if err != nil {
 		return err
