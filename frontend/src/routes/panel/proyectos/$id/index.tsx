@@ -43,7 +43,8 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { FileText, Save, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/panel/proyectos/$id/")({
@@ -60,6 +61,8 @@ export const Route = createFileRoute("/panel/proyectos/$id/")({
 function RouteComponent() {
     const { id } = Route.useParams();
     const [isSectionUploading, setIsSectionUploading] = useState(false);
+    const [showFloatingBtn, setShowFloatingBtn] = useState(false);
+    const headerBtnRef = useRef<HTMLDivElement>(null);
     const { data } = useSuspenseQuery(getProjectOpts(id));
     const project = data.project;
     const { data: docsData } = useSuspenseQuery(getProjectDocsOpts(id));
@@ -87,6 +90,20 @@ function RouteComponent() {
         deleteAvailabilityMut.isPending ||
         deleteQuoteImgMut.isPending ||
         deleteDocMut.isPending;
+
+    useEffect(() => {
+        const el = headerBtnRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                setShowFloatingBtn(!entry.isIntersecting);
+            },
+            { threshold: 0 },
+        );
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, []);
 
     const form = useForm({
         defaultValues: projectToFormValues(project),
@@ -303,24 +320,26 @@ function RouteComponent() {
                             Modifica los detalles del proyecto.
                         </p>
                     </div>
-                    <form.Subscribe
-                        selector={(s) => ({
-                            canSubmit: s.canSubmit,
-                            isSubmitting: s.isSubmitting,
-                        })}
-                    >
-                        {({ canSubmit, isSubmitting }) => (
-                            <Button
-                                size="lg"
-                                type="submit"
-                                form="edit-project-form"
-                                disabled={!canSubmit || isSubmitting || isSectionUploading}
-                            >
-                                <Save className="size-4" />
-                                {isSubmitting ? "Guardando..." : "Guardar"}
-                            </Button>
-                        )}
-                    </form.Subscribe>
+                    <div ref={headerBtnRef}>
+                        <form.Subscribe
+                            selector={(s) => ({
+                                canSubmit: s.canSubmit,
+                                isSubmitting: s.isSubmitting,
+                            })}
+                        >
+                            {({ canSubmit, isSubmitting }) => (
+                                <Button
+                                    size="lg"
+                                    type="submit"
+                                    form="edit-project-form"
+                                    disabled={!canSubmit || isSubmitting || isSectionUploading}
+                                >
+                                    <Save className="size-4" />
+                                    {isSubmitting ? "Guardando..." : "Guardar"}
+                                </Button>
+                            )}
+                        </form.Subscribe>
+                    </div>
                 </header>
 
                 <form
@@ -370,6 +389,38 @@ function RouteComponent() {
                     <AppealSection form={form} />
                 </form>
             </div>
+
+            <AnimatePresence>
+                {showFloatingBtn && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className="fixed bottom-6 right-6 z-50"
+                    >
+                        <form.Subscribe
+                            selector={(s) => ({
+                                canSubmit: s.canSubmit,
+                                isSubmitting: s.isSubmitting,
+                            })}
+                        >
+                            {({ canSubmit, isSubmitting }) => (
+                                <Button
+                                    size="lg"
+                                    type="submit"
+                                    form="edit-project-form"
+                                    disabled={!canSubmit || isSubmitting || isSectionUploading}
+                                    className="shadow-xl"
+                                >
+                                    <Save className="size-4" />
+                                    {isSubmitting ? "Guardando..." : "Guardar"}
+                                </Button>
+                            )}
+                        </form.Subscribe>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </main>
     );
 }

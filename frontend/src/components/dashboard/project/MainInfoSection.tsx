@@ -90,7 +90,6 @@ export function MainInfoSection({
                     description="Imagen que aparece junto a la sección de filosofía del proyecto."
                     existingSrc={existingQuoteImg}
                     onDeleteExisting={onDeleteQuoteImg}
-                    aspectClassName="aspect-[4/5]"
                 />
 
                 <div
