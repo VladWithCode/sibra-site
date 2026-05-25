@@ -327,6 +327,24 @@ export const uploadProjectAvailabilityOpts = (id: string) =>
         },
     });
 
+export const uploadProjectQuoteImgOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "quoteImg", { id }],
+        mutationFn: uploadProjectQuoteImg,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
+export const removeProjectQuoteImgOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "removeQuoteImg", { id }],
+        mutationFn: () => removeProjectQuoteImg(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ProjectQueryKeys.byId(id) });
+        },
+    });
+
 export const uploadProjectGalleryOpts = (id: string) =>
     mutationOptions({
         mutationKey: [...ProjectQueryKeys.detail(), "gallery", { id }],
@@ -505,6 +523,23 @@ export async function removeProjectAvailability(projectId: string): Promise<{ su
     return jsonFetch<{ success: true }>(`/api/proyectos/${projectId}/medios/disponibilidad`, {
         method: "DELETE",
     }, "Error al eliminar la imagen de disponibilidad");
+}
+
+// Media mutations — quote image
+
+export async function uploadProjectQuoteImg({ projectId, file }: { projectId: string; file: File }): Promise<TProjectMutationResult> {
+    const fd = new FormData();
+    fd.append("file", file);
+    return jsonFetch<TProjectMutationResult>(`/api/proyectos/${projectId}/medios/cita`, {
+        method: "PUT",
+        body: fd,
+    }, "Error al subir la imagen de cita");
+}
+
+export async function removeProjectQuoteImg(projectId: string): Promise<{ success: true }> {
+    return jsonFetch<{ success: true }>(`/api/proyectos/${projectId}/medios/cita`, {
+        method: "DELETE",
+    }, "Error al eliminar la imagen de cita");
 }
 
 // Media mutations — section images

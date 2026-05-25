@@ -30,11 +30,13 @@ import {
     removeProjectAvailabilityOpts,
     removeProjectDocOpts,
     removeProjectMainImgOpts,
+    removeProjectQuoteImgOpts,
     updateProjectOpts,
     uploadProjectAmenityOpts,
     uploadProjectAvailabilityOpts,
     uploadProjectGalleryOpts,
     uploadProjectMainImgOpts,
+    uploadProjectQuoteImgOpts,
 } from "@/queries/projects";
 import type { TProject, TProjectDoc } from "@/queries/type";
 import { useForm } from "@tanstack/react-form";
@@ -66,6 +68,7 @@ function RouteComponent() {
     const updateMut = useMutation(updateProjectOpts(id));
     const mainImgMut = useMutation(uploadProjectMainImgOpts(id));
     const availabilityMut = useMutation(uploadProjectAvailabilityOpts(id));
+    const quoteImgMut = useMutation(uploadProjectQuoteImgOpts(id));
     const galleryMut = useMutation(uploadProjectGalleryOpts(id));
     const amenityMut = useMutation(uploadProjectAmenityOpts(id));
     const docMut = useMutation(createProjectDocOpts(id));
@@ -74,6 +77,7 @@ function RouteComponent() {
     const deleteGalleryImgMut = useMutation(removeFromProjectGalleryOpts(id));
     const deleteAmenityMut = useMutation(deleteProjectAmenityOpts(id));
     const deleteAvailabilityMut = useMutation(removeProjectAvailabilityOpts(id));
+    const deleteQuoteImgMut = useMutation(removeProjectQuoteImgOpts(id));
     const deleteDocMut = useMutation(removeProjectDocOpts(id));
 
     const isDeleting =
@@ -81,6 +85,7 @@ function RouteComponent() {
         deleteGalleryImgMut.isPending ||
         deleteAmenityMut.isPending ||
         deleteAvailabilityMut.isPending ||
+        deleteQuoteImgMut.isPending ||
         deleteDocMut.isPending;
 
     const form = useForm({
@@ -122,6 +127,20 @@ function RouteComponent() {
                     } catch (e: any) {
                         toast.warning(
                             `Se actualizó el proyecto, pero falló el plano de disponibilidad: ${e?.message || ""}`,
+                            { closeButton: true },
+                        );
+                    }
+                }
+
+                if (value.quoteImg) {
+                    try {
+                        await quoteImgMut.mutateAsync({
+                            projectId: id,
+                            file: value.quoteImg,
+                        });
+                    } catch (e: any) {
+                        toast.warning(
+                            `Se actualizó el proyecto, pero falló la imagen de cita: ${e?.message || ""}`,
                             { closeButton: true },
                         );
                     }
@@ -205,6 +224,20 @@ function RouteComponent() {
                 toast.error(
                     e?.message ||
                         "Error al eliminar el plano de disponibilidad",
+                    { closeButton: true },
+                ),
+        });
+    }
+
+    function handleDeleteQuoteImg() {
+        deleteQuoteImgMut.mutate(undefined, {
+            onSuccess: () =>
+                toast.success("Imagen de cita eliminada", {
+                    closeButton: true,
+                }),
+            onError: (e: any) =>
+                toast.error(
+                    e?.message || "Error al eliminar la imagen de cita",
                     { closeButton: true },
                 ),
         });
@@ -299,18 +332,26 @@ function RouteComponent() {
                         form.handleSubmit();
                     }}
                 >
-                    <MainInfoSection form={form} />
+                    <MainInfoSection
+                        form={form}
+                        existingQuoteImg={project.quote_img}
+                        onDeleteQuoteImg={handleDeleteQuoteImg}
+                    />
                     <SectionsSection form={form} projectId={id} onUploadingChange={setIsSectionUploading} />
                     <LocationSection form={form} />
 
                     <ExistingImagesSection
                         project={project}
-                        onDeleteMainImg={handleDeleteMainImg}
-                        onDeleteAvailabilityImg={handleDeleteAvailabilityImg}
                         onDeleteGalleryImg={handleDeleteGalleryImg}
                         isDeleting={isDeleting}
                     />
-                    <MediaSection form={form} />
+                    <MediaSection
+                        form={form}
+                        existingMainImg={project.main_img}
+                        onDeleteMainImg={handleDeleteMainImg}
+                        existingAvailabilityImg={project.availability_img}
+                        onDeleteAvailabilityImg={handleDeleteAvailabilityImg}
+                    />
 
                     <ExistingAmenitiesSection
                         project={project}
@@ -335,75 +376,23 @@ function RouteComponent() {
 
 function ExistingImagesSection({
     project,
-    onDeleteMainImg,
-    onDeleteAvailabilityImg,
     onDeleteGalleryImg,
     isDeleting,
 }: {
     project: TProject;
-    onDeleteMainImg: () => void;
-    onDeleteAvailabilityImg: () => void;
     onDeleteGalleryImg: (imgId: string) => void;
     isDeleting: boolean;
 }) {
-    const hasMainImg = !!project.main_img;
-    const hasAvailability = !!project.availability_img;
     const hasGallery = project.gallery && project.gallery.length > 0;
 
-    if (!hasMainImg && !hasAvailability && !hasGallery) return null;
+    if (!hasGallery) return null;
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-xl">Medios actuales</CardTitle>
+                <CardTitle className="text-xl">Galería actual</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-                {hasMainImg && (
-                    <div className="space-y-2">
-                        <p className="text-sm font-medium">Imagen principal</p>
-                        <div className="group relative aspect-video w-full overflow-hidden rounded-lg">
-                            <ProjectImage
-                                projName={project.name}
-                                src={project.main_img}
-                                className="h-full w-full object-cover"
-                            />
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                disabled={isDeleting}
-                                onClick={onDeleteMainImg}
-                                className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
-                            >
-                                <Trash2 className="size-4" />
-                            </Button>
-                        </div>
-                    </div>
-                )}
-                {hasAvailability && (
-                    <div className="space-y-2">
-                        <p className="text-sm font-medium">
-                            Plano de disponibilidad
-                        </p>
-                        <div className="group relative aspect-video w-full overflow-hidden rounded-lg">
-                            <ProjectImage
-                                projName={project.name}
-                                src={project.availability_img}
-                                className="h-full w-full object-cover"
-                            />
-                            <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                disabled={isDeleting}
-                                onClick={onDeleteAvailabilityImg}
-                                className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
-                            >
-                                <Trash2 className="size-4" />
-                            </Button>
-                        </div>
-                    </div>
-                )}
                 {hasGallery && (
                     <div className="space-y-2">
                         <p className="text-sm font-medium">Galería</p>

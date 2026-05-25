@@ -3,6 +3,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { LucideIcon } from "@/components/dashboard/property/LucideIcon";
+import { SingleImageField } from "@/components/dashboard/project/MediaSection";
 import type { CSSProperties } from "react";
 
 type ErrorList = Array<{ message?: string } | undefined>;
@@ -17,7 +18,15 @@ function numberFromInput(value: string): number | undefined {
     return Number.isNaN(n) ? undefined : n;
 }
 
-export function MainInfoSection({ form }: { form: any }) {
+export function MainInfoSection({
+    form,
+    existingQuoteImg,
+    onDeleteQuoteImg,
+}: {
+    form: any;
+    existingQuoteImg?: string;
+    onDeleteQuoteImg?: () => void;
+}) {
     return (
         <Card>
             <CardHeader>
@@ -73,6 +82,16 @@ export function MainInfoSection({ form }: { form: any }) {
                         </Field>
                     )}
                 </form.Field>
+
+                <SingleImageField
+                    form={form}
+                    name="quoteImg"
+                    label="Imagen de cita / filosofía"
+                    description="Imagen que aparece junto a la sección de filosofía del proyecto."
+                    existingSrc={existingQuoteImg}
+                    onDeleteExisting={onDeleteQuoteImg}
+                    aspectClassName="aspect-[4/5]"
+                />
 
                 <div
                     className="grid gap-4"

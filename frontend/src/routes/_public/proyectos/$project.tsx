@@ -129,7 +129,7 @@ function RouteComponent() {
                     </div>
                     <div className="lg:col-span-5 relative">
                         <div className="aspect-[4/5] bg-surface-container-high rounded-xl overflow-hidden shadow-2xl">
-                            <img className="w-full h-full object-cover" data-alt="Detailed close up of premium limestone textures and glass intersections in a modern tropical villa" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiehPqWG-qIbWnxcXsFQX0Xes38qXMrgZJ5DiYOjABD63oCA96upYb25zlmBt10wjBU_HDPZVHiU9DSnwd4PPeIr3UI5dM1QxyitXl3gJvgWmabR4zUq4r1Lf6jpboVyJARyL7JmcPTqrs79iYT-_h4gEsIr2Bs0i2XqFNGrGSGGjgQLJYj06Gc2C-FNs8h_CqJgGdrSCJU7lrPouu4ocP7wObMeBIKPIBrFcZzVdHUDZ1lyqAT9Krr7Dd4JEHs7O9lg5PIlD65yE" />
+                            <img className="w-full h-full object-cover" data-alt="Detailed close up of premium limestone textures and glass intersections in a modern tropical villa" src={projectData.quote_img ? `/static/uploads/${projectData.quote_img}` : "https://lh3.googleusercontent.com/aida-public/AB6AXuBiehPqWG-qIbWnxcXsFQX0Xes38qXMrgZJ5DiYOjABD63oCA96upYb25zlmBt10wjBU_HDPZVHiU9DSnwd4PPeIr3UI5dM1QxyitXl3gJvgWmabR4zUq4r1Lf6jpboVyJARyL7JmcPTqrs79iYT-_h4gEsIr2Bs0i2XqFNGrGSGGjgQLJYj06Gc2C-FNs8h_CqJgGdrSCJU7lrPouu4ocP7wObMeBIKPIBrFcZzVdHUDZ1lyqAT9Krr7Dd4JEHs7O9lg5PIlD65yE"} />
                         </div>
                         {projectData.lot_count > 0 && (
                             <div className="absolute -bottom-8 -left-8 bg-primary p-8 text-white rounded-lg shadow-xl hidden md:block">
@@ -216,7 +216,7 @@ function RouteComponent() {
 
             <section className="bg-surface-container px-6 md:px-12 py-12 md:py-24 lg:py-32 space-y-6 lg:space-y-12">
                 <div className="space-y-3 md:text-center">
-                    <h2 className="text-3xl">Portal de Asociados</h2>
+                    <h2 className="text-3xl">Portal de Propietarios</h2>
                     <p className="text-current/60">
                         Accede a los documentos actualizados del proyecto y revisa si tienes algún saldo pendiente.
                     </p>

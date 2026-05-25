@@ -76,6 +76,7 @@ type Project struct {
 	// Images are the filename of the corresponding image as stored in server
 	MainImg         string   `json:"main_img" db:"main_img"`
 	AvailabilityImg string   `json:"availability_img" db:"availability_img"`
+	QuoteImg        string   `json:"quote_img" db:"quote_img"`
 	Gallery         []string `json:"gallery" db:"gallery"`
 
 	Amenities  []ProjectAmenity   `json:"amenities" db:"amenities"`
@@ -122,11 +123,11 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 
 	var projects []*Project
 
-	rows, err := conn.Query(
+    rows, err := conn.Query(
 		ctx,
 		`SELECT
             id, slug, name, quote, summary, location,
-            main_img, gallery, availability_img,
+            main_img, gallery, availability_img, COALESCE(quote_img, '') as quote_img,
             total_area, lot_count, available_lots,
             lat, lon, earth_coords,
             amenities, docs, p.created_at, p.updated_at,
@@ -161,6 +162,7 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 			&project.MainImg,
 			&project.Gallery,
 			&project.AvailabilityImg,
+			&project.QuoteImg,
 			&project.TotalArea,
 			&project.LotCount,
 			&project.AvailableLots,
@@ -248,7 +250,7 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 	row := conn.QueryRow(ctx, `
 		SELECT
 			p.id, p.slug, p.name, p.quote, p.summary, p.location,
-			p.main_img, p.gallery, p.availability_img,
+			p.main_img, p.gallery, p.availability_img, COALESCE(p.quote_img, '') as quote_img,
 			p.total_area, p.lot_count, p.available_lots,
 			p.lat, p.lon, p.earth_coords,
 			p.amenities, p.docs,
@@ -300,6 +302,7 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 		&proj.MainImg,
 		&proj.Gallery,
 		&proj.AvailabilityImg,
+		&proj.QuoteImg,
 		&proj.TotalArea,
 		&proj.LotCount,
 		&proj.AvailableLots,
@@ -362,10 +365,10 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	row := conn.QueryRow(ctx, `
+    row := conn.QueryRow(ctx, `
         SELECT
             p.id, p.slug, p.name, p.quote, p.summary, p.location,
-            p.main_img, p.gallery, p.availability_img,
+            p.main_img, p.gallery, p.availability_img, COALESCE(p.quote_img, '') as quote_img,
             p.total_area, p.lot_count, p.available_lots,
             p.lat, p.lon, p.earth_coords,
             p.amenities, p.docs,
@@ -417,6 +420,7 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 		&proj.MainImg,
 		&proj.Gallery,
 		&proj.AvailabilityImg,
+		&proj.QuoteImg,
 		&proj.TotalArea,
 		&proj.LotCount,
 		&proj.AvailableLots,
@@ -519,6 +523,7 @@ func CreateProject(ctx context.Context, project *Project) error {
 		"main_img":         project.MainImg,
 		"gallery":          project.Gallery,
 		"availability_img": project.AvailabilityImg,
+		"quote_img":        project.QuoteImg,
 		"total_area":       project.TotalArea,
 		"lot_count":        project.LotCount,
 		"available_lots":   project.AvailableLots,
@@ -532,13 +537,13 @@ func CreateProject(ctx context.Context, project *Project) error {
 		ctx,
 		`INSERT INTO projects (
             id, slug, name, quote, summary, location,
-            main_img, gallery, availability_img,
+            main_img, gallery, availability_img, quote_img,
             total_area, lot_count, available_lots,
             lat, lon, earth_coords,
             amenities, docs
         ) VALUES (
             @id, @slug, @name, @quote, @summary, @location,
-            @main_img, @gallery, @availability_img,
+            @main_img, @gallery, @availability_img, @quote_img,
             @total_area, @lot_count, @available_lots,
             @lat, @lon, @earth_coords,
             @amenities, @docs
@@ -698,6 +703,7 @@ func UpdateProject(ctx context.Context, project *Project) error {
 		"main_img":         project.MainImg,
 		"gallery":          project.Gallery,
 		"availability_img": project.AvailabilityImg,
+		"quote_img":        project.QuoteImg,
 		"total_area":       project.TotalArea,
 		"lot_count":        project.LotCount,
 		"available_lots":   project.AvailableLots,
@@ -712,7 +718,7 @@ func UpdateProject(ctx context.Context, project *Project) error {
 		`UPDATE projects SET
             name = @name, quote = @quote, summary = @summary,
             location = @location, main_img = @main_img, gallery = @gallery,
-            availability_img = @availability_img,
+            availability_img = @availability_img, quote_img = @quote_img,
             total_area = @total_area, lot_count = @lot_count, available_lots = @available_lots,
             lat = @lat, lon = @lon, earth_coords = @earth_coords,
             amenities = @amenities, docs = @docs,

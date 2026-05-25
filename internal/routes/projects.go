@@ -43,6 +43,8 @@ func RegisterProjectRoutes(router *customServeMux) {
 	router.HandleFunc("DELETE /api/proyectos/{id}/medios/amenidades/{amenityID}", auth.WithAuthAccessLevelMiddleware(DeleteProjectAmenity, auth.AccessLevelEditor))
 	router.HandleFunc("PUT /api/proyectos/{id}/medios/disponibilidad", auth.WithAuthAccessLevelMiddleware(UploadProjectAvailability, auth.AccessLevelEditor))
 	router.HandleFunc("DELETE /api/proyectos/{id}/medios/disponibilidad", auth.WithAuthAccessLevelMiddleware(RemoveProjectAvailability, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/proyectos/{id}/medios/cita", auth.WithAuthAccessLevelMiddleware(UploadProjectQuoteImg, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/proyectos/{id}/medios/cita", auth.WithAuthAccessLevelMiddleware(RemoveProjectQuoteImg, auth.AccessLevelEditor))
 	router.HandleFunc("PUT /api/proyectos/{id}/medios/secciones/{sectionIdx}", auth.WithAuthAccessLevelMiddleware(UploadProjectSectionImage, auth.AccessLevelEditor))
 
 	router.HandleFunc("GET /api/socios", auth.WithAuthAccessLevelMiddleware(GetAssociates, auth.AccessLevelEditor))
@@ -1691,6 +1693,125 @@ func UploadProjectSectionImage(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, map[string]any{
 		"success":  true,
 		"filename": filename,
+	})
+}
+
+func UploadProjectQuoteImg(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("id")
+
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize+1<<20)
+	err := r.ParseMultipartForm(uploads.MaxImageUploadSize)
+	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
+		})
+		log.Printf("Error parsing multipart form: %v\n", err)
+		return
+	}
+
+	files := r.MultipartForm.File["file"]
+	if len(files) == 0 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Debes proporcionar un archivo.",
+		})
+		return
+	} else if len(files) > 1 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Solo puede haber una imagen de cita.",
+		})
+		return
+	}
+
+	project, err := db.FindProject(ctx, projectID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró el proyecto",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding project: %v\n", err)
+		return
+	}
+
+	file := files[0]
+	filename, err := uploads.Upload(&uploads.FileData{
+		Filename: fmt.Sprintf("%s-%s", project.Slug, "quote-img"),
+		File:     file,
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error uploading file: %v\n", err)
+		return
+	}
+	project.QuoteImg = filename
+
+	err = db.UpdateProject(ctx, project)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar el proyecto",
+		})
+		log.Printf("Error updating project: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, map[string]any{
+		"success": true,
+		"project": project,
+	})
+}
+
+func RemoveProjectQuoteImg(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("id")
+	project, err := db.FindProject(ctx, projectID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró el proyecto",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding project: %v\n", err)
+		return
+	}
+
+	err = uploads.Delete(project.QuoteImg)
+	if err != nil && !os.IsNotExist(err) {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al eliminar la imagen de cita",
+		})
+		log.Printf("Error deleting quote image: %v\n", err)
+		return
+	}
+
+	project.QuoteImg = ""
+
+	err = db.UpdateProject(ctx, project)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error al actualizar el proyecto",
+		})
+		log.Printf("Error updating project: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{
+		"success": true,
 	})
 }
 

@@ -1,8 +1,9 @@
+import { ProjectImage } from "@/components/Image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { CloudUpload, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ErrorList = Array<{ message?: string } | undefined>;
 
@@ -11,39 +12,128 @@ function errsOf(field: { state: { meta: { errors: unknown } } }) {
 }
 
 function useObjectUrl(file: File | undefined | null) {
-    const url = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
+    const [url, setUrl] = useState<string | null>(null);
+
     useEffect(() => {
+        if (!file) {
+            setUrl(null);
+            return;
+        }
+        const objectUrl = URL.createObjectURL(file);
+        setUrl(objectUrl);
         return () => {
-            if (url) URL.revokeObjectURL(url);
+            URL.revokeObjectURL(objectUrl);
         };
-    }, [url]);
+    }, [file]);
+
     return url;
 }
 
 function useObjectUrls(files: File[]) {
-    const urls = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
+    const [urls, setUrls] = useState<string[]>([]);
+
     useEffect(() => {
-        return () => urls.forEach((u) => URL.revokeObjectURL(u));
-    }, [urls]);
+        const objectUrls = files.map((f) => URL.createObjectURL(f));
+        setUrls(objectUrls);
+        return () => {
+            objectUrls.forEach((u) => URL.revokeObjectURL(u));
+        };
+    }, [files]);
+
     return urls;
 }
 
-function SingleImageField({
+export function SingleImageField({
     form,
     name,
     label,
     description,
+    existingSrc,
+    onDeleteExisting,
+    aspectClassName = "aspect-video",
 }: {
     form: any;
-    name: "mainImg" | "availabilityImg";
+    name: "mainImg" | "availabilityImg" | "quoteImg";
     label: string;
     description: string;
+    existingSrc?: string;
+    onDeleteExisting?: () => void;
+    aspectClassName?: string;
 }) {
     const inputRef = useRef<HTMLInputElement>(null);
     return (
         <form.Field name={name}>
             {(field: any) => {
                 const file = field.state.value as File | undefined;
+
+                // If a new file has been selected, show its preview
+                if (file) {
+                    return (
+                        <Field>
+                            <FieldLabel>{label}</FieldLabel>
+                            <FieldDescription>{description}</FieldDescription>
+                            <input
+                                ref={inputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    field.handleChange(f);
+                                }}
+                            />
+                            <SingleImagePreview
+                                file={file}
+                                onRemove={() => {
+                                    field.handleChange(undefined);
+                                    if (inputRef.current) inputRef.current.value = "";
+                                }}
+                            />
+                            <FieldError errors={errsOf(field)} />
+                        </Field>
+                    );
+                }
+
+                // If an image already exists on the server, show it with a visible delete button below
+                if (existingSrc) {
+                    return (
+                        <Field>
+                            <FieldLabel>{label}</FieldLabel>
+                            <FieldDescription>{description}</FieldDescription>
+                            <input
+                                ref={inputRef}
+                                type="file"
+                                accept="image/jpeg,image/png,image/webp"
+                                className="hidden"
+                                onChange={(e) => {
+                                    const f = e.target.files?.[0];
+                                    field.handleChange(f);
+                                }}
+                            />
+                            <div className={`${aspectClassName} w-full overflow-hidden rounded-lg`}>
+                                <ProjectImage
+                                    projName={label}
+                                    src={existingSrc}
+                                    className="h-full w-full object-cover"
+                                />
+                            </div>
+                            <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                disabled={!onDeleteExisting}
+                                onClick={onDeleteExisting}
+                                className="w-full"
+                            >
+                                <Trash2 className="size-4 mr-2" />
+                                Eliminar imagen
+                            </Button>
+                            <FieldError errors={errsOf(field)} />
+                        </Field>
+                    );
+                }
+
+                // Otherwise show the upload placeholder
                 return (
                     <Field>
                         <FieldLabel>{label}</FieldLabel>
@@ -58,27 +148,17 @@ function SingleImageField({
                                 field.handleChange(f);
                             }}
                         />
-                        {file ? (
-                            <SingleImagePreview
-                                file={file}
-                                onRemove={() => {
-                                    field.handleChange(undefined);
-                                    if (inputRef.current) inputRef.current.value = "";
-                                }}
-                            />
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => inputRef.current?.click()}
-                                className="border-outline-variant/40 hover:border-primary/60 hover:bg-accent/40 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors"
-                            >
-                                <CloudUpload className="text-primary size-8" />
-                                <p className="text-sm font-semibold">Subir imagen</p>
-                                <p className="text-muted-foreground text-xs">
-                                    Haz click o arrastra un archivo
-                                </p>
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={() => inputRef.current?.click()}
+                            className="border-outline-variant/40 hover:border-primary/60 hover:bg-accent/40 flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors"
+                        >
+                            <CloudUpload className="text-primary size-8" />
+                            <p className="text-sm font-semibold">Subir imagen</p>
+                            <p className="text-muted-foreground text-xs">
+                                Haz click o arrastra un archivo
+                            </p>
+                        </button>
                         <FieldError errors={errsOf(field)} />
                     </Field>
                 );
@@ -184,7 +264,19 @@ function GalleryPreview({
     );
 }
 
-export function MediaSection({ form }: { form: any }) {
+export function MediaSection({
+    form,
+    existingMainImg,
+    onDeleteMainImg,
+    existingAvailabilityImg,
+    onDeleteAvailabilityImg,
+}: {
+    form: any;
+    existingMainImg?: string;
+    onDeleteMainImg?: () => void;
+    existingAvailabilityImg?: string;
+    onDeleteAvailabilityImg?: () => void;
+}) {
     return (
         <Card>
             <CardHeader>
@@ -196,12 +288,16 @@ export function MediaSection({ form }: { form: any }) {
                     name="mainImg"
                     label="Imagen principal"
                     description="Máx 90MB. Formatos: JPEG, PNG, WebP."
+                    existingSrc={existingMainImg}
+                    onDeleteExisting={onDeleteMainImg}
                 />
                 <SingleImageField
                     form={form}
                     name="availabilityImg"
                     label="Plano de disponibilidad"
                     description="Imagen que muestra la distribución de lotes disponibles."
+                    existingSrc={existingAvailabilityImg}
+                    onDeleteExisting={onDeleteAvailabilityImg}
                 />
                 <GalleryField form={form} />
             </CardContent>

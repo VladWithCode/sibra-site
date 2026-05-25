@@ -237,6 +237,7 @@ export type TProject = {
     location: string;
     main_img: string;
     availability_img: string;
+    quote_img: string;
     gallery: string[];
 
     total_area: number;

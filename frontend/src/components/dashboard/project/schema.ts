@@ -68,6 +68,7 @@ export const ProjectFormSchema = z.object({
 
     mainImg: z.instanceof(File).optional(),
     availabilityImg: z.instanceof(File).optional(),
+    quoteImg: z.instanceof(File).optional(),
     gallery: z.array(z.instanceof(File)),
 
     amenities: z.array(ProjectAmenityInputSchema),
@@ -91,6 +92,7 @@ export const projectFormDefaults: ProjectFormValues = {
     lon: undefined,
     mainImg: undefined,
     availabilityImg: undefined,
+    quoteImg: undefined,
     gallery: [],
     amenities: [],
     docs: [],
@@ -141,6 +143,7 @@ export function projectToFormValues(p: TProject): ProjectFormValues {
         lon: p.lon || undefined,
         mainImg: undefined,
         availabilityImg: undefined,
+        quoteImg: undefined,
         gallery: [],
         amenities: [],
         docs: [],
