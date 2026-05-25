@@ -5,9 +5,11 @@ import { DocsSection } from "@/components/dashboard/project/DocsSection";
 import { LocationSection } from "@/components/dashboard/project/LocationSection";
 import { MainInfoSection } from "@/components/dashboard/project/MainInfoSection";
 import { MediaSection } from "@/components/dashboard/project/MediaSection";
+import { SectionsSection } from "@/components/dashboard/project/SectionsSection";
 import {
     ProjectFormSchema,
     buildProjectPayload,
+    isSectionValid,
     projectToFormValues,
 } from "@/components/dashboard/project/schema";
 import { LucideIcon } from "@/components/dashboard/property/LucideIcon";
@@ -39,22 +41,23 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { FileText, Save, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/panel/proyectos/$id/")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        const [projectData] = await Promise.all([
+        await Promise.all([
             context.queryClient.ensureQueryData(getProjectOpts(params.id)),
             context.queryClient.ensureQueryData(getProjectDocsOpts(params.id)),
             context.queryClient.ensureQueryData(getAppealItemsOpts),
         ]);
-        return { projectName: projectData.project.name };
     },
 });
 
 function RouteComponent() {
     const { id } = Route.useParams();
+    const [isSectionUploading, setIsSectionUploading] = useState(false);
     const { data } = useSuspenseQuery(getProjectOpts(id));
     const project = data.project;
     const { data: docsData } = useSuspenseQuery(getProjectDocsOpts(id));
@@ -84,6 +87,14 @@ function RouteComponent() {
         defaultValues: projectToFormValues(project),
         validators: { onChange: ProjectFormSchema },
         onSubmit: async ({ value }) => {
+            const badIdx = value.sections.findIndex((s) => !isSectionValid(s));
+            if (badIdx !== -1) {
+                toast.error(
+                    `La sección ${badIdx + 1} debe tener texto o imagen.`,
+                    { closeButton: true },
+                );
+                return;
+            }
             try {
                 await updateMut.mutateAsync(buildProjectPayload(value));
                 toast.success("Proyecto actualizado", { closeButton: true });
@@ -270,7 +281,7 @@ function RouteComponent() {
                                 size="lg"
                                 type="submit"
                                 form="edit-project-form"
-                                disabled={!canSubmit || isSubmitting}
+                                disabled={!canSubmit || isSubmitting || isSectionUploading}
                             >
                                 <Save className="size-4" />
                                 {isSubmitting ? "Guardando..." : "Guardar"}
@@ -289,6 +300,7 @@ function RouteComponent() {
                     }}
                 >
                     <MainInfoSection form={form} />
+                    <SectionsSection form={form} projectId={id} onUploadingChange={setIsSectionUploading} />
                     <LocationSection form={form} />
 
                     <ExistingImagesSection

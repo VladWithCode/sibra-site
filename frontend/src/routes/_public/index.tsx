@@ -202,7 +202,7 @@ function AboutSection() {
                         className="bg-on-surface text-white font-headline font-bold hover:bg-slate-800  transition-all shadow-xl active:scale-95"
                         asChild
                     >
-                        <Link to="/nosotro/nosotross">Conoce nuestra historia</Link>
+                        <Link to="/nosotros">Conoce nuestra historia</Link>
                     </Button>
                 </div>
             </div>

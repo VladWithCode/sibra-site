@@ -57,23 +57,6 @@ export function MainInfoSection({ form }: { form: any }) {
                     )}
                 </form.Field>
 
-                <form.Field name="description">
-                    {(field: any) => (
-                        <Field>
-                            <FieldLabel htmlFor="description">Descripción</FieldLabel>
-                            <Textarea
-                                id="description"
-                                rows={5}
-                                value={field.state.value ?? ""}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="Describe el proyecto, su visión y características..."
-                            />
-                            <FieldError errors={errsOf(field)} />
-                        </Field>
-                    )}
-                </form.Field>
-
                 <form.Field name="quote">
                     {(field: any) => (
                         <Field>

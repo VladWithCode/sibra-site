@@ -4,9 +4,11 @@ import { DocsSection } from "@/components/dashboard/project/DocsSection";
 import { LocationSection } from "@/components/dashboard/project/LocationSection";
 import { MainInfoSection } from "@/components/dashboard/project/MainInfoSection";
 import { MediaSection } from "@/components/dashboard/project/MediaSection";
+import { SectionsSection } from "@/components/dashboard/project/SectionsSection";
 import {
     ProjectFormSchema,
     buildProjectPayload,
+    isSectionValid,
     projectFormDefaults,
 } from "@/components/dashboard/project/schema";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,7 @@ import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Save } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/panel/proyectos/nuevo")({
@@ -34,6 +37,7 @@ export const Route = createFileRoute("/panel/proyectos/nuevo")({
 
 function RouteComponent() {
     const navigate = useNavigate();
+    const [isSectionUploading, setIsSectionUploading] = useState(false);
     const createMut = useMutation(createProjectOpts());
     const mainImgMut = useMutation(uploadProjectMainImgOpts(""));
     const availabilityMut = useMutation(uploadProjectAvailabilityOpts(""));
@@ -45,6 +49,15 @@ function RouteComponent() {
         defaultValues: projectFormDefaults,
         validators: { onChange: ProjectFormSchema },
         onSubmit: async ({ value }) => {
+            // Reject empty sections client-side; backend also enforces.
+            const badIdx = value.sections.findIndex((s) => !isSectionValid(s));
+            if (badIdx !== -1) {
+                toast.error(
+                    `La sección ${badIdx + 1} debe tener texto o imagen.`,
+                    { closeButton: true },
+                );
+                return;
+            }
             try {
                 const result = await createMut.mutateAsync(buildProjectPayload(value));
                 const newId = result.project.id;
@@ -174,7 +187,7 @@ function RouteComponent() {
                                 size="lg"
                                 type="submit"
                                 form="create-project-form"
-                                disabled={!canSubmit || isSubmitting}
+                                disabled={!canSubmit || isSubmitting || isSectionUploading}
                             >
                                 <Save className="size-4" />
                                 {isSubmitting ? "Guardando..." : "Guardar"}
@@ -193,6 +206,7 @@ function RouteComponent() {
                     }}
                 >
                     <MainInfoSection form={form} />
+                    <SectionsSection form={form} onUploadingChange={setIsSectionUploading} />
                     <LocationSection form={form} />
                     <MediaSection form={form} />
                     <AmenitiesSection form={form} />

@@ -18,8 +18,8 @@ import { useRouter } from "@tanstack/react-router";
 
 export function CreatePropertyForm({ }: {}) {
     const router = useRouter();
-    const form = useForm<TPropertyFormData>({
-        resolver: zodResolver(propertyFormSchema),
+    const form = useForm<TPropertyFormData, any, TPropertyFormData>({
+        resolver: zodResolver(propertyFormSchema) as any,
         defaultValues: {
             title: "",
             address: "",
@@ -466,8 +466,8 @@ export function CreatePropertyForm({ }: {}) {
 
 export function EditPropertyForm({ property }: { property: TProperty }) {
     const router = useRouter();
-    const form = useForm<TPropertyFormData>({
-        resolver: zodResolver(propertyFormSchema),
+    const form = useForm<TPropertyFormData, any, TPropertyFormData>({
+        resolver: zodResolver(propertyFormSchema) as any,
         defaultValues: property,
     });
     const updatePropertyMut = useMutation(updatePropertyDetailsOpts(property.id));
@@ -918,6 +918,7 @@ export function EditPropertyPicForm({ property }: { property: TProperty }) {
     const updateImgMut = useMutation(updatePropertyMainImgOpts(property.id));
     const onSubmit = form.handleSubmit(
         (data) => {
+            if (!data.mainImg) return;
             updateImgMut.mutate({
                 id: property.id,
                 file: data.mainImg,

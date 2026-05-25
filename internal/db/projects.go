@@ -19,6 +19,9 @@ var (
 
 	ErrProjectAssociateFilterInvalid = errors.New("invalid project associate filter")
 	ErrProjectAssociateArgsInvalid   = errors.New("invalid project associate args")
+
+	ErrProjectSectionEmpty       = errors.New("project section must have body or image")
+	ErrProjectSectionInvalidSide = errors.New("project section image_side must be 'left' or 'right'")
 )
 
 type ProjectAmenity struct {
@@ -54,14 +57,22 @@ type ProjectAppealItem struct {
 	Description string `json:"description" db:"description"`
 }
 
+type ProjectSection struct {
+	ID        string `json:"id" db:"id"`
+	Position  int    `json:"position" db:"position"`
+	Title     string `json:"title" db:"title"`
+	Body      string `json:"body" db:"body"`
+	Image     string `json:"image" db:"image"`
+	ImageSide string `json:"image_side" db:"image_side"`
+}
+
 type Project struct {
-	ID          string `json:"id" db:"id"`
-	Slug        string `json:"slug" db:"slug"`
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"description"`
-	Quote       string `json:"quote" db:"quote"`
-	Summary     string `json:"summary" db:"summary"`
-	Location    string `json:"location" db:"location"`
+	ID       string `json:"id" db:"id"`
+	Slug     string `json:"slug" db:"slug"`
+	Name     string `json:"name" db:"name"`
+	Quote    string `json:"quote" db:"quote"`
+	Summary  string `json:"summary" db:"summary"`
+	Location string `json:"location" db:"location"`
 	// Images are the filename of the corresponding image as stored in server
 	MainImg         string   `json:"main_img" db:"main_img"`
 	AvailabilityImg string   `json:"availability_img" db:"availability_img"`
@@ -75,6 +86,7 @@ type Project struct {
 	LotCount      int                 `json:"lot_count" db:"lot_count"`
 	AvailableLots int                 `json:"available_lots" db:"available_lots"`
 	AppealList    []ProjectAppealItem `json:"appeal_list" db:"appeal_list"`
+	Sections      []ProjectSection    `json:"sections" db:"sections"`
 	Coords        *Point              `json:"coords" db:"earth_coords"`
 	Lat           float64             `json:"lat" db:"lat"`
 	Lon           float64             `json:"lon" db:"lon"`
@@ -113,7 +125,7 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 	rows, err := conn.Query(
 		ctx,
 		`SELECT
-            id, slug, name, description, quote, summary, location,
+            id, slug, name, quote, summary, location,
             main_img, gallery, availability_img,
             total_area, lot_count, available_lots,
             lat, lon, earth_coords,
@@ -143,7 +155,6 @@ func FindProjects(ctx context.Context) ([]*Project, error) {
 			&project.ID,
 			&project.Slug,
 			&project.Name,
-			&project.Description,
 			&project.Quote,
 			&project.Summary,
 			&project.Location,
@@ -236,7 +247,7 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 
 	row := conn.QueryRow(ctx, `
 		SELECT
-			p.id, p.slug, p.name, p.description, p.quote, p.summary, p.location,
+			p.id, p.slug, p.name, p.quote, p.summary, p.location,
 			p.main_img, p.gallery, p.availability_img,
 			p.total_area, p.lot_count, p.available_lots,
 			p.lat, p.lon, p.earth_coords,
@@ -253,6 +264,20 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 				JOIN appeal_items ai ON ai.id = pai.appeal_item_id
 				WHERE pai.project_id = p.id
 			), '[]'::jsonb) AS appeal_list,
+			COALESCE((
+				SELECT jsonb_agg(
+					jsonb_build_object(
+						'id', ps.id,
+						'position', ps.position,
+						'title', ps.title,
+						'body', ps.body,
+						'image', ps.image,
+						'image_side', ps.image_side
+					) ORDER BY ps.position
+				)
+				FROM project_sections ps
+				WHERE ps.project_id = p.id
+			), '[]'::jsonb) AS sections,
 			p.created_at, p.updated_at
 		FROM projects p
 		WHERE p.id = $1
@@ -262,13 +287,13 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 		rawDocs       []byte
 		rawAmenities  []byte
 		rawAppealList []byte
+		rawSections   []byte
 		proj          Project
 	)
 	err = row.Scan(
 		&proj.ID,
 		&proj.Slug,
 		&proj.Name,
-		&proj.Description,
 		&proj.Quote,
 		&proj.Summary,
 		&proj.Location,
@@ -284,6 +309,7 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 		&rawAmenities,
 		&rawDocs,
 		&rawAppealList,
+		&rawSections,
 		&proj.CreatedAt,
 		&proj.UpdatedAt,
 	)
@@ -312,6 +338,13 @@ func FindProjectByID(ctx context.Context, id string) (*Project, error) {
 		proj.AppealList = make([]ProjectAppealItem, 0)
 		err = json.Unmarshal(rawAppealList, &proj.AppealList)
 		if err != nil {
+			return nil, err
+		}
+	}
+
+	proj.Sections = make([]ProjectSection, 0)
+	if rawSections != nil {
+		if err = json.Unmarshal(rawSections, &proj.Sections); err != nil {
 			return nil, err
 		}
 	}
@@ -331,7 +364,7 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 
 	row := conn.QueryRow(ctx, `
         SELECT
-            p.id, p.slug, p.name, p.description, p.quote, p.summary, p.location,
+            p.id, p.slug, p.name, p.quote, p.summary, p.location,
             p.main_img, p.gallery, p.availability_img,
             p.total_area, p.lot_count, p.available_lots,
             p.lat, p.lon, p.earth_coords,
@@ -348,6 +381,20 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
                 JOIN appeal_items ai ON ai.id = pai.appeal_item_id
                 WHERE pai.project_id = p.id
             ), '[]'::jsonb) AS appeal_list,
+            COALESCE((
+                SELECT jsonb_agg(
+                    jsonb_build_object(
+                        'id', ps.id,
+                        'position', ps.position,
+                        'title', ps.title,
+                        'body', ps.body,
+                        'image', ps.image,
+                        'image_side', ps.image_side
+                    ) ORDER BY ps.position
+                )
+                FROM project_sections ps
+                WHERE ps.project_id = p.id
+            ), '[]'::jsonb) AS sections,
             p.created_at, p.updated_at
         FROM projects p
         WHERE p.slug = $1
@@ -357,13 +404,13 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 		rawDocs       []byte
 		rawAmenities  []byte
 		rawAppealList []byte
+		rawSections   []byte
 		proj          Project
 	)
 	err = row.Scan(
 		&proj.ID,
 		&proj.Slug,
 		&proj.Name,
-		&proj.Description,
 		&proj.Quote,
 		&proj.Summary,
 		&proj.Location,
@@ -379,6 +426,7 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 		&rawAmenities,
 		&rawDocs,
 		&rawAppealList,
+		&rawSections,
 		&proj.CreatedAt,
 		&proj.UpdatedAt,
 	)
@@ -407,6 +455,13 @@ func FindProjectBySlug(ctx context.Context, slug string) (*Project, error) {
 		proj.AppealList = make([]ProjectAppealItem, 0)
 		err = json.Unmarshal(rawAppealList, &proj.AppealList)
 		if err != nil {
+			return nil, err
+		}
+	}
+
+	proj.Sections = make([]ProjectSection, 0)
+	if rawSections != nil {
+		if err = json.Unmarshal(rawSections, &proj.Sections); err != nil {
 			return nil, err
 		}
 	}
@@ -458,7 +513,6 @@ func CreateProject(ctx context.Context, project *Project) error {
 		"id":               project.ID,
 		"slug":             project.Slug,
 		"name":             project.Name,
-		"description":      project.Description,
 		"quote":            project.Quote,
 		"summary":          project.Summary,
 		"location":         project.Location,
@@ -477,13 +531,13 @@ func CreateProject(ctx context.Context, project *Project) error {
 	_, err = tx.Exec(
 		ctx,
 		`INSERT INTO projects (
-            id, slug, name, description, quote, summary, location,
+            id, slug, name, quote, summary, location,
             main_img, gallery, availability_img,
             total_area, lot_count, available_lots,
             lat, lon, earth_coords,
             amenities, docs
         ) VALUES (
-            @id, @slug, @name, @description, @quote, @summary, @location,
+            @id, @slug, @name, @quote, @summary, @location,
             @main_img, @gallery, @availability_img,
             @total_area, @lot_count, @available_lots,
             @lat, @lon, @earth_coords,
@@ -497,6 +551,10 @@ func CreateProject(ctx context.Context, project *Project) error {
 	}
 
 	if err := upsertProjectAppealList(ctx, tx, project.ID, project.AppealList); err != nil {
+		return err
+	}
+
+	if err := upsertProjectSections(ctx, tx, project.ID, project.Sections); err != nil {
 		return err
 	}
 
@@ -634,7 +692,6 @@ func UpdateProject(ctx context.Context, project *Project) error {
 	args := pgx.NamedArgs{
 		"id":               project.ID,
 		"name":             project.Name,
-		"description":      project.Description,
 		"quote":            project.Quote,
 		"summary":          project.Summary,
 		"location":         project.Location,
@@ -653,7 +710,7 @@ func UpdateProject(ctx context.Context, project *Project) error {
 	_, err = tx.Exec(
 		ctx,
 		`UPDATE projects SET
-            name = @name, description = @description, quote = @quote, summary = @summary,
+            name = @name, quote = @quote, summary = @summary,
             location = @location, main_img = @main_img, gallery = @gallery,
             availability_img = @availability_img,
             total_area = @total_area, lot_count = @lot_count, available_lots = @available_lots,
@@ -674,6 +731,15 @@ func UpdateProject(ctx context.Context, project *Project) error {
 	}
 
 	if err := upsertProjectAppealList(ctx, tx, project.ID, project.AppealList); err != nil {
+		return err
+	}
+
+	// Replace project sections: delete all then insert provided slice
+	if _, err := tx.Exec(ctx, `DELETE FROM project_sections WHERE project_id = $1`, project.ID); err != nil {
+		return err
+	}
+
+	if err := upsertProjectSections(ctx, tx, project.ID, project.Sections); err != nil {
 		return err
 	}
 
@@ -1377,4 +1443,68 @@ func DeleteAppealItem(ctx context.Context, id string) error {
 
 	_, err = conn.Exec(ctx, `DELETE FROM appeal_items WHERE id = $1`, id)
 	return err
+}
+
+// upsertProjectSections inserts the provided sections for the given project,
+// reassigning position based on slice index. It is intended to run inside an
+// existing transaction. The caller is responsible for deleting existing rows
+// before calling (UpdateProject does this; CreateProject does not need to).
+//
+// Sections with both body and image empty are rejected with ErrProjectSectionEmpty.
+// Invalid image_side values are rejected with ErrProjectSectionInvalidSide.
+// Missing IDs are filled with uuid.NewV7(), matching the rest of the codebase.
+func upsertProjectSections(ctx context.Context, tx pgx.Tx, projectID string, sections []ProjectSection) error {
+	if len(sections) == 0 {
+		return nil
+	}
+
+	batch := pgx.Batch{}
+
+	for i := range sections {
+		s := &sections[i]
+
+		if s.Body == "" && s.Image == "" {
+			return ErrProjectSectionEmpty
+		}
+
+		if s.ImageSide == "" {
+			s.ImageSide = "right"
+		}
+		if s.ImageSide != "left" && s.ImageSide != "right" {
+			return ErrProjectSectionInvalidSide
+		}
+
+		if s.ID == "" {
+			s.ID = uuid.Must(uuid.NewV7()).String()
+		}
+
+		batch.Queue(
+			`INSERT INTO project_sections (
+                id, project_id, position, title, body, image, image_side
+            ) VALUES (
+                @id, @project_id, @position, @title, @body, @image, @image_side
+            )`,
+			pgx.NamedArgs{
+				"id":         s.ID,
+				"project_id": projectID,
+				"position":   i,
+				"title":      s.Title,
+				"body":       s.Body,
+				"image":      s.Image,
+				"image_side": s.ImageSide,
+			},
+		)
+
+		// Sync position field on caller-visible struct (matches index).
+		s.Position = i
+	}
+
+	bres := tx.SendBatch(ctx, &batch)
+	for i := 0; i < batch.Len(); i++ {
+		if _, err := bres.Exec(); err != nil {
+			bres.Close()
+			return err
+		}
+	}
+	return bres.Close()
 }

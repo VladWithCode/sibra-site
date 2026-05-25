@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "@tanstack/react-form";
 import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from "react";
 import z from "zod";
-import { ContactFormDatePicker, QuoteTypeSelector, type TDatePickerItem } from "../properties/quote-ui";
+import { ContactFormDatePicker, type TDatePickerItem } from "../properties/quote-ui";
 import { format, set } from "date-fns";
 import { toast } from "sonner";
 import { CheckCircle2 } from "lucide-react";
@@ -63,7 +63,7 @@ export function ContactForm({
             phone: "",
             name: isViewComplete ? "" : undefined,
         } satisfies contactFormSchemaType,
-        validators: { onChange: ContactFormSchema },
+        validators: { onChange: ContactFormSchema as any },
         onSubmit: async ({ value }) => {
             const quoteData: TQuote = {
                 name: value.name || "",

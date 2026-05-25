@@ -19,47 +19,71 @@ import (
 )
 
 func RegisterProjectRoutes(router *customServeMux) {
-	router.HandleFunc("POST /api/socios", CreateAssociate)
-	router.HandleFunc("PUT /api/socios/{id}", UpdateAssociate)
-	router.HandleFunc("DELETE /api/socios/{id}", DeleteAssociate)
+	// Associate CRUD — editor-gated (data mutation on shared associate records).
+	router.HandleFunc("POST /api/socios", auth.WithAuthAccessLevelMiddleware(CreateAssociate, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/socios/{id}", auth.WithAuthAccessLevelMiddleware(UpdateAssociate, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/socios/{id}", auth.WithAuthAccessLevelMiddleware(DeleteAssociate, auth.AccessLevelEditor))
 
+	// Project reads — public for the marketing site.
 	router.HandleFunc("GET /api/proyectos", auth.PopulateAuthMiddleware(GetProjects))
 	router.HandleFunc("GET /api/proyectos/{id}", GetProject)
-	router.HandleFunc("POST /api/proyectos", CreateProject)
-	router.HandleFunc("PUT /api/proyectos/{id}", UpdateProject)
-	router.HandleFunc("DELETE /api/proyectos/{id}", DeleteProject)
+	// Project mutations — editor-gated. DeleteProject is admin-only (destructive,
+	// matches blog hard-delete convention).
+	router.HandleFunc("POST /api/proyectos", auth.WithAuthAccessLevelMiddleware(CreateProject, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/proyectos/{id}", auth.WithAuthAccessLevelMiddleware(UpdateProject, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/proyectos/{id}", auth.WithAuthAccessLevelMiddleware(DeleteProject, auth.AccessLevelAdmin))
 
-	router.HandleFunc("PUT /api/proyectos/{id}/medios/principal", UploadProjectMainImg)
-	router.HandleFunc("DELETE /api/proyectos/{id}/medios/principal", RemoveProjectMainImg)
-	router.HandleFunc("PUT /api/proyectos/{id}/medios/galeria", UploadProjectGallery)
-	router.HandleFunc("DELETE /api/proyectos/{id}/medios/galeria/{imgID}", RemoveFromProjectGallery)
-	router.HandleFunc("PUT /api/proyectos/{id}/medios/amenidades", UploadProjectAmenity)
-	router.HandleFunc("PUT /api/proyectos/{id}/medios/amenidades/{amenityID}", UpdateProjectAmenity)
-	router.HandleFunc("DELETE /api/proyectos/{id}/medios/amenidades/{amenityID}", DeleteProjectAmenity)
-	router.HandleFunc("PUT /api/proyectos/{id}/medios/disponibilidad", UploadProjectAvailability)
-	router.HandleFunc("DELETE /api/proyectos/{id}/medios/disponibilidad", RemoveProjectAvailability)
+	// Project media — all editor-gated.
+	router.HandleFunc("PUT /api/proyectos/{id}/medios/principal", auth.WithAuthAccessLevelMiddleware(UploadProjectMainImg, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/proyectos/{id}/medios/principal", auth.WithAuthAccessLevelMiddleware(RemoveProjectMainImg, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/proyectos/{id}/medios/galeria", auth.WithAuthAccessLevelMiddleware(UploadProjectGallery, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/proyectos/{id}/medios/galeria/{imgID}", auth.WithAuthAccessLevelMiddleware(RemoveFromProjectGallery, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/proyectos/{id}/medios/amenidades", auth.WithAuthAccessLevelMiddleware(UploadProjectAmenity, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/proyectos/{id}/medios/amenidades/{amenityID}", auth.WithAuthAccessLevelMiddleware(UpdateProjectAmenity, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/proyectos/{id}/medios/amenidades/{amenityID}", auth.WithAuthAccessLevelMiddleware(DeleteProjectAmenity, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/proyectos/{id}/medios/disponibilidad", auth.WithAuthAccessLevelMiddleware(UploadProjectAvailability, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/proyectos/{id}/medios/disponibilidad", auth.WithAuthAccessLevelMiddleware(RemoveProjectAvailability, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/proyectos/{id}/medios/secciones/{sectionIdx}", auth.WithAuthAccessLevelMiddleware(UploadProjectSectionImage, auth.AccessLevelEditor))
 
 	router.HandleFunc("GET /api/socios", auth.WithAuthAccessLevelMiddleware(GetAssociates, auth.AccessLevelEditor))
 
 	router.HandleFunc("GET /api/proyectos/{id}/socios", auth.ValidateAuthMiddleware(GetProjectAssociates))
 	router.HandleFunc("GET /api/proyectos/{id}/socios/{associateID}", auth.ValidateAuthMiddleware(GetProjectAssociate))
-	router.HandleFunc("POST /api/proyectos/{id}/socios/{associateID}", AddProjectAssociate)
-	router.HandleFunc("PUT /api/proyectos/{id}/socios/{associateID}", UpdateProjectAssociate)
-	router.HandleFunc("DELETE /api/proyectos/{id}/socios/{associateID}", RemoveProjectAssociate)
+	// Project-associate junction mutations — editor-gated.
+	router.HandleFunc("POST /api/proyectos/{id}/socios/{associateID}", auth.WithAuthAccessLevelMiddleware(AddProjectAssociate, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/proyectos/{id}/socios/{associateID}", auth.WithAuthAccessLevelMiddleware(UpdateProjectAssociate, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/proyectos/{id}/socios/{associateID}", auth.WithAuthAccessLevelMiddleware(RemoveProjectAssociate, auth.AccessLevelEditor))
 
+	// Doc reads keep existing scoping. Doc mutations — editor-gated.
 	router.HandleFunc("GET /api/proyectos/{id}/documentos", auth.ValidateProjectAccessMiddleware(GetProjectDocs))
 	router.HandleFunc("GET /api/proyectos/{id}/documentos/admin", auth.ValidateAuthMiddleware(GetProjectDocs))
-	router.HandleFunc("POST /api/proyectos/{id}/documentos", CreateProjectDoc)
-	router.HandleFunc("DELETE /api/proyectos/{id}/documentos/{docID}", RemoveProjectDoc)
+	router.HandleFunc("POST /api/proyectos/{id}/documentos", auth.WithAuthAccessLevelMiddleware(CreateProjectDoc, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/proyectos/{id}/documentos/{docID}", auth.WithAuthAccessLevelMiddleware(RemoveProjectDoc, auth.AccessLevelEditor))
 
+	// Project-access login endpoints — must remain public (client/associate self-login).
 	router.HandleFunc("GET /api/proyectos/{id}/acceso", CheckProjectAccess)
 	router.HandleFunc("POST /api/proyectos/{id}/acceso", ValidateProjectAccess)
 
+	// Appeal items: reads public, mutations editor-gated.
 	router.HandleFunc("GET /api/atractivos", GetAppealItems)
 	router.HandleFunc("GET /api/atractivos/{id}", GetAppealItem)
-	router.HandleFunc("POST /api/atractivos", CreateAppealItem)
-	router.HandleFunc("PUT /api/atractivos/{id}", UpdateAppealItem)
-	router.HandleFunc("DELETE /api/atractivos/{id}", DeleteAppealItem)
+	router.HandleFunc("POST /api/atractivos", auth.WithAuthAccessLevelMiddleware(CreateAppealItem, auth.AccessLevelEditor))
+	router.HandleFunc("PUT /api/atractivos/{id}", auth.WithAuthAccessLevelMiddleware(UpdateAppealItem, auth.AccessLevelEditor))
+	router.HandleFunc("DELETE /api/atractivos/{id}", auth.WithAuthAccessLevelMiddleware(DeleteAppealItem, auth.AccessLevelEditor))
+}
+
+// respondProjectMultipartErr returns true if the error from ParseMultipartForm
+// was a body-too-large error and has already been answered with 413. Caller
+// must return immediately when true.
+func respondProjectMultipartErr(w http.ResponseWriter, err error) bool {
+	var mbe *http.MaxBytesError
+	if errors.As(err, &mbe) {
+		respondWithError(w, http.StatusRequestEntityTooLarge, ErrorParams{
+			ErrorMessage: "El archivo es demasiado grande.",
+		})
+		return true
+	}
+	return false
 }
 
 func CheckProjectAccess(w http.ResponseWriter, r *http.Request) {
@@ -287,6 +311,18 @@ func CreateProject(w http.ResponseWriter, r *http.Request) {
 
 	err = db.CreateProject(ctx, &project)
 	if err != nil {
+		if errors.Is(err, db.ErrProjectSectionEmpty) {
+			respondWithError(w, http.StatusBadRequest, ErrorParams{
+				ErrorMessage: "Cada sección debe tener texto o imagen",
+			})
+			return
+		}
+		if errors.Is(err, db.ErrProjectSectionInvalidSide) {
+			respondWithError(w, http.StatusBadRequest, ErrorParams{
+				ErrorMessage: "El lado de la imagen debe ser 'left' o 'right'",
+			})
+			return
+		}
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al crear el proyecto",
 		})
@@ -319,13 +355,85 @@ func UpdateProject(w http.ResponseWriter, r *http.Request) {
 
 	project.ID = projectID
 
+	// Snapshot existing section images so we can clean up orphans after a
+	// successful update. A failure to load this is non-fatal — we just skip
+	// cleanup rather than block the update.
+	var oldSectionImages []string
+	if existing, loadErr := db.FindProjectByID(ctx, projectID); loadErr == nil && existing != nil {
+		for _, s := range existing.Sections {
+			if s.Image != "" {
+				oldSectionImages = append(oldSectionImages, s.Image)
+			}
+		}
+	} else if loadErr != nil {
+		log.Printf("Warning: could not load existing project for section cleanup: %v\n", loadErr)
+	}
+
 	err = db.UpdateProject(ctx, &project)
 	if err != nil {
+		if errors.Is(err, db.ErrProjectSectionEmpty) {
+			respondWithError(w, http.StatusBadRequest, ErrorParams{
+				ErrorMessage: "Cada sección debe tener texto o imagen",
+			})
+			return
+		}
+		if errors.Is(err, db.ErrProjectSectionInvalidSide) {
+			respondWithError(w, http.StatusBadRequest, ErrorParams{
+				ErrorMessage: "El lado de la imagen debe ser 'left' o 'right'",
+			})
+			return
+		}
 		respondWithError(w, http.StatusInternalServerError, ErrorParams{
 			ErrorMessage: "Ocurrió un error al actualizar el proyecto",
 		})
 		log.Printf("Failed to update project: %v\n", err)
 		return
+	}
+
+	// Cleanup orphan section images: any filename that was attached to an old
+	// section but is not referenced by the new sections (and not referenced
+	// elsewhere on the project) should be deleted from disk.
+	if len(oldSectionImages) > 0 {
+		newRefs := map[string]struct{}{}
+		for _, s := range project.Sections {
+			if s.Image != "" {
+				newRefs[s.Image] = struct{}{}
+			}
+		}
+		// Avoid removing files still used by main image, availability image, or gallery.
+		if project.MainImg != "" {
+			newRefs[project.MainImg] = struct{}{}
+		}
+		if project.AvailabilityImg != "" {
+			newRefs[project.AvailabilityImg] = struct{}{}
+		}
+		for _, g := range project.Gallery {
+			if g != "" {
+				newRefs[g] = struct{}{}
+			}
+		}
+
+		var orphans []string
+		seen := map[string]struct{}{}
+		for _, img := range oldSectionImages {
+			if _, dup := seen[img]; dup {
+				continue
+			}
+			seen[img] = struct{}{}
+			if _, kept := newRefs[img]; !kept {
+				orphans = append(orphans, img)
+			}
+		}
+
+		if len(orphans) > 0 {
+			go func(files []string) {
+				for _, f := range files {
+					if delErr := uploads.Delete(f); delErr != nil && !os.IsNotExist(delErr) {
+						log.Printf("Warning: failed to delete orphan section image %q: %v\n", f, delErr)
+					}
+				}
+			}(orphans)
+		}
 	}
 
 	respondWithJSON(w, http.StatusCreated, map[string]any{
@@ -355,8 +463,12 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 func CreateProjectDoc(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("id")
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize+1<<20)
 	err := r.ParseMultipartForm(uploads.MaxImageUploadSize)
 	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
 		})
@@ -431,8 +543,12 @@ func CreateProjectDoc(w http.ResponseWriter, r *http.Request) {
 
 func UpdateProjectDoc(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize+1<<20)
 	err := r.ParseMultipartForm(uploads.MaxImageUploadSize)
 	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
 		})
@@ -854,8 +970,12 @@ func UploadProjectMainImg(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("id")
 
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize+1<<20)
 	err := r.ParseMultipartForm(uploads.MaxImageUploadSize)
 	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
 		})
@@ -969,8 +1089,12 @@ func UploadProjectGallery(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("id")
 
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize*uploads.MaxMultiUploadCount+1<<20)
 	err := r.ParseMultipartForm(uploads.MaxImageUploadSize * uploads.MaxMultiUploadCount)
 	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
 		})
@@ -1098,8 +1222,12 @@ func UploadProjectAmenity(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("id")
 
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize+1<<20)
 	err := r.ParseMultipartForm(uploads.MaxImageUploadSize)
 	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
 		})
@@ -1183,8 +1311,12 @@ func UpdateProjectAmenity(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("id")
 	amenityID := r.PathValue("amenityID")
 
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize+1<<20)
 	err := r.ParseMultipartForm(uploads.MaxImageUploadSize)
 	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
 		})
@@ -1358,8 +1490,12 @@ func UploadProjectAvailability(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("id")
 
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize+1<<20)
 	err := r.ParseMultipartForm(uploads.MaxImageUploadSize)
 	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
 		})
@@ -1471,6 +1607,90 @@ func RemoveProjectAvailability(w http.ResponseWriter, r *http.Request) {
 
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"success": true,
+	})
+}
+
+// UploadProjectSectionImage uploads a single image file for a project section
+// identified by its array index (sectionIdx). The handler stores the file under
+// uploads with a deterministic, slug-scoped name and returns the resulting
+// filename so the frontend can persist it inside sections[idx].image via the
+// normal PUT /api/proyectos/{id} JSON update.
+//
+// This endpoint never mutates the project DB row — it only writes to disk.
+func UploadProjectSectionImage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("id")
+	sectionIdxStr := r.PathValue("sectionIdx")
+
+	sectionIdx, err := strconv.Atoi(sectionIdxStr)
+	if err != nil || sectionIdx < 0 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "El índice de la sección debe ser un entero positivo",
+		})
+		return
+	}
+
+	// Hard cap request body to image upload size + 1MB slack for multipart overhead.
+	// ParseMultipartForm's argument controls in-memory buffer only, not total size.
+	r.Body = http.MaxBytesReader(w, r.Body, uploads.MaxImageUploadSize+1<<20)
+
+	err = r.ParseMultipartForm(uploads.MaxImageUploadSize)
+	if err != nil {
+		if respondProjectMultipartErr(w, err) {
+			return
+		}
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Ocurrió un error al procesar la solicitud. Verifica que la información proporcionada sea correcta",
+		})
+		log.Printf("Error parsing multipart form: %v\n", err)
+		return
+	}
+
+	files := r.MultipartForm.File["file"]
+	if len(files) == 0 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Debes proporcionar un archivo.",
+		})
+		return
+	} else if len(files) > 1 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Solo puedes subir un archivo a la vez.",
+		})
+		return
+	}
+
+	project, err := db.FindProject(ctx, projectID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{
+				ErrorMessage: "No se encontró el proyecto",
+			})
+			return
+		}
+
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error finding project: %v\n", err)
+		return
+	}
+
+	date := time.Now().Format("2006-01-02T15-04-05")
+	filename, err := uploads.Upload(&uploads.FileData{
+		Filename: fmt.Sprintf("%s-section-%d-%s", project.Slug, sectionIdx, date),
+		File:     files[0],
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{
+			ErrorMessage: "Ocurrió un error inesperado. Intenta de nuevo más tarde.",
+		})
+		log.Printf("Error uploading section image: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, map[string]any{
+		"success":  true,
+		"filename": filename,
 	})
 }
 

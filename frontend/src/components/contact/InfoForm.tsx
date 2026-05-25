@@ -33,7 +33,7 @@ export function InfoForm({ contactType, formTitle, submitLabel }: {
             type: contactType || "informacion",
         },
         validators: {
-            onSubmit: contactFormSchema,
+            onSubmit: contactFormSchema as any,
         },
         onSubmit: async ({ value }) => {
             try {
@@ -87,7 +87,7 @@ export function InfoForm({ contactType, formTitle, submitLabel }: {
                             />
                             {field.state.meta.isTouched && field.state.meta.errors.length > 0 ? (
                                 <p className="text-xs text-destructive ml-1 mt-1">
-                                    {field.state.meta.errors.map((err) => err?.message).filter(Boolean).join(", ")}
+                                    {field.state.meta.errors.map((err: any) => err?.message).filter(Boolean).join(", ")}
                                 </p>
                             ) : null}
                         </div>
@@ -110,7 +110,7 @@ export function InfoForm({ contactType, formTitle, submitLabel }: {
                             />
                             {field.state.meta.isTouched && field.state.meta.errors.length > 0 ? (
                                 <p className="text-xs text-destructive ml-1 mt-1">
-                                    {field.state.meta.errors.map((err) => err?.message).filter(Boolean).join(", ")}
+                                    {field.state.meta.errors.map((err: any) => err?.message).filter(Boolean).join(", ")}
                                 </p>
                             ) : null}
                         </div>
@@ -136,7 +136,7 @@ export function InfoForm({ contactType, formTitle, submitLabel }: {
                             </div>
                             {field.state.meta.isTouched && field.state.meta.errors.length > 0 ? (
                                 <p className="text-xs text-destructive ml-1">
-                                    {field.state.meta.errors.map((err) => err?.message).filter(Boolean).join(", ")}
+                                    {field.state.meta.errors.map((err: any) => err?.message).filter(Boolean).join(", ")}
                                 </p>
                             ) : null}
                         </div>

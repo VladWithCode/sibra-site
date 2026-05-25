@@ -44,7 +44,8 @@ export function useScrollReveal(options: TUseScrollRevealOptions = {}) {
     const ref = useRef<HTMLElement>(null);
 
     const {
-        trigger = ref,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        trigger: _trigger = ref,
         start = "top 80%",
         animation = "fadeUp",
         stagger = 0.5,

@@ -31,7 +31,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
             <CardContent className="pt-0 px-4 sm:px-6 space-y-3">
                 <div className="flex items-center justify-between gap-3">
                     <CardTitle className="text-2xl lg:text-3xl text-current/80 font-bold">
-                        <Link to={`/propiedades/${property.contract}/${property.slug}`}>
+                        <Link to={`/propiedades/${property.contract}/${property.slug}` as any}>
                             {FormatMoney(property.price)}
                         </Link>
                     </CardTitle>
@@ -44,7 +44,7 @@ export function PropertyCard({ propData: property, withMap }: TPropertyCardProps
                 </div>
                 <CardDescription>
                     <Link
-                        to={`/propiedades/${property.contract}/${property.slug}`}
+                        to={`/propiedades/${property.contract}/${property.slug}` as any}
                         className="space-y-0.5"
                     >
                         <div className="flex items-center gap-3 text-current/60 font-semibold tracking-wide">
@@ -72,7 +72,7 @@ export function PropertyCardHeader({ property }: { property: TProperty }) {
     return (
         <CardHeader className="p-0">
             <div className="relative z-0 w-full h-full overflow-hidden">
-                <Link to={`/propiedades/${property.contract}/${property.slug}`} className="relative z-10 w-full aspect-[2/1] bg-gray-200 rounded-t-lg">
+                <Link to={`/propiedades/${property.contract}/${property.slug}` as any} className="relative z-10 w-full aspect-[2/1] bg-gray-200 rounded-t-lg">
                     <img
                         src={
                             property.mainImg
@@ -113,7 +113,7 @@ export function PropertyCardHeaderWithMap({ property }: { property: TProperty })
                     className="relative z-10 w-full aspect-[2/1] bg-gray-200 transition-(--transition-appear) duration-500 translate-x-0 opacity-100 data-[is-active=false]:-translate-x-12 data-[is-active=false]:opacity-0 data-[is-active=false]:z-0"
                     data-is-active={activeTab === "img"}
                 >
-                    <Link to={`/propiedades/${property.contract}/${property.slug}`}>
+                    <Link to={`/propiedades/${property.contract}/${property.slug}` as any}>
                         <img
                             src={
                                 property.mainImg

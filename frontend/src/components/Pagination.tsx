@@ -27,7 +27,7 @@ export function Pagination({ pagination }: { pagination: TPagination }) {
 
     const goTo = (n: number) => {
         navigate({
-            search: (prev) => ({ ...prev, page: n === 1 ? undefined : n }),
+            search: ((prev: any) => ({ ...prev, page: n === 1 ? undefined : n })) as any,
             replace: true,
         });
     };

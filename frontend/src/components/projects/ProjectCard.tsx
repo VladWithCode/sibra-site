@@ -22,7 +22,7 @@ export function ProjectCard({ project, className }: { project: TProject } & Reac
                 <CardTitle className="space-y-1.5">
                     <h3 className="font-headline text-2xl font-bold text-on-surface tracking-tight">{project.name}</h3>
                     <div className="text-on-surface-variant/80 font-light mt-1 line-clamp-2">
-                        {project.description}
+                        {project.summary}
                     </div>
                 </CardTitle>
                 <div className="grid grid-cols-2 gap-6 min-h-20 border-y border-outline-variant/30">

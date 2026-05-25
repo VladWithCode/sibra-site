@@ -507,6 +507,44 @@ export async function removeProjectAvailability(projectId: string): Promise<{ su
     }, "Error al eliminar la imagen de disponibilidad");
 }
 
+// Media mutations — section images
+//
+// Uploads a single image for a project section identified by its array index.
+// Returns the persisted filename so the caller can write it into
+// sections[idx].image before submitting the project PUT.
+
+export type TUploadProjectSectionImageInput = {
+    projectId: string;
+    sectionIdx: number;
+    file: File;
+};
+
+export type TUploadProjectSectionImageResult = {
+    success: true;
+    filename: string;
+};
+
+export async function uploadProjectSectionImage(
+    { projectId, sectionIdx, file }: TUploadProjectSectionImageInput,
+): Promise<TUploadProjectSectionImageResult> {
+    const fd = new FormData();
+    fd.append("file", file);
+    return jsonFetch<TUploadProjectSectionImageResult>(
+        `/api/proyectos/${projectId}/medios/secciones/${sectionIdx}`,
+        { method: "PUT", body: fd },
+        "Error al subir la imagen de la sección",
+    );
+}
+
+export const uploadProjectSectionImageOpts = (id: string) =>
+    mutationOptions({
+        mutationKey: [...ProjectQueryKeys.detail(), "sectionImage", { id }],
+        mutationFn: uploadProjectSectionImage,
+        // No automatic invalidation: caller writes filename into form state and
+        // commits via the standard project PUT, which invalidates the detail
+        // query itself.
+    });
+
 // Doc mutations
 
 export type TCreateProjectDocInput = {

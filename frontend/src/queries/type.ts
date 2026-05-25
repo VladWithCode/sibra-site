@@ -219,11 +219,19 @@ export type TProjectAppealItem = {
     description: string;
 };
 
+export type TProjectSection = {
+    id: string;
+    position: number;
+    title: string;
+    body: string;
+    image: string;
+    image_side: 'left' | 'right';
+}
+
 export type TProject = {
     id: string;
     slug: string;
     name: string;
-    description: string;
     quote: string;
     summary: string;
     location: string;
@@ -239,6 +247,7 @@ export type TProject = {
     associates: TProjectAssociate[];
     docs: TProjectDoc[];
     appeal_list: TProjectAppealItem[];
+    sections: TProjectSection[];
 
     lat?: number;
     lon?: number;

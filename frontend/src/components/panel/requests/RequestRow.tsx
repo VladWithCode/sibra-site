@@ -1,5 +1,5 @@
 import type { TContactRequestType, TQuote } from "@/queries/type";
-import { setDoneQuoteOpts, updateQuoteOpts } from "@/queries/quotes";
+import { setDoneQuoteOpts } from "@/queries/quotes";
 import { RequestStatusBadge } from "./RequestStatusBadge";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -62,7 +62,7 @@ export function RequestRow({ request }: { request: TQuote }) {
                         disabled={request.status === "atendida" || markDoneMut.isPending}
                         onClick={() =>
                             markDoneMut.mutate(
-                                { id: request.id, quote: { status: "atendida" } },
+                                ({ id: request.id, quote: { status: "atendida" } } as any),
                                 {
                                     onSuccess: () =>
                                         toast.success("Solicitud marcada como atendida", { closeButton: true }),

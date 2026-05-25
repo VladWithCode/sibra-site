@@ -30,14 +30,14 @@ export function PropertyCard({ propData }: { propData: TProperty }) {
     return (
         <Card className="py-0">
             <CardHeader className="p-0 bg-gray-100 gap-0">
-                <Link to={`/panel/propiedades/${propData.id}`}>
+                <Link to={`/panel/propiedades/${propData.id}` as any}>
                     <img src="/hero.png" alt="" className="w-full aspect-[4/2] object-cover object-center brightness-80 rounded-t-lg" />
                 </Link>
             </CardHeader>
             <CardContent className="pt-0 pb-6 px-3 sm:px-3.5 space-y-3">
                 <div className="grid grid-cols-[1fr_auto] auto-rows-min items-start gap-3">
                     <div>
-                        <Link to={`/panel/propiedades/${propData.id}`} className="mt-auto space-y-2">
+                        <Link to={`/panel/propiedades/${propData.id}` as any} className="mt-auto space-y-2">
                             <h3 className="text-xl font-bold line-clamp-2">
                                 {propData.address}. C.P. {propData.zip}
                             </h3>
@@ -70,7 +70,7 @@ export function PropertyCard({ propData }: { propData: TProperty }) {
                     </div>
                     <div className="flex flex-col space-y-2.5">
                         <Button className="flex items-center justify-center gap-3 text-sm" variant="secondary" size="sm" asChild>
-                            <Link to={`/panel/propiedades/${propData.id}`}>
+                            <Link to={`/panel/propiedades/${propData.id}` as any}>
                                 <Edit2 className="size-3" />
                                 Editar
                             </Link>

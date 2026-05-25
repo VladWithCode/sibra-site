@@ -20,13 +20,13 @@ const conqsQuoteFormSchema = z.object({
 });
 
 export function ConqsQuoteForm() {
-    const form = useForm<TConqsQuoteFormData>({
-        resolver: zodResolver(conqsQuoteFormSchema),
+    const form = useForm<TConqsQuoteFormData, any, TConqsQuoteFormData>({
+        resolver: zodResolver(conqsQuoteFormSchema) as any,
         defaultValues: {
             name: "",
             phone: "",
             schedule: "sin especificar",
-            consent: false,
+            consent: false as unknown as true,
         },
     });
 
@@ -34,7 +34,7 @@ export function ConqsQuoteForm() {
     const onSubmit = form.handleSubmit(
         (data) => {
             conqsQuoteMut.mutate({
-                quoteData: data,
+                quoteData: data as any,
             }, {
                 onSuccess: () => {
                     toast.success("La cita ha sido creada correctamente.", { closeButton: true });
@@ -164,13 +164,13 @@ export function ConqsQuoteForm() {
 }
 
 export function ConqsFooterQuoteForm() {
-    const form = useForm<TConqsQuoteFormData>({
-        resolver: zodResolver(conqsQuoteFormSchema),
+    const form = useForm<TConqsQuoteFormData, any, TConqsQuoteFormData>({
+        resolver: zodResolver(conqsQuoteFormSchema) as any,
         defaultValues: {
             name: "",
             phone: "",
             schedule: "otro",
-            consent: false,
+            consent: false as unknown as true,
         },
     });
 
@@ -178,7 +178,7 @@ export function ConqsFooterQuoteForm() {
     const onSubmit = form.handleSubmit(
         (data) => {
             conqsQuoteMut.mutate({
-                quoteData: data,
+                quoteData: data as any,
             }, {
                 onSuccess: () => {
                     toast.success("La cita ha sido creada correctamente.", { closeButton: true });

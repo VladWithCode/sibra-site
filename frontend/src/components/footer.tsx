@@ -58,7 +58,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="/vender"
+                                    to="/vende-tu-casa"
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Venta de Propiedades
@@ -66,7 +66,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="#"
+                                    to={"#" as any}
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Consultoría Inmobiliaria
@@ -74,7 +74,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="#"
+                                    to={"#" as any}
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Trámites Legales
@@ -82,7 +82,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="#"
+                                    to={"#" as any}
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Valuación de Propiedades
@@ -90,7 +90,7 @@ export function Footer() {
                             </li>
                             <li>
                                 <Link
-                                    to="#"
+                                    to={"#" as any}
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Análisis de Mercado
@@ -131,7 +131,7 @@ export function Footer() {
                             {/* </li> */}
                             <li>
                                 <Link
-                                    to="#"
+                                    to={"#" as any}
                                     className="text-foreground hover:text-primary transition-colors"
                                 >
                                     Preguntas Frecuentes
@@ -226,7 +226,7 @@ export function Footer() {
                                 Política de Privacidad
                             </Link>
                             <Link
-                                to="/politica-de-cookies"
+                                to={"/politica-de-cookies" as any}
                                 className="text-center text-muted-foreground hover:text-primary transition-colors"
                             >
                                 Política de Cookies

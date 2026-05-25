@@ -17,6 +17,7 @@ import { PalapaIcon, PlaygroundIcon, PoolIcon } from '@/components/icons/icons';
 import { cn } from '@/lib/utils';
 import { MDash } from '@/components/util';
 import { ProjectImage } from '@/components/Image';
+import { ProjectSectionBlock } from '@/components/projects/ProjectSectionBlock';
 import { AnimatePresence, motion } from 'motion/react';
 import { DynamicIcon } from 'lucide-react/dynamic';
 
@@ -65,7 +66,7 @@ function RouteComponent() {
                         </div>
                         <Link
                             className="flex items-center gap-6 bg-sbr-blue text-on-primary p-2 px-8 mr-auto rounded-sm"
-                            to="#contacto"
+                            to={"#contacto" as any}
                         >
                             <span>Obtener una cita</span>
                             <ArrowRight className="stroke-2" />
@@ -139,6 +140,16 @@ function RouteComponent() {
                     </div>
                 </div>
             </section>
+
+            {projectData.sections && projectData.sections.length > 0 && (
+                <section className="bg-surface py-12 md:py-24 lg:py-32">
+                    <div className="mx-auto max-w-7xl space-y-20 px-6 md:px-12 xl:px-24 2xl:px-0 lg:space-y-32">
+                        {projectData.sections.map((s) => (
+                            <ProjectSectionBlock key={s.id} section={s} />
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <section className="py-12 md:pb-24 lg:py-32 bg-surface-container-low overflow-hidden">
                 <div className="max-w-7xl mx-auto px-6 md:px-12 2xl:px-0 mb-16">
@@ -240,6 +251,7 @@ function ProjectFetchError({ error }: { error: Error }) {
     )
 }
 
+// @ts-ignore: kept for future use; currently not rendered
 function SimilarProjects({ projectData }: { projectData: TProject }) {
     const { data, status, error } = useQuery(getProjectsOpts);
     const similarProjects = useMemo(() => {
@@ -276,7 +288,7 @@ function SimilarProjects({ projectData }: { projectData: TProject }) {
                         </div>
                     )
                     : similarProjects.map((project) => (
-                        <Link to={`/proyectos/${project.slug}`} className="relative z-0" key={project.id}>
+                        <Link to={`/proyectos/${project.slug}` as any} className="relative z-0" key={project.id}>
                             <div className="absolute inset-0 z-0">
                                 <img
                                     src={"/static/uploads/" + project.main_img}
@@ -764,6 +776,7 @@ function ProjectAssociatesAuthenticationForm({ projectData, onAuthenticate }: {
     );
 };
 
+// @ts-ignore: legacy form kept for reference; not exported
 function _ContactForm() {
     return (
         <section className="py-12 bg-surface-container-lowest relative overflow-hidden">

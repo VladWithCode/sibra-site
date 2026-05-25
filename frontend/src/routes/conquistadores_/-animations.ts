@@ -9,7 +9,7 @@ export function animateSection(section: HTMLElement, obsv: IntersectionObserver)
         tl.kill();
     });
 
-    for (const anim of animationParams.animations) {
+    for (const anim of animationParams.animations as unknown as any[]) {
         if (anim.animateFromOpts) {
             tl.fromTo(section.querySelectorAll(anim.selector), anim.animateFromOpts, {
                 ...anim.animateToOpts,
