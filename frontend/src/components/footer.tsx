@@ -191,14 +191,14 @@ export function Footer() {
                             </p>
                             <div className="flex gap-3">
                                 <a
-                                    href="https://www.facebook.com/sibra.app"
+                                    href="https://www.facebook.com/sibramx"
                                     className="p-2 rounded-md bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
                                     aria-label="Facebook"
                                 >
                                     <FacebookIcon className="h-4 w-4" />
                                 </a>
                                 <a
-                                    href="https://instagram.com/sibra.app"
+                                    href="https://www.instagram.com/sibra_mx/"
                                     className="p-2 rounded-md bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
                                     aria-label="Instagram"
                                 >

@@ -133,14 +133,14 @@ function RouteComponent() {
                 <h2 className="text-2xl font-medium text-center">Conecta con nosotros</h2>
                 <div className="flex gap-4 lg:gap-8 items-center justify-center pt-4">
                     <a
-                        href="https://www.instagram.com/sibra.durango/"
+                        href="https://www.instagram.com/sibra_mx/"
                         target="_blank"
                         rel="noreferrer"
                     >
                         <InstagramIcon className="size-8" />
                     </a>
                     <a
-                        href="https://www.facebook.com/sibra.durango/"
+                        href="https://www.facebook.com/sibramx"
                         target="_blank"
                         rel="noreferrer"
                     >
