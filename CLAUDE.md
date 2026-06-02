@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Sibra Site is a full-stack real estate platform. The Go backend serves a REST API, and the React frontend (currently being rebuilt on the `remake` branch) is a separate SPA that proxies API calls to the backend during development.
+Sibra Site is a full-stack real estate platform. The Go backend serves a REST API, and the React frontend is a separate SPA that proxies API calls to the backend during development.
 
 ## Commands
 
@@ -24,12 +24,6 @@ npm test        # Vitest
 npm run format  # Prettier
 ```
 
-### CSS (for Go templates in `web/`)
-```bash
-bunx @tailwindcss/cli -i web/style/styles.css -o web/static/styles.css
-./scripts/css-watch.sh   # Watch mode
-```
-
 ### Database migrations (Goose)
 ```bash
 goose up    # Apply migrations (uses GOOSE_* env vars from .env)
@@ -43,12 +37,11 @@ Entry point: `main.go` → connects to PostgreSQL via `internal/db`, then regist
 
 | Package | Role |
 |---------|------|
-| `internal/routes` | HTTP handlers — `RegisterPropertyRoutes`, `RegisterProjectRoutes`, `RegisterUserRoutes`, `RegisterRequestsRouter`, `RegisterAdminRoutes`, `RegisterPriceMapRoutes` |
+| `internal/routes` | HTTP handlers — `RegisterPropertyRoutes`, `RegisterProjectRoutes`, `RegisterUserRoutes`, `RegisterRequestsRouter`, `RegisterAdminRoutes`. Serves the REST API plus the built React SPA (`spaFallback`) |
 | `internal/auth` | JWT in HTTP-only `auth_token` cookie; `ValidateAuthMiddleware` and `WithAuthAccessLevelMiddleware` for role checks (user/editor/admin) |
 | `internal/db` | pgxpool connection, all SQL queries |
 | `internal/files` / `internal/uploads` | File upload/delete logic |
 | `internal/wsp` | WhatsApp Business API notifications |
-| `internal/templates` | Go `html/template` + `.templ` rendering (use `tpl.ToGoHTML()` for templ→template conversion) |
 
 Route patterns use Go 1.22+ syntax: `"GET /{$}"`, `"POST /api/users"`. Authenticated handlers use the `AuthedHandler` pattern.
 
