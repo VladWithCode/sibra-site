@@ -48,6 +48,7 @@ import { Route as PanelEquipoIdRouteImport } from './routes/panel/equipo/$id'
 import { Route as PanelCitasIdRouteImport } from './routes/panel/citas/$id'
 import { Route as PanelBlogNuevoRouteImport } from './routes/panel/blog/nuevo'
 import { Route as PanelBlogIdRouteImport } from './routes/panel/blog/$id'
+import { Route as PublicTerrenosSlugRouteImport } from './routes/_public/terrenos/$slug'
 import { Route as PublicProyectosProjectRouteImport } from './routes/_public/proyectos/$project'
 import { Route as PublicBlogSlugRouteImport } from './routes/_public/blog/$slug'
 import { Route as PanelProyectosIdRouteRouteImport } from './routes/panel/proyectos/$id/route'
@@ -255,6 +256,11 @@ const PanelBlogIdRoute = PanelBlogIdRouteImport.update({
   path: '/blog/$id',
   getParentRoute: () => PanelRouteRoute,
 } as any)
+const PublicTerrenosSlugRoute = PublicTerrenosSlugRouteImport.update({
+  id: '/terrenos/$slug',
+  path: '/terrenos/$slug',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicProyectosProjectRoute = PublicProyectosProjectRouteImport.update({
   id: '/$project',
   path: '/$project',
@@ -346,6 +352,7 @@ export interface FileRoutesByFullPath {
   '/panel/proyectos/$id': typeof PanelProyectosIdRouteRouteWithChildren
   '/blog/$slug': typeof PublicBlogSlugRoute
   '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/terrenos/$slug': typeof PublicTerrenosSlugRoute
   '/panel/blog/$id': typeof PanelBlogIdRoute
   '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
@@ -393,6 +400,7 @@ export interface FileRoutesByTo {
   '/propiedades': typeof PublicPropiedadesListingIndexRoute
   '/blog/$slug': typeof PublicBlogSlugRoute
   '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/terrenos/$slug': typeof PublicTerrenosSlugRoute
   '/panel/blog/$id': typeof PanelBlogIdRoute
   '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
@@ -445,6 +453,7 @@ export interface FileRoutesById {
   '/panel/proyectos/$id': typeof PanelProyectosIdRouteRouteWithChildren
   '/_public/blog/$slug': typeof PublicBlogSlugRoute
   '/_public/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/_public/terrenos/$slug': typeof PublicTerrenosSlugRoute
   '/panel/blog/$id': typeof PanelBlogIdRoute
   '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
@@ -497,6 +506,7 @@ export interface FileRouteTypes {
     | '/panel/proyectos/$id'
     | '/blog/$slug'
     | '/proyectos/$project'
+    | '/terrenos/$slug'
     | '/panel/blog/$id'
     | '/panel/blog/nuevo'
     | '/panel/citas/$id'
@@ -544,6 +554,7 @@ export interface FileRouteTypes {
     | '/propiedades'
     | '/blog/$slug'
     | '/proyectos/$project'
+    | '/terrenos/$slug'
     | '/panel/blog/$id'
     | '/panel/blog/nuevo'
     | '/panel/citas/$id'
@@ -595,6 +606,7 @@ export interface FileRouteTypes {
     | '/panel/proyectos/$id'
     | '/_public/blog/$slug'
     | '/_public/proyectos/$project'
+    | '/_public/terrenos/$slug'
     | '/panel/blog/$id'
     | '/panel/blog/nuevo'
     | '/panel/citas/$id'
@@ -902,6 +914,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelBlogIdRouteImport
       parentRoute: typeof PanelRouteRoute
     }
+    '/_public/terrenos/$slug': {
+      id: '/_public/terrenos/$slug'
+      path: '/terrenos/$slug'
+      fullPath: '/terrenos/$slug'
+      preLoaderRoute: typeof PublicTerrenosSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/proyectos/$project': {
       id: '/_public/proyectos/$project'
       path: '/$project'
@@ -1066,6 +1085,7 @@ interface PublicRouteRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
   PublicPropiedadesRoute: typeof PublicPropiedadesRouteWithChildren
   PublicBlogSlugRoute: typeof PublicBlogSlugRoute
+  PublicTerrenosSlugRoute: typeof PublicTerrenosSlugRoute
   PublicBlogIndexRoute: typeof PublicBlogIndexRoute
 }
 
@@ -1082,6 +1102,7 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicIndexRoute: PublicIndexRoute,
   PublicPropiedadesRoute: PublicPropiedadesRouteWithChildren,
   PublicBlogSlugRoute: PublicBlogSlugRoute,
+  PublicTerrenosSlugRoute: PublicTerrenosSlugRoute,
   PublicBlogIndexRoute: PublicBlogIndexRoute,
 }
 
