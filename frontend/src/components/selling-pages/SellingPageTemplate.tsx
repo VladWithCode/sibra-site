@@ -1,7 +1,5 @@
-import { useGSAP } from "@gsap/react";
 import { useLayoutEffect, useRef } from "react";
 import { WhatsappIcon } from "@/components/icons/whatsapp";
-import { animateSection } from "./animations";
 import { type SellingPageData } from "./defaults";
 import { HeroSection } from "./HeroSection";
 import { AvailabilitySection } from "./AvailabilitySection";
@@ -15,51 +13,40 @@ import { FooterContact } from "./FooterContact";
 
 type SellingPageTemplateProps = {
     data: SellingPageData;
-    /** Static render for admin preview: forces sections visible, skips the
-     *  scroll observer + the fixed floating WhatsApp button. */
     preview?: boolean;
 };
 
-/**
- * Reusable Selling Page template. Variant-driven top sections (hero,
- * availability, cards, contact) honor `data.alignment`; the lower sections
- * (financing, offer, steps, location, footer) keep a fixed layout. Owns the
- * IntersectionObserver + GSAP reveal that the conquistadores landing used.
- */
 export function SellingPageTemplate({ data, preview = false }: SellingPageTemplateProps) {
-    const mainContentRef = useRef<HTMLDivElement>(null);
-    const { contextSafe } = useGSAP({ scope: mainContentRef });
-    const safeAnimateSection = contextSafe(animateSection);
+    const rootRef = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {
-        if (preview) return; // preview is static; no scroll animations
-        if (!mainContentRef.current) return;
-
-        const obsv = new IntersectionObserver(
-            (ents, obsv) => {
-                for (const ent of ents) {
-                    if (ent.isIntersecting) {
-                        safeAnimateSection(ent.target as HTMLElement, obsv);
-                        obsv.unobserve(ent.target);
+        if (preview) return;
+        const root = rootRef.current;
+        if (!root) return;
+        const els = Array.from(root.querySelectorAll<HTMLElement>(".sp-reveal"));
+        if (!("IntersectionObserver" in window)) {
+            els.forEach((e) => e.classList.add("in"));
+            return;
+        }
+        const io = new IntersectionObserver(
+            (entries) => {
+                for (const e of entries) {
+                    if (e.isIntersecting) {
+                        e.target.classList.add("in");
+                        io.unobserve(e.target);
                     }
                 }
             },
-            { threshold: 0.35 },
+            { threshold: 0.15 },
         );
-
-        mainContentRef.current.querySelectorAll("section").forEach((el) => {
-            obsv.observe(el);
-        });
-
-        return () => {
-            obsv.disconnect();
-        };
-    }, [mainContentRef.current, preview]);
+        els.forEach((e) => io.observe(e));
+        return () => io.disconnect();
+    }, [preview]);
 
     return (
         <main
-            className={`relative bg-sbr-blue-dark text-primary-foreground${preview ? " sp-preview" : ""}`}
-            ref={mainContentRef}
+            ref={rootRef}
+            className={`relative bg-white text-slate-900 antialiased${preview ? " sp-preview" : ""}`}
         >
             <HeroSection data={data.hero} alignment={data.alignment} />
             <AvailabilitySection data={data.availability} alignment={data.alignment} />
@@ -78,16 +65,21 @@ export function SellingPageTemplate({ data, preview = false }: SellingPageTempla
             <OfferSection data={data.offer} />
             <StepsSection steps={data.steps} />
             <LocationSection data={data.location} />
-            <FooterContact data={data.footer} pageSlug={data.slug} pageName={data.name} />
+            <FooterContact
+                data={data.footer}
+                pageSlug={data.slug}
+                pageName={data.name}
+                whatsappHref={data.whatsappHref}
+            />
             {!preview && (
                 <a
                     href={data.whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="whatsapp-fixed"
+                    aria-label="Contactar por WhatsApp"
+                    className="fixed bottom-5 right-5 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/30 text-white"
                 >
-                    <WhatsappIcon className="text-gray-50 size-8" />
-                    <span className="sr-only">Envianos un WhatsApp</span>
+                    <WhatsappIcon className="w-7 h-7" />
                 </a>
             )}
         </main>

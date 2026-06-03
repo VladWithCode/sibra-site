@@ -1,3 +1,4 @@
+import { MapPin } from "lucide-react";
 import { type SellingPageData } from "./defaults";
 
 type LocationSectionProps = {
@@ -6,51 +7,61 @@ type LocationSectionProps = {
 
 export function LocationSection({ data }: LocationSectionProps) {
     return (
-        <section className="relative z-0 px-4 py-16 bg-accent space-y-6">
-            <div className="relative z-0 w-full max-w-xl aspect-[2/1] rounded-xs mb-12 sm:mb-16 mx-auto">
-                <img
-                    src={data.image}
-                    alt=""
-                    className="w-full h-full object-cover object-center brightness-75 rounded-lg shadow-lg"
-                    style={{
-                        clipPath: "polygon(0% 0%, 100% 0%, 100% 85%, 0% 97%)",
-                    }}
-                />
-                <div className="absolute -bottom-2 sm:bottom-0 inset-x-0">
-                    <h2
-                        className="text-5xl sm:text-6xl font-medium tracking-tighter uppercase"
-                        style={{ textShadow: "0px 0px 8px rgba(0,0,0,0.65)" }}
-                    >
-                        {data.heading}
+        <section
+            id="ubicacion"
+            className="sp-reveal bg-white text-slate-900 py-24 md:py-32 px-6"
+        >
+            <div className="max-w-6xl mx-auto flex flex-col gap-12">
+                <div className="flex flex-col gap-4 text-center items-center max-w-2xl mx-auto">
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                        Ubicación
+                    </span>
+                    <h2 className="sp-display text-3xl md:text-4xl tracking-tight text-slate-900 text-balance">
+                        {data.heading || "En el lugar correcto"}
                     </h2>
+                    {data.caption && (
+                        <p className="text-lg text-slate-600 leading-relaxed">{data.caption}</p>
+                    )}
                 </div>
-            </div>
-            <div className="max-w-xl aspect-[4/3] bg-gray-200 rounded-lg mx-auto">
-                <iframe
-                    title="Mapa de Ubicación (Google Maps)"
-                    className="w-full h-full object-cover border-0 rounded-lg"
-                    src={data.mapEmbedUrl}
-                    width="400"
-                    height="300"
-                    allowFullScreen={false}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
-            </div>
-            <p className="text-xs sm:text-sm text-gray-800 text-center">{data.caption}</p>
-            <div className="flex items-center gap-2.5 lg:gap-4 bg-linear-to-r from-sbr-blue-dark to-sbr-blue-light rounded-xs p-2 sm:p-4 lg:p-6">
-                {data.chips.map((chip, index) => (
-                    <div key={index} className="contents">
-                        {index > 0 && (
-                            <div className="basis-0.5 shrink-0 grow-0 h-7 lg:h-9 border-l-2 border-dashed my-auto"></div>
-                        )}
-                        <div className="basis-1/3 shrink-0 grow-0 sm:p-1">
-                            <p className="text-tiny sm:text-sm lg:text-base font-semibold text-current">
-                                {chip.text}
-                            </p>
-                        </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="overflow-hidden rounded-2xl ring-1 ring-slate-200/70 shadow-sm">
+                        <img
+                            src={data.image}
+                            alt="Ubicación"
+                            className="w-full h-64 md:h-full object-cover"
+                        />
                     </div>
-                ))}
+                    {data.mapEmbedUrl && (
+                        <div className="overflow-hidden rounded-2xl ring-1 ring-slate-200/70 shadow-sm min-h-64">
+                            <iframe
+                                title="Mapa de ubicación"
+                                src={data.mapEmbedUrl}
+                                className="w-full h-full min-h-64 border-0"
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {data.chips && data.chips.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {data.chips.map((chip, i) => (
+                            <div
+                                key={i}
+                                className="flex items-center gap-3 rounded-xl bg-stone-50 ring-1 ring-slate-200/70 px-5 py-4 text-slate-700"
+                            >
+                                <span className="flex items-center justify-center w-9 h-9 rounded-full bg-emerald-50 shrink-0">
+                                    <MapPin className="w-4 h-4 text-emerald-700" />
+                                </span>
+                                <span className="text-sm font-medium leading-snug">
+                                    {chip.text}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );

@@ -368,6 +368,28 @@
     --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+/* Selling Page: scroll-reveal + display headline + preview override. */
+.sp-reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+        opacity 0.6s ease,
+        transform 0.6s ease;
+}
+.sp-reveal.in {
+    opacity: 1;
+    transform: none;
+}
+.sp-display {
+    font-family: var(--font-headline, var(--font-sans));
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+.sp-preview .sp-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
 /* Admin live-preview: force the GSAP entrance-initial states visible (the
    preview is static and does not run the scroll observer). */
 .sp-preview [data-inview-animate],

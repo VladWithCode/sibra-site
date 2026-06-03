@@ -1,5 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { type Alignment, type SellingCard, type SellingPageData, alignText } from "./defaults";
+import { type Alignment, type SellingCard, type SellingPageData } from "./defaults";
 
 type CardsSectionProps = {
     cards: SellingPageData["cards"];
@@ -9,44 +8,58 @@ type CardsSectionProps = {
 
 function FeatureCard({ data }: { data: SellingCard }) {
     return (
-        <div className="col-span-1 space-y-3 sm:space-y-6" data-card-wrapper>
-            <h3
-                className="text-start text-lg sm:text-2xl text-current/80 font-light opacity-0 translate-y-14"
-                data-card-title
-            >
-                {data.title}
-            </h3>
-            <Card
-                className="max-w-md bg-linear-to-br from-sbr-green-dark to-sbr-green-dark border-0 p-4 sm:px-6 py-10 sm:py-12 mx-auto rounded-md shadow-2xl opacity-0 translate-y-14"
-                data-card
-            >
-                <CardContent className="flex flex-col gap-8 text-gray-50 px-2 text-start">
-                    <img
-                        src={data.image}
-                        alt=""
-                        className="w-full aspect-[4/3] object-cover object-center brightness-75 rounded"
-                    />
-                    <p className="sm:text-lg text-current/90 font-bold">{data.description}</p>
-                </CardContent>
-            </Card>
-        </div>
+        <article className="group flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm hover:shadow-md transition-shadow">
+            <div className="overflow-hidden">
+                <img
+                    src={data.image}
+                    alt={data.title}
+                    className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+            </div>
+            <div className="p-6 flex flex-col gap-2">
+                <h3 className="text-lg font-semibold text-slate-900">{data.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{data.description}</p>
+            </div>
+        </article>
     );
 }
 
 export function CardsSection({ cards, footnote, alignment }: CardsSectionProps) {
+    const centered = alignment === "center";
+    const intro = centered
+        ? "items-center text-center mx-auto"
+        : alignment === "right"
+          ? "items-end text-right ml-auto"
+          : "items-start text-left";
+
     return (
         <section
             id="detalles"
-            className="relative z-0 grid grid-cols-1 auto-rows-auto gap-12 sm:gap-16 px-4 py-16 sm:py-24 pb-4"
+            className="sp-reveal bg-stone-50 text-slate-900 py-24 md:py-32 px-6"
         >
-            {cards.map((feature) => (
-                <FeatureCard key={feature.title} data={feature} />
-            ))}
-            {/* Footnote is the only loose copy in this section, so it follows the
-                variant alignment; card titles/content stay text-start. */}
-            {footnote && (
-                <p className={`text-xs sm:text-sm ${alignText(alignment)}`}>{footnote}</p>
-            )}
+            <div className="max-w-6xl mx-auto flex flex-col gap-14">
+                <div className={`flex flex-col gap-4 max-w-2xl ${intro}`}>
+                    <span className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">
+                        Por qué aquí
+                    </span>
+                    <h2 className="sp-display text-3xl md:text-4xl tracking-tight text-slate-900 text-balance">
+                        Todo lo que tu patrimonio merece
+                    </h2>
+                    <p className="text-lg text-slate-600 leading-relaxed">
+                        Construye con tranquilidad sobre bases sólidas.
+                    </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+                    {cards.map((c) => (
+                        <FeatureCard key={c.title} data={c} />
+                    ))}
+                </div>
+                {footnote && (
+                    <p className="text-sm text-slate-500 text-center max-w-3xl mx-auto">
+                        {footnote}
+                    </p>
+                )}
+            </div>
         </section>
     );
 }
