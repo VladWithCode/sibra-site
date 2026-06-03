@@ -37,6 +37,7 @@ count.txt
 # Ignore agent related files
 /tmp/
 /stitch-export/
+.claude/
 
 # Ignore static uploads
 /web/static/uploads/*
