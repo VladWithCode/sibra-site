@@ -8,7 +8,7 @@ export function FinancingSection({ data }: FinancingSectionProps) {
     return (
         <section
             id="financiamiento"
-            className="sp-reveal bg-slate-950 text-white py-24 md:py-32 px-6"
+            className="sp-reveal bg-sbr-nav text-white py-24 md:py-32 px-6"
         >
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center gap-12 md:gap-16">
                 <div className="flex-1 flex flex-col gap-5">

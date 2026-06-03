@@ -14,7 +14,7 @@ export function FooterContact({ data, pageSlug, pageName, whatsappHref }: Footer
     return (
         <footer
             id="contacto-bottom"
-            className="sp-reveal bg-slate-950 text-white py-24 md:py-32 px-6"
+            className="sp-reveal bg-sbr-nav text-white py-24 md:py-32 px-6"
         >
             <div className="max-w-6xl mx-auto flex flex-col lg:flex-row gap-12 lg:gap-16">
                 <div className="flex-1 flex flex-col gap-6">
@@ -74,7 +74,11 @@ export function FooterContact({ data, pageSlug, pageName, whatsappHref }: Footer
                 </div>
                 <div className="flex-1 flex justify-center lg:justify-end">
                     <div className="w-full max-w-md">
-                        <ConqsFooterQuoteForm pageSlug={pageSlug} pageName={pageName} />
+                        <ConqsFooterQuoteForm
+                            pageSlug={pageSlug}
+                            pageName={pageName}
+                            variant="onDark"
+                        />
                     </div>
                 </div>
             </div>

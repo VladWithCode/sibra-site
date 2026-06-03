@@ -16,6 +16,7 @@ export type TConqsQuoteFormData = z.infer<typeof conqsQuoteFormSchema>;
 export type SellingPageAttribution = {
     pageSlug?: string;
     pageName?: string;
+    variant?: "default" | "onDark";
 };
 
 const conqsQuoteFormSchema = z.object({
@@ -31,7 +32,16 @@ const conqsQuoteFormSchema = z.object({
         .or(z.literal("")),
 });
 
-export function ConqsQuoteForm({ pageSlug, pageName }: SellingPageAttribution = {}) {
+export function ConqsQuoteForm({
+    pageSlug,
+    pageName,
+    variant = "default",
+}: SellingPageAttribution = {}) {
+    const onDark = variant === "onDark";
+    const labelCls = onDark ? "sm:text-base text-white" : "sm:text-base";
+    const headingCls = onDark
+        ? "text-2xl sm:text-3xl font-bold uppercase text-white"
+        : "text-2xl sm:text-3xl font-bold uppercase";
     const form = useForm<TConqsQuoteFormData, any, TConqsQuoteFormData>({
         resolver: zodResolver(conqsQuoteFormSchema) as any,
         defaultValues: {
@@ -87,16 +97,14 @@ export function ConqsQuoteForm({ pageSlug, pageName }: SellingPageAttribution = 
                             Cargando...
                         </span>
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-bold uppercase">
-                        ¡Agenda tu cita!
-                    </h2>
+                    <h2 className={headingCls}>¡Agenda tu cita!</h2>
                     <div className="space-y-4 sm:space-y-6">
                         <FormField
                             control={form.control}
                             name="name"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2 sm:space-y-1">
-                                    <FormLabel className="sm:text-base">Nombre</FormLabel>
+                                    <FormLabel className={labelCls}>Nombre</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="text"
@@ -114,7 +122,7 @@ export function ConqsQuoteForm({ pageSlug, pageName }: SellingPageAttribution = 
                             name="phone"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2 sm:space-y-1">
-                                    <FormLabel className="sm:text-base">Teléfono</FormLabel>
+                                    <FormLabel className={labelCls}>Teléfono</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="tel"
@@ -133,7 +141,7 @@ export function ConqsQuoteForm({ pageSlug, pageName }: SellingPageAttribution = 
                             render={() => (
                                 <FormItem>
                                     <Select>
-                                        <FormLabel className="sm:text-base">
+                                        <FormLabel className={labelCls}>
                                             Horario de visita
                                         </FormLabel>
                                         <FormControl>
@@ -168,7 +176,13 @@ export function ConqsQuoteForm({ pageSlug, pageName }: SellingPageAttribution = 
                                                 onCheckedChange={field.onChange}
                                             />
                                         </FormControl>
-                                        <FormLabel className="pt-1.5 sm:text-base">
+                                        <FormLabel
+                                            className={
+                                                onDark
+                                                    ? "pt-1.5 sm:text-base text-white"
+                                                    : "pt-1.5 sm:text-base"
+                                            }
+                                        >
                                             Acepto que se me contacte a través de Whatsapp o
                                             llamada telefónica.
                                         </FormLabel>
@@ -193,7 +207,16 @@ export function ConqsQuoteForm({ pageSlug, pageName }: SellingPageAttribution = 
     );
 }
 
-export function ConqsFooterQuoteForm({ pageSlug, pageName }: SellingPageAttribution = {}) {
+export function ConqsFooterQuoteForm({
+    pageSlug,
+    pageName,
+    variant = "default",
+}: SellingPageAttribution = {}) {
+    const onDark = variant === "onDark";
+    const labelCls = onDark ? "sm:text-base text-white" : "sm:text-base";
+    const consentLabelCls = onDark
+        ? "leading-none sm:pt-1.5 sm:text-base text-white"
+        : "leading-none sm:pt-1.5 sm:text-base";
     const form = useForm<TConqsQuoteFormData, any, TConqsQuoteFormData>({
         resolver: zodResolver(conqsQuoteFormSchema) as any,
         defaultValues: {
@@ -255,7 +278,7 @@ export function ConqsFooterQuoteForm({ pageSlug, pageName }: SellingPageAttribut
                             name="name"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2">
-                                    <FormLabel className="sm:text-base">Nombre</FormLabel>
+                                    <FormLabel className={labelCls}>Nombre</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="text"
@@ -273,7 +296,7 @@ export function ConqsFooterQuoteForm({ pageSlug, pageName }: SellingPageAttribut
                             name="phone"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2">
-                                    <FormLabel className="sm:text-base">Teléfono</FormLabel>
+                                    <FormLabel className={labelCls}>Teléfono</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="tel"
@@ -292,7 +315,7 @@ export function ConqsFooterQuoteForm({ pageSlug, pageName }: SellingPageAttribut
                             render={() => (
                                 <FormItem>
                                     <Select>
-                                        <FormLabel className="sm:text-base">
+                                        <FormLabel className={labelCls}>
                                             Horario de visita
                                         </FormLabel>
                                         <FormControl>
@@ -327,7 +350,7 @@ export function ConqsFooterQuoteForm({ pageSlug, pageName }: SellingPageAttribut
                                                 onCheckedChange={field.onChange}
                                             />
                                         </FormControl>
-                                        <FormLabel className="leading-none sm:pt-1.5 sm:text-base">
+                                        <FormLabel className={consentLabelCls}>
                                             Acepto que se me contacte a través de Whatsapp o
                                             llamada telefónica.
                                         </FormLabel>

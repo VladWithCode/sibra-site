@@ -21,7 +21,7 @@ export function ContactSection({ data, alignment, pageSlug, pageName }: ContactS
             </div>
             <div className={`max-w-6xl mx-auto flex ${justifySide(alignment)}`}>
                 <div className="w-full max-w-md">
-                    <ConqsQuoteForm pageSlug={pageSlug} pageName={pageName} />
+                    <ConqsQuoteForm pageSlug={pageSlug} pageName={pageName} variant="onDark" />
                 </div>
             </div>
         </section>
