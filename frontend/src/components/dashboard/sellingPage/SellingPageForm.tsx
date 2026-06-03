@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DynamicCardsField, DynamicStepsField, DynamicStringList } from "./DynamicFields";
 
 type ErrorList = Array<{ message?: string } | undefined>;
 function errsOf(field: { state: { meta: { errors: unknown } } }) {
@@ -44,14 +45,12 @@ function AreaField({
     label,
     placeholder,
     rows = 2,
-    mono = false,
 }: {
     form: any;
     name: string;
     label: string;
     placeholder?: string;
     rows?: number;
-    mono?: boolean;
 }) {
     return (
         <form.Field name={name}>
@@ -61,7 +60,6 @@ function AreaField({
                     <Textarea
                         id={name}
                         rows={rows}
-                        className={mono ? "font-mono text-xs" : undefined}
                         value={field.state.value ?? ""}
                         onBlur={field.handleBlur}
                         onChange={(e: any) => field.handleChange(e.target.value)}
@@ -106,9 +104,9 @@ export function SellingPageForm({ form }: { form: any }) {
                                     onBlur={field.handleBlur}
                                     onChange={(e) => field.handleChange(e.target.value)}
                                 >
-                                    <option value="left">left</option>
-                                    <option value="center">center</option>
-                                    <option value="right">right</option>
+                                    <option value="left">Izquierda</option>
+                                    <option value="center">Centro</option>
+                                    <option value="right">Derecha</option>
                                 </select>
                                 <FieldError errors={errsOf(field)} />
                             </Field>
@@ -128,8 +126,8 @@ export function SellingPageForm({ form }: { form: any }) {
                             </Field>
                         )}
                     </form.Field>
-                    <TextField form={form} name="seoTitle" label="SEO Título" />
-                    <AreaField form={form} name="seoDescription" label="SEO Descripción" />
+                    <TextField form={form} name="seoTitle" label="Título SEO" />
+                    <AreaField form={form} name="seoDescription" label="Descripción SEO" />
                     <TextField form={form} name="pixelId" label="Meta Pixel ID" />
                     <TextField
                         form={form}
@@ -137,7 +135,7 @@ export function SellingPageForm({ form }: { form: any }) {
                         label="WhatsApp (solo dígitos)"
                         placeholder="5216181231212"
                     />
-                    <AreaField form={form} name="whatsappMessage" label="WhatsApp Mensaje" />
+                    <AreaField form={form} name="whatsappMessage" label="Mensaje de WhatsApp" />
                 </CardContent>
             </Card>
 
@@ -148,14 +146,15 @@ export function SellingPageForm({ form }: { form: any }) {
                 <CardContent className="space-y-4">
                     <TextField form={form} name="heroTitle" label="Título" />
                     <AreaField form={form} name="heroSubtitle" label="Subtítulo" />
-                    <TextField form={form} name="heroCtaLabel" label="CTA Texto" />
+                    <TextField form={form} name="heroCtaLabel" label="Texto del botón" />
                     <TextField
                         form={form}
                         name="heroCtaTarget"
-                        label="CTA Destino (#contacto o URL)"
+                        label="Destino del botón (#contacto o URL)"
                     />
                     <p className="text-muted-foreground text-xs">
-                        Video/poster/imagen se suben como archivos en la página de edición.
+                        El video, póster e imagen se suben como archivos en la página de
+                        edición.
                     </p>
                 </CardContent>
             </Card>
@@ -168,9 +167,13 @@ export function SellingPageForm({ form }: { form: any }) {
                     <TextField
                         form={form}
                         name="availabilityCtaUrl"
-                        label="Disponibilidad: URL plano (externo, opcional)"
+                        label="URL del plano (externo, opcional)"
                     />
-                    <TextField form={form} name="contactHeading" label="Contacto: Encabezado" />
+                    <TextField
+                        form={form}
+                        name="contactHeading"
+                        label="Encabezado de contacto"
+                    />
                 </CardContent>
             </Card>
 
@@ -208,38 +211,34 @@ export function SellingPageForm({ form }: { form: any }) {
                         placeholder="10m x 25m"
                     />
                     <AreaField form={form} name="offerFinePrint" label="Letra chica" />
-                    <AreaField
-                        form={form}
-                        name="offerFeaturesJson"
-                        label="Características (JSON)"
-                        rows={4}
-                        mono
-                        placeholder={'["Agua, luz y drenaje.", "Plusvalía."]'}
-                    />
+                    <Field>
+                        <FieldLabel>Características</FieldLabel>
+                        <DynamicStringList
+                            form={form}
+                            name="offerFeatures"
+                            itemLabel="Característica"
+                            addLabel="Agregar característica"
+                            placeholder="Ej. Agua, luz y drenaje."
+                        />
+                    </Field>
                 </CardContent>
             </Card>
 
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-xl">Tarjetas y Pasos</CardTitle>
+                    <CardTitle className="text-xl">Tarjetas</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                    <AreaField
-                        form={form}
-                        name="cardsJson"
-                        label="Tarjetas (JSON)"
-                        rows={6}
-                        mono
-                        placeholder={'[{ "title": "", "description": "", "image": "" }]'}
-                    />
-                    <AreaField
-                        form={form}
-                        name="stepsJson"
-                        label="Pasos (JSON)"
-                        rows={6}
-                        mono
-                        placeholder={'[{ "step": 1, "title": "", "description": ["línea 1"] }]'}
-                    />
+                <CardContent>
+                    <DynamicCardsField form={form} name="cards" />
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-xl">Pasos</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <DynamicStepsField form={form} name="steps" />
                 </CardContent>
             </Card>
 
@@ -251,17 +250,19 @@ export function SellingPageForm({ form }: { form: any }) {
                     <AreaField
                         form={form}
                         name="locationMapEmbed"
-                        label="Google Maps embed URL"
+                        label="URL del mapa (Google Maps embed)"
                     />
                     <AreaField form={form} name="locationCaption" label="Descripción" />
-                    <AreaField
-                        form={form}
-                        name="locationChipsJson"
-                        label="Chips (JSON)"
-                        rows={4}
-                        mono
-                        placeholder={'[{ "text": "Dirección..." }]'}
-                    />
+                    <Field>
+                        <FieldLabel>Chips de ubicación</FieldLabel>
+                        <DynamicStringList
+                            form={form}
+                            name="chips"
+                            itemLabel="Chip"
+                            addLabel="Agregar chip"
+                            placeholder="Ej. A 10 min del centro"
+                        />
+                    </Field>
                 </CardContent>
             </Card>
 

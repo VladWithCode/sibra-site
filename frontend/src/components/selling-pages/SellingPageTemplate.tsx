@@ -15,6 +15,9 @@ import { FooterContact } from "./FooterContact";
 
 type SellingPageTemplateProps = {
     data: SellingPageData;
+    /** Static render for admin preview: forces sections visible, skips the
+     *  scroll observer + the fixed floating WhatsApp button. */
+    preview?: boolean;
 };
 
 /**
@@ -23,12 +26,13 @@ type SellingPageTemplateProps = {
  * (financing, offer, steps, location, footer) keep a fixed layout. Owns the
  * IntersectionObserver + GSAP reveal that the conquistadores landing used.
  */
-export function SellingPageTemplate({ data }: SellingPageTemplateProps) {
+export function SellingPageTemplate({ data, preview = false }: SellingPageTemplateProps) {
     const mainContentRef = useRef<HTMLDivElement>(null);
     const { contextSafe } = useGSAP({ scope: mainContentRef });
     const safeAnimateSection = contextSafe(animateSection);
 
     useLayoutEffect(() => {
+        if (preview) return; // preview is static; no scroll animations
         if (!mainContentRef.current) return;
 
         const obsv = new IntersectionObserver(
@@ -50,11 +54,11 @@ export function SellingPageTemplate({ data }: SellingPageTemplateProps) {
         return () => {
             obsv.disconnect();
         };
-    }, [mainContentRef.current]);
+    }, [mainContentRef.current, preview]);
 
     return (
         <main
-            className="relative bg-sbr-blue-dark text-primary-foreground"
+            className={`relative bg-sbr-blue-dark text-primary-foreground${preview ? " sp-preview" : ""}`}
             ref={mainContentRef}
         >
             <HeroSection data={data.hero} alignment={data.alignment} />
@@ -75,15 +79,17 @@ export function SellingPageTemplate({ data }: SellingPageTemplateProps) {
             <StepsSection steps={data.steps} />
             <LocationSection data={data.location} />
             <FooterContact data={data.footer} pageSlug={data.slug} pageName={data.name} />
-            <a
-                href={data.whatsappHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="whatsapp-fixed"
-            >
-                <WhatsappIcon className="text-gray-50 size-8" />
-                <span className="sr-only">Envianos un WhatsApp</span>
-            </a>
+            {!preview && (
+                <a
+                    href={data.whatsappHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="whatsapp-fixed"
+                >
+                    <WhatsappIcon className="text-gray-50 size-8" />
+                    <span className="sr-only">Envianos un WhatsApp</span>
+                </a>
+            )}
         </main>
     );
 }

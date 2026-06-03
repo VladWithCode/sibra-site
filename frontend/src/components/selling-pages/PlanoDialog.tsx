@@ -32,13 +32,20 @@ export function PlanoDialog({ image, ctaLabel, planHref, className }: PlanoDialo
                     {ctaLabel}
                 </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-5xl w-[95vw] p-2 sm:p-3 bg-background">
+            <DialogContent
+                className="w-screen h-[100dvh] max-w-none sm:w-[95vw] sm:h-[90vh] sm:max-w-[95vw] p-1 sm:p-2 bg-background sm:rounded-lg gap-0"
+                showCloseButton
+            >
                 <DialogTitle className="sr-only">Plano de disponibilidad</DialogTitle>
-                <img
-                    src={image}
-                    alt="Plano de disponibilidad del desarrollo"
-                    className="w-full h-auto max-h-[85vh] object-contain rounded"
-                />
+                {/* object-contain so the plan is never cropped; container scrolls/pans
+                    when the image is larger than the viewport. */}
+                <div className="h-full w-full overflow-auto">
+                    <img
+                        src={image}
+                        alt="Plano de disponibilidad del desarrollo"
+                        className="mx-auto h-full w-auto max-w-none object-contain"
+                    />
+                </div>
             </DialogContent>
         </Dialog>
     );
