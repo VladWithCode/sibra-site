@@ -127,6 +127,9 @@ export type TConqsQuoteSchedule = "fin de semana" | "entre semana" | "otro";
 
 export type TQuoteConquistadores = TQuote & {
     schedule: TConqsQuoteSchedule;
+    // Selling-page attribution (optional; surfaced in the WhatsApp notice).
+    pageSlug?: string;
+    pageName?: string;
 };
 
 export type TQuoteFilters = {

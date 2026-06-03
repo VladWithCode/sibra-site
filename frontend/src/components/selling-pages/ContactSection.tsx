@@ -4,9 +4,11 @@ import { type Alignment, type SellingPageData, justifySide } from "./defaults";
 type ContactSectionProps = {
     data: SellingPageData["contact"];
     alignment: Alignment;
+    pageSlug: string;
+    pageName: string;
 };
 
-export function ContactSection({ data, alignment }: ContactSectionProps) {
+export function ContactSection({ data, alignment, pageSlug, pageName }: ContactSectionProps) {
     return (
         <section id="contacto" className="relative z-0">
             <div
@@ -17,7 +19,7 @@ export function ContactSection({ data, alignment }: ContactSectionProps) {
                 className={`relative z-10 flex ${justifySide(alignment)} opacity-0 translate-y-14`}
                 data-quote-form
             >
-                <ConqsQuoteForm />
+                <ConqsQuoteForm pageSlug={pageSlug} pageName={pageName} />
             </div>
         </section>
     );

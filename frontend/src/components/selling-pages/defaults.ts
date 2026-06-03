@@ -29,6 +29,9 @@ export type FinePrintSegment = {
 };
 
 export type SellingPageData = {
+    /** Page identity, used for lead attribution. */
+    slug: string;
+    name: string;
     /** Drives the variant-aware top sections (hero, availability, cards, contact). */
     alignment: Alignment;
 
@@ -98,6 +101,8 @@ export type SellingPageData = {
 };
 
 export const conquistadoresDefaults: SellingPageData = {
+    slug: "conquistadores",
+    name: "Conquistadores",
     alignment: "right",
     hero: {
         videoWebm: "/conquistadores_hero.webm",

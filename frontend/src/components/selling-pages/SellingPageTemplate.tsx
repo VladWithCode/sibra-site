@@ -64,12 +64,17 @@ export function SellingPageTemplate({ data }: SellingPageTemplateProps) {
                 footnote={data.cardsFootnote}
                 alignment={data.alignment}
             />
-            <ContactSection data={data.contact} alignment={data.alignment} />
+            <ContactSection
+                data={data.contact}
+                alignment={data.alignment}
+                pageSlug={data.slug}
+                pageName={data.name}
+            />
             <FinancingSection data={data.financing} />
             <OfferSection data={data.offer} />
             <StepsSection steps={data.steps} />
             <LocationSection data={data.location} />
-            <FooterContact data={data.footer} />
+            <FooterContact data={data.footer} pageSlug={data.slug} pageName={data.name} />
             <a
                 href={data.whatsappHref}
                 target="_blank"

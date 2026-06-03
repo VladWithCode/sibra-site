@@ -4,9 +4,11 @@ import { type SellingPageData } from "./defaults";
 
 type FooterContactProps = {
     data: SellingPageData["footer"];
+    pageSlug: string;
+    pageName: string;
 };
 
-export function FooterContact({ data }: FooterContactProps) {
+export function FooterContact({ data, pageSlug, pageName }: FooterContactProps) {
     return (
         <div id="contacto-bottom" className="bg-secondary text-gray-800 px-4 py-16 space-y-6">
             <div className="max-w-2xl space-y-6 mx-auto">
@@ -41,7 +43,7 @@ export function FooterContact({ data }: FooterContactProps) {
                 </ul>
             </div>
             <div className="max-w-2xl mx-auto">
-                <ConqsFooterQuoteForm />
+                <ConqsFooterQuoteForm pageSlug={pageSlug} pageName={pageName} />
             </div>
             <p className="text-center lg:text-2xl">{data.tagline}</p>
         </div>

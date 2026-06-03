@@ -42,6 +42,8 @@ export function mergeSellingPage(api: TSellingPage): SellingPageData {
     const hasVideo = typeof api.heroVideo === "string" && api.heroVideo.trim() !== "";
 
     return {
+        slug: str(api.slug, d.slug),
+        name: str(api.name, d.name),
         alignment: variantOf(api.variant),
 
         hero: {
