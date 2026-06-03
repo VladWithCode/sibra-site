@@ -164,11 +164,10 @@ export function SellingPageForm({ form }: { form: any }) {
                     <CardTitle className="text-xl">Disponibilidad y Contacto</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <TextField
-                        form={form}
-                        name="availabilityCtaUrl"
-                        label="URL del plano (externo, opcional)"
-                    />
+                    <p className="text-muted-foreground text-xs">
+                        El plano subido en multimedia (Disponibilidad — Imagen) es el que abre
+                        el popup "Ver plano".
+                    </p>
                     <TextField
                         form={form}
                         name="contactHeading"

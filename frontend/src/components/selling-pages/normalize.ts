@@ -60,7 +60,6 @@ export function mergeSellingPage(api: TSellingPage): SellingPageData {
         availability: {
             image: media(api.availabilityImg, d.availability.image)!,
             ctaLabel: d.availability.ctaLabel,
-            planHref: str(api.availabilityCtaUrl, "") || undefined,
         },
 
         cards: arr<SellingCard>(api.cards, d.cards),

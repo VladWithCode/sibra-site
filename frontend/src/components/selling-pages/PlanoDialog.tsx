@@ -4,27 +4,16 @@ import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/
 type PlanoDialogProps = {
     image: string;
     ctaLabel: string;
-    /** When set (external URL), the CTA opens the link instead of a lightbox. */
-    planHref?: string;
     /** Classes for the trigger button (keeps original absolute positioning). */
     className?: string;
 };
 
 /**
- * "Ver plano" interaction. If `planHref` is an external URL the button opens it
- * in a new tab; otherwise it opens a shadcn Dialog lightbox of the plan image.
+ * "Ver plano" interaction. Always opens a shadcn Dialog lightbox of the plan
+ * image. External-URL behavior was removed per client feedback — the popup is
+ * the only entry point.
  */
-export function PlanoDialog({ image, ctaLabel, planHref, className }: PlanoDialogProps) {
-    if (planHref) {
-        return (
-            <Button asChild size="sm" className={className}>
-                <a href={planHref} target="_blank" rel="noopener noreferrer">
-                    {ctaLabel}
-                </a>
-            </Button>
-        );
-    }
-
+export function PlanoDialog({ image, ctaLabel, className }: PlanoDialogProps) {
     return (
         <Dialog>
             <DialogTrigger asChild>

@@ -31,7 +31,6 @@ export const SellingPageFormSchema = z.object({
     heroCtaLabel: z.string(),
     heroCtaTarget: z.string(),
 
-    availabilityCtaUrl: z.string(),
     contactHeading: z.string(),
 
     financingHeading: z.string(),
@@ -85,7 +84,6 @@ export const sellingPageFormDefaults: SellingPageFormValues = {
     heroSubtitle: "",
     heroCtaLabel: "",
     heroCtaTarget: "",
-    availabilityCtaUrl: "",
     contactHeading: "",
     financingHeading: "",
     financingBody: "",
@@ -151,7 +149,9 @@ export function buildSellingPagePayload(values: SellingPageFormValues): TSelling
         heroSubtitle: values.heroSubtitle,
         heroCtaLabel: values.heroCtaLabel,
         heroCtaTarget: values.heroCtaTarget,
-        availabilityCtaUrl: values.availabilityCtaUrl,
+        // External URL was removed per feedback; always send empty to keep
+        // backend column (NOT NULL DEFAULT '') happy + records intact.
+        availabilityCtaUrl: "",
         contactHeading: values.contactHeading,
         financingHeading: values.financingHeading,
         financingBody: values.financingBody,
@@ -218,7 +218,6 @@ export function formValuesFromPage(page: TSellingPage): SellingPageFormValues {
         heroSubtitle: page.heroSubtitle ?? "",
         heroCtaLabel: page.heroCtaLabel ?? "",
         heroCtaTarget: page.heroCtaTarget ?? "",
-        availabilityCtaUrl: page.availabilityCtaUrl ?? "",
         contactHeading: page.contactHeading ?? "",
         financingHeading: page.financingHeading ?? "",
         financingBody: page.financingBody ?? "",

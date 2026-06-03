@@ -32,7 +32,6 @@ export function AvailabilitySection({ data, alignment }: AvailabilitySectionProp
                     <PlanoDialog
                         image={data.image}
                         ctaLabel={data.ctaLabel}
-                        planHref={data.planHref}
                         className={`absolute -bottom-3 ${ctaPosition(alignment)} px-8 sm:py-5 text-lg sm:text-xl text-primary-foreground font-medium bg-linear-to-b from-sbr-green-light to-sbr-green rounded shadow-lg`}
                     />
                 </div>

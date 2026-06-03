@@ -49,8 +49,6 @@ export type SellingPageData = {
     availability: {
         image: string;
         ctaLabel: string;
-        /** Optional external URL. When set, "Ver Plano" opens it; otherwise a lightbox of `image`. */
-        planHref?: string;
     };
 
     cards: SellingCard[];
