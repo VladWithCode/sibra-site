@@ -23,7 +23,7 @@ export function HeroSection({ data, alignment }: HeroSectionProps) {
     return (
         <section
             id="inicio"
-            className="sp-reveal relative z-0 min-h-[80vh] md:min-h-[92vh] flex overflow-hidden"
+            className="sp-reveal relative z-0 md:min-h-[92vh] flex overflow-hidden"
         >
             <div className="absolute inset-0 -z-10">
                 {data.videoMp4 || data.videoWebm || data.videoMov ? (
@@ -51,7 +51,7 @@ export function HeroSection({ data, alignment }: HeroSectionProps) {
             </div>
 
             <div
-                className={`relative w-full max-w-6xl mx-auto px-6 py-28 flex flex-col ${cls.justify} ${cls.items}`}
+                className={`relative w-full max-w-6xl mx-auto px-6 pt-40 pb-20 sm:pt-48 sm:pb-24 lg:pt-56 lg:pb-28 flex flex-col ${cls.justify} ${cls.items}`}
             >
                 <div
                     className={`max-w-xl flex flex-col gap-6 ${cls.text} ${centered ? "items-center" : "items-start"}`}
