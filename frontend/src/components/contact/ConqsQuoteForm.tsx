@@ -259,7 +259,7 @@ export function ConqsFooterQuoteForm({
     return (
         <Form {...form}>
             <form
-                className="relative z-0 flex flex-col items-center justify-center"
+                className={`relative z-0 flex flex-col items-center justify-center ${onDark ? "text-white" : ""}`}
                 onSubmit={onSubmit}
             >
                 <div className="relative z-0 w-full py-6 rounded space-y-6 sm:space-y-8">
