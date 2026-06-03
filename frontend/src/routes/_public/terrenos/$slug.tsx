@@ -1,4 +1,3 @@
-import { PublicLayout } from "@/components/layout/publicLayout";
 import { SellingPageTemplate } from "@/components/selling-pages/SellingPageTemplate";
 import { mergeSellingPage } from "@/components/selling-pages/normalize";
 import { getSellingPageBySlugOpts } from "@/queries/sellingPages";
@@ -48,25 +47,19 @@ function RouteComponent() {
 
     const merged = useMemo(() => mergeSellingPage(data.page), [data.page]);
 
-    return (
-        <PublicLayout>
-            <SellingPageTemplate data={merged} />
-        </PublicLayout>
-    );
+    return <SellingPageTemplate data={merged} />;
 }
 
 function SellingPageError() {
     return (
-        <PublicLayout>
-            <main className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-6 text-center">
-                <h1 className="text-3xl font-semibold">Página no encontrada</h1>
-                <p className="text-muted-foreground">
-                    El terreno que buscas no existe o no está disponible.
-                </p>
-                <Link to="/" className="underline underline-offset-4">
-                    Volver al inicio
-                </Link>
-            </main>
-        </PublicLayout>
+        <main className="min-h-[60vh] flex flex-col items-center justify-center gap-4 px-6 text-center">
+            <h1 className="text-3xl font-semibold">Página no encontrada</h1>
+            <p className="text-muted-foreground">
+                El terreno que buscas no existe o no está disponible.
+            </p>
+            <Link to="/" className="underline underline-offset-4">
+                Volver al inicio
+            </Link>
+        </main>
     );
 }
