@@ -1,5 +1,18 @@
 import { Link, linkOptions } from "@tanstack/react-router";
-import { BarChart3, Calendar, ChevronRight, Home, LayoutDashboard, Map, Newspaper, User, UserCircle, Users, Award } from "lucide-react";
+import {
+    BarChart3,
+    Calendar,
+    ChevronRight,
+    Home,
+    LayoutDashboard,
+    Map,
+    Newspaper,
+    Tag,
+    User,
+    UserCircle,
+    Users,
+    Award,
+} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -18,6 +31,7 @@ const sidebarMenuItems = linkOptions([
     { label: "Panel", to: "/panel", icon: LayoutDashboard },
     { label: "Propiedades", to: "/panel/propiedades", icon: Home },
     { label: "Terrenos y proyectos", to: "/panel/proyectos", icon: Map },
+    { label: "Páginas de venta", to: "/panel/terrenos", icon: Tag },
     { label: "Asociados", to: "/panel/asociados", icon: Users },
     { label: "Citas y contacto", to: "/panel/citas", icon: Calendar },
     { label: "Blog", to: "/panel/blog", icon: Newspaper },
@@ -33,13 +47,15 @@ export function DashboardSidebar() {
             variant="inset"
             collapsible="icon"
             className="bg-sbr-blue-dark text-white border-black/10"
-            style={{
-                "--sidebar": "var(--color-sbr-blue-dark)",
-                "--sidebar-foreground": "white",
-                "--sidebar-accent": "var(--color-sbr-blue-light)",
-                "--sidebar-accent-foreground": "white",
-                "--sidebar-border": "rgba(255,255,255,0.1)",
-            } as React.CSSProperties}
+            style={
+                {
+                    "--sidebar": "var(--color-sbr-blue-dark)",
+                    "--sidebar-foreground": "white",
+                    "--sidebar-accent": "var(--color-sbr-blue-light)",
+                    "--sidebar-accent-foreground": "white",
+                    "--sidebar-border": "rgba(255,255,255,0.1)",
+                } as React.CSSProperties
+            }
         >
             <SidebarHeader>
                 <div className="flex items-center gap-2">
@@ -47,8 +63,12 @@ export function DashboardSidebar() {
                         SI
                     </div>
                     <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-                        <div className="text-sm font-semibold leading-tight truncate">Sibra Inmobiliaria</div>
-                        <div className="text-[11px] text-white/55 leading-tight">Panel admin</div>
+                        <div className="text-sm font-semibold leading-tight truncate">
+                            Sibra Inmobiliaria
+                        </div>
+                        <div className="text-[11px] text-white/55 leading-tight">
+                            Panel admin
+                        </div>
                     </div>
                     <SidebarTrigger className="ml-auto group-data-[collapsible=icon]:ml-0 text-white/60 hover:bg-white/10 hover:text-white" />
                 </div>
@@ -86,8 +106,12 @@ export function DashboardSidebar() {
                                 JR
                             </div>
                             <div className="min-w-0 flex-1">
-                                <div className="text-xs font-medium truncate">Julia Ramírez</div>
-                                <div className="text-[11px] text-white/55 truncate">admin@sibra.do</div>
+                                <div className="text-xs font-medium truncate">
+                                    Julia Ramírez
+                                </div>
+                                <div className="text-[11px] text-white/55 truncate">
+                                    admin@sibra.do
+                                </div>
                             </div>
                             <ChevronRight size={14} className="text-white/50" />
                         </SidebarMenuButton>
