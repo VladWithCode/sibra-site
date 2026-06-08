@@ -12,14 +12,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 
 export type TConqsQuoteFormData = z.infer<typeof conqsQuoteFormSchema>;
 
+/** Optional selling-page attribution passed to the lead WhatsApp notice. */
+export type SellingPageAttribution = {
+    pageSlug?: string;
+    pageName?: string;
+    variant?: "default" | "onDark";
+};
+
 const conqsQuoteFormSchema = z.object({
     name: z.string().min(1, "El nombre no puede estar vacío"),
-    phone: z.string().min(1, "El número de teléfono no puede estar vacío").max(10, "El número de teléfono no puede tener más de 10 caracteres"),
+    phone: z
+        .string()
+        .min(1, "El número de teléfono no puede estar vacío")
+        .max(10, "El número de teléfono no puede tener más de 10 caracteres"),
     consent: z.literal(true, "Debes aceptar que te contactemos para agendar una cita."),
-    schedule: z.enum(["otro", "fin de semana", "entre semana", "sin especificar"]).optional().or(z.literal("")),
+    schedule: z
+        .enum(["otro", "fin de semana", "entre semana", "sin especificar"])
+        .optional()
+        .or(z.literal("")),
 });
 
-export function ConqsQuoteForm() {
+export function ConqsQuoteForm({
+    pageSlug,
+    pageName,
+    variant = "default",
+}: SellingPageAttribution = {}) {
+    const onDark = variant === "onDark";
+    const labelCls = onDark ? "sm:text-base text-white" : "sm:text-base";
+    const headingCls = onDark
+        ? "text-2xl sm:text-3xl font-bold uppercase text-white"
+        : "text-2xl sm:text-3xl font-bold uppercase";
     const form = useForm<TConqsQuoteFormData, any, TConqsQuoteFormData>({
         resolver: zodResolver(conqsQuoteFormSchema) as any,
         defaultValues: {
@@ -33,20 +55,25 @@ export function ConqsQuoteForm() {
     const conqsQuoteMut = useMutation(createConqsQuoteOpts(""));
     const onSubmit = form.handleSubmit(
         (data) => {
-            conqsQuoteMut.mutate({
-                quoteData: data as any,
-            }, {
-                onSuccess: () => {
-                    toast.success("La cita ha sido creada correctamente.", { closeButton: true });
-                    form.reset();
+            conqsQuoteMut.mutate(
+                {
+                    quoteData: { ...data, pageSlug, pageName } as any,
                 },
-                onError: (err) => {
-                    toast.error(err.message, { closeButton: true });
+                {
+                    onSuccess: () => {
+                        toast.success("La cita ha sido creada correctamente.", {
+                            closeButton: true,
+                        });
+                        form.reset();
+                    },
+                    onError: (err) => {
+                        toast.error(err.message, { closeButton: true });
+                    },
                 },
-            });
+            );
 
             if (window.fbq) {
-                window.fbq("track", "Schedule")
+                window.fbq("track", "Schedule");
             }
         },
         () => {
@@ -66,16 +93,18 @@ export function ConqsQuoteForm() {
                         data-state={conqsQuoteMut.status}
                     >
                         <span className="loader"></span>
-                        <span className="text-2xl text-current/60 font-medium">Cargando...</span>
+                        <span className="text-2xl text-current/60 font-medium">
+                            Cargando...
+                        </span>
                     </div>
-                    <h2 className="text-2xl sm:text-3xl font-bold uppercase">¡Agenda tu cita!</h2>
+                    <h2 className={headingCls}>¡Agenda tu cita!</h2>
                     <div className="space-y-4 sm:space-y-6">
                         <FormField
                             control={form.control}
                             name="name"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2 sm:space-y-1">
-                                    <FormLabel className="sm:text-base">Nombre</FormLabel>
+                                    <FormLabel className={labelCls}>Nombre</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="text"
@@ -93,7 +122,7 @@ export function ConqsQuoteForm() {
                             name="phone"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2 sm:space-y-1">
-                                    <FormLabel className="sm:text-base">Teléfono</FormLabel>
+                                    <FormLabel className={labelCls}>Teléfono</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="tel"
@@ -112,7 +141,9 @@ export function ConqsQuoteForm() {
                             render={() => (
                                 <FormItem>
                                     <Select>
-                                        <FormLabel className="sm:text-base">Horario de visita</FormLabel>
+                                        <FormLabel className={labelCls}>
+                                            Horario de visita
+                                        </FormLabel>
                                         <FormControl>
                                             <SelectTrigger className="w-full text-gray-800 bg-card">
                                                 <SelectValue placeholder="¿Cuándo deseas visitar?" />
@@ -120,8 +151,12 @@ export function ConqsQuoteForm() {
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="otro">Otro horario</SelectItem>
-                                            <SelectItem value="fin de semana">Este fin de semana</SelectItem>
-                                            <SelectItem value="entre semana">Entre semana</SelectItem>
+                                            <SelectItem value="fin de semana">
+                                                Este fin de semana
+                                            </SelectItem>
+                                            <SelectItem value="entre semana">
+                                                Entre semana
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FormItem>
@@ -141,7 +176,16 @@ export function ConqsQuoteForm() {
                                                 onCheckedChange={field.onChange}
                                             />
                                         </FormControl>
-                                        <FormLabel className="pt-1.5 sm:text-base">Acepto que se me contacte a través de Whatsapp o llamada telefónica.</FormLabel>
+                                        <FormLabel
+                                            className={
+                                                onDark
+                                                    ? "pt-1.5 sm:text-base text-white"
+                                                    : "pt-1.5 sm:text-base"
+                                            }
+                                        >
+                                            Acepto que se me contacte a través de Whatsapp o
+                                            llamada telefónica.
+                                        </FormLabel>
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -163,7 +207,16 @@ export function ConqsQuoteForm() {
     );
 }
 
-export function ConqsFooterQuoteForm() {
+export function ConqsFooterQuoteForm({
+    pageSlug,
+    pageName,
+    variant = "default",
+}: SellingPageAttribution = {}) {
+    const onDark = variant === "onDark";
+    const labelCls = onDark ? "sm:text-base text-white" : "sm:text-base";
+    const consentLabelCls = onDark
+        ? "leading-none sm:pt-1.5 sm:text-base text-white"
+        : "leading-none sm:pt-1.5 sm:text-base";
     const form = useForm<TConqsQuoteFormData, any, TConqsQuoteFormData>({
         resolver: zodResolver(conqsQuoteFormSchema) as any,
         defaultValues: {
@@ -177,20 +230,25 @@ export function ConqsFooterQuoteForm() {
     const conqsQuoteMut = useMutation(createConqsQuoteOpts(""));
     const onSubmit = form.handleSubmit(
         (data) => {
-            conqsQuoteMut.mutate({
-                quoteData: data as any,
-            }, {
-                onSuccess: () => {
-                    toast.success("La cita ha sido creada correctamente.", { closeButton: true });
-                    form.reset();
+            conqsQuoteMut.mutate(
+                {
+                    quoteData: { ...data, pageSlug, pageName } as any,
                 },
-                onError: (err) => {
-                    toast.error(err.message, { closeButton: true });
+                {
+                    onSuccess: () => {
+                        toast.success("La cita ha sido creada correctamente.", {
+                            closeButton: true,
+                        });
+                        form.reset();
+                    },
+                    onError: (err) => {
+                        toast.error(err.message, { closeButton: true });
+                    },
                 },
-            });
+            );
 
             if (window.fbq) {
-                window.fbq("track", "Schedule")
+                window.fbq("track", "Schedule");
             }
         },
         () => {
@@ -201,7 +259,7 @@ export function ConqsFooterQuoteForm() {
     return (
         <Form {...form}>
             <form
-                className="relative z-0 flex flex-col items-center justify-center"
+                className={`relative z-0 flex flex-col items-center justify-center ${onDark ? "text-white" : ""}`}
                 onSubmit={onSubmit}
             >
                 <div className="relative z-0 w-full py-6 rounded space-y-6 sm:space-y-8">
@@ -210,7 +268,9 @@ export function ConqsFooterQuoteForm() {
                         data-state={conqsQuoteMut.status}
                     >
                         <span className="loader"></span>
-                        <span className="text-2xl text-current/60 font-medium">Cargando...</span>
+                        <span className="text-2xl text-current/60 font-medium">
+                            Cargando...
+                        </span>
                     </div>
                     <div className="space-y-4 sm:space-y-6">
                         <FormField
@@ -218,7 +278,7 @@ export function ConqsFooterQuoteForm() {
                             name="name"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2">
-                                    <FormLabel className="sm:text-base">Nombre</FormLabel>
+                                    <FormLabel className={labelCls}>Nombre</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="text"
@@ -236,7 +296,7 @@ export function ConqsFooterQuoteForm() {
                             name="phone"
                             render={({ field }) => (
                                 <FormItem className="basis-1/2">
-                                    <FormLabel className="sm:text-base">Teléfono</FormLabel>
+                                    <FormLabel className={labelCls}>Teléfono</FormLabel>
                                     <FormControl>
                                         <Input
                                             type="tel"
@@ -255,7 +315,9 @@ export function ConqsFooterQuoteForm() {
                             render={() => (
                                 <FormItem>
                                     <Select>
-                                        <FormLabel className="sm:text-base">Horario de visita</FormLabel>
+                                        <FormLabel className={labelCls}>
+                                            Horario de visita
+                                        </FormLabel>
                                         <FormControl>
                                             <SelectTrigger className="w-full bg-card">
                                                 <SelectValue placeholder="¿Cuándo deseas visitar?" />
@@ -263,8 +325,12 @@ export function ConqsFooterQuoteForm() {
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="otro">Otro horario</SelectItem>
-                                            <SelectItem value="fin de semana">Este fin de semana</SelectItem>
-                                            <SelectItem value="entre semana">Entre semana</SelectItem>
+                                            <SelectItem value="fin de semana">
+                                                Este fin de semana
+                                            </SelectItem>
+                                            <SelectItem value="entre semana">
+                                                Entre semana
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </FormItem>
@@ -284,7 +350,10 @@ export function ConqsFooterQuoteForm() {
                                                 onCheckedChange={field.onChange}
                                             />
                                         </FormControl>
-                                        <FormLabel className="leading-none sm:pt-1.5 sm:text-base">Acepto que se me contacte a través de Whatsapp o llamada telefónica.</FormLabel>
+                                        <FormLabel className={consentLabelCls}>
+                                            Acepto que se me contacte a través de Whatsapp o
+                                            llamada telefónica.
+                                        </FormLabel>
                                     </div>
                                     <FormMessage />
                                 </FormItem>

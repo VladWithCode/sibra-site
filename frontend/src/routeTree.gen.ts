@@ -26,6 +26,7 @@ import { Route as PublicFavoritosRouteImport } from './routes/_public/favoritos'
 import { Route as PublicContactoRouteImport } from './routes/_public/contacto'
 import { Route as PublicProyectosRouteRouteImport } from './routes/_public/proyectos/route'
 import { Route as PanelUsuariosIndexRouteImport } from './routes/panel/usuarios/index'
+import { Route as PanelTerrenosIndexRouteImport } from './routes/panel/terrenos/index'
 import { Route as PanelProyectosIndexRouteImport } from './routes/panel/proyectos/index'
 import { Route as PanelPropiedadesIndexRouteImport } from './routes/panel/propiedades/index'
 import { Route as PanelPerfilIndexRouteImport } from './routes/panel/perfil/index'
@@ -38,6 +39,7 @@ import { Route as PublicProyectosIndexRouteImport } from './routes/_public/proye
 import { Route as PublicBlogIndexRouteImport } from './routes/_public/blog/index'
 import { Route as PanelUsuariosNuevoRouteImport } from './routes/panel/usuarios/nuevo'
 import { Route as PanelUsuariosIdRouteImport } from './routes/panel/usuarios/$id'
+import { Route as PanelTerrenosNuevoRouteImport } from './routes/panel/terrenos/nuevo'
 import { Route as PanelProyectosNuevoRouteImport } from './routes/panel/proyectos/nuevo'
 import { Route as PanelPropiedadesNuevaRouteImport } from './routes/panel/propiedades/nueva'
 import { Route as PanelPropiedadesIdRouteImport } from './routes/panel/propiedades/$id'
@@ -48,11 +50,13 @@ import { Route as PanelEquipoIdRouteImport } from './routes/panel/equipo/$id'
 import { Route as PanelCitasIdRouteImport } from './routes/panel/citas/$id'
 import { Route as PanelBlogNuevoRouteImport } from './routes/panel/blog/nuevo'
 import { Route as PanelBlogIdRouteImport } from './routes/panel/blog/$id'
+import { Route as PublicTerrenosSlugRouteImport } from './routes/_public/terrenos/$slug'
 import { Route as PublicProyectosProjectRouteImport } from './routes/_public/proyectos/$project'
 import { Route as PublicBlogSlugRouteImport } from './routes/_public/blog/$slug'
 import { Route as PanelProyectosIdRouteRouteImport } from './routes/panel/proyectos/$id/route'
 import { Route as PublicPropiedadesListingRouteRouteImport } from './routes/_public/propiedades/_listing/route'
 import { Route as PublicPropiedadesDetailRouteRouteImport } from './routes/_public/propiedades/_detail/route'
+import { Route as PanelTerrenosIdIndexRouteImport } from './routes/panel/terrenos/$id/index'
 import { Route as PanelProyectosIdIndexRouteImport } from './routes/panel/proyectos/$id/index'
 import { Route as PublicPropiedadesListingIndexRouteImport } from './routes/_public/propiedades/_listing/index'
 import { Route as PanelProyectosIdAsociadosRouteImport } from './routes/panel/proyectos/$id/asociados'
@@ -145,6 +149,11 @@ const PanelUsuariosIndexRoute = PanelUsuariosIndexRouteImport.update({
   path: '/usuarios/',
   getParentRoute: () => PanelRouteRoute,
 } as any)
+const PanelTerrenosIndexRoute = PanelTerrenosIndexRouteImport.update({
+  id: '/terrenos/',
+  path: '/terrenos/',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
 const PanelProyectosIndexRoute = PanelProyectosIndexRouteImport.update({
   id: '/proyectos/',
   path: '/proyectos/',
@@ -205,6 +214,11 @@ const PanelUsuariosIdRoute = PanelUsuariosIdRouteImport.update({
   path: '/usuarios/$id',
   getParentRoute: () => PanelRouteRoute,
 } as any)
+const PanelTerrenosNuevoRoute = PanelTerrenosNuevoRouteImport.update({
+  id: '/terrenos/nuevo',
+  path: '/terrenos/nuevo',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
 const PanelProyectosNuevoRoute = PanelProyectosNuevoRouteImport.update({
   id: '/proyectos/nuevo',
   path: '/proyectos/nuevo',
@@ -255,6 +269,11 @@ const PanelBlogIdRoute = PanelBlogIdRouteImport.update({
   path: '/blog/$id',
   getParentRoute: () => PanelRouteRoute,
 } as any)
+const PublicTerrenosSlugRoute = PublicTerrenosSlugRouteImport.update({
+  id: '/terrenos/$slug',
+  path: '/terrenos/$slug',
+  getParentRoute: () => PublicRouteRoute,
+} as any)
 const PublicProyectosProjectRoute = PublicProyectosProjectRouteImport.update({
   id: '/$project',
   path: '/$project',
@@ -280,6 +299,11 @@ const PublicPropiedadesDetailRouteRoute =
     id: '/_detail',
     getParentRoute: () => PublicPropiedadesRoute,
   } as any)
+const PanelTerrenosIdIndexRoute = PanelTerrenosIdIndexRouteImport.update({
+  id: '/terrenos/$id/',
+  path: '/terrenos/$id/',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
 const PanelProyectosIdIndexRoute = PanelProyectosIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -346,6 +370,7 @@ export interface FileRoutesByFullPath {
   '/panel/proyectos/$id': typeof PanelProyectosIdRouteRouteWithChildren
   '/blog/$slug': typeof PublicBlogSlugRoute
   '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/terrenos/$slug': typeof PublicTerrenosSlugRoute
   '/panel/blog/$id': typeof PanelBlogIdRoute
   '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
@@ -356,6 +381,7 @@ export interface FileRoutesByFullPath {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
+  '/panel/terrenos/nuevo': typeof PanelTerrenosNuevoRoute
   '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/blog': typeof PublicBlogIndexRoute
@@ -368,10 +394,12 @@ export interface FileRoutesByFullPath {
   '/panel/perfil': typeof PanelPerfilIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
+  '/panel/terrenos': typeof PanelTerrenosIndexRoute
   '/panel/usuarios': typeof PanelUsuariosIndexRoute
   '/panel/proyectos/$id/asociados': typeof PanelProyectosIdAsociadosRouteWithChildren
   '/propiedades/': typeof PublicPropiedadesListingIndexRoute
   '/panel/proyectos/$id/': typeof PanelProyectosIdIndexRoute
+  '/panel/terrenos/$id': typeof PanelTerrenosIdIndexRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
   '/panel/proyectos/$id/asociados/$associateId': typeof PanelProyectosIdAsociadosAssociateIdRoute
   '/panel/proyectos/$id/asociados/nuevo': typeof PanelProyectosIdAsociadosNuevoRoute
@@ -393,6 +421,7 @@ export interface FileRoutesByTo {
   '/propiedades': typeof PublicPropiedadesListingIndexRoute
   '/blog/$slug': typeof PublicBlogSlugRoute
   '/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/terrenos/$slug': typeof PublicTerrenosSlugRoute
   '/panel/blog/$id': typeof PanelBlogIdRoute
   '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
@@ -403,6 +432,7 @@ export interface FileRoutesByTo {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
+  '/panel/terrenos/nuevo': typeof PanelTerrenosNuevoRoute
   '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/blog': typeof PublicBlogIndexRoute
@@ -415,8 +445,10 @@ export interface FileRoutesByTo {
   '/panel/perfil': typeof PanelPerfilIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos': typeof PanelProyectosIndexRoute
+  '/panel/terrenos': typeof PanelTerrenosIndexRoute
   '/panel/usuarios': typeof PanelUsuariosIndexRoute
   '/panel/proyectos/$id': typeof PanelProyectosIdIndexRoute
+  '/panel/terrenos/$id': typeof PanelTerrenosIdIndexRoute
   '/propiedades/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
   '/panel/proyectos/$id/asociados/$associateId': typeof PanelProyectosIdAsociadosAssociateIdRoute
   '/panel/proyectos/$id/asociados/nuevo': typeof PanelProyectosIdAsociadosNuevoRoute
@@ -445,6 +477,7 @@ export interface FileRoutesById {
   '/panel/proyectos/$id': typeof PanelProyectosIdRouteRouteWithChildren
   '/_public/blog/$slug': typeof PublicBlogSlugRoute
   '/_public/proyectos/$project': typeof PublicProyectosProjectRoute
+  '/_public/terrenos/$slug': typeof PublicTerrenosSlugRoute
   '/panel/blog/$id': typeof PanelBlogIdRoute
   '/panel/blog/nuevo': typeof PanelBlogNuevoRoute
   '/panel/citas/$id': typeof PanelCitasIdRoute
@@ -455,6 +488,7 @@ export interface FileRoutesById {
   '/panel/propiedades/$id': typeof PanelPropiedadesIdRoute
   '/panel/propiedades/nueva': typeof PanelPropiedadesNuevaRoute
   '/panel/proyectos/nuevo': typeof PanelProyectosNuevoRoute
+  '/panel/terrenos/nuevo': typeof PanelTerrenosNuevoRoute
   '/panel/usuarios/$id': typeof PanelUsuariosIdRoute
   '/panel/usuarios/nuevo': typeof PanelUsuariosNuevoRoute
   '/_public/blog/': typeof PublicBlogIndexRoute
@@ -467,10 +501,12 @@ export interface FileRoutesById {
   '/panel/perfil/': typeof PanelPerfilIndexRoute
   '/panel/propiedades/': typeof PanelPropiedadesIndexRoute
   '/panel/proyectos/': typeof PanelProyectosIndexRoute
+  '/panel/terrenos/': typeof PanelTerrenosIndexRoute
   '/panel/usuarios/': typeof PanelUsuariosIndexRoute
   '/panel/proyectos/$id/asociados': typeof PanelProyectosIdAsociadosRouteWithChildren
   '/_public/propiedades/_listing/': typeof PublicPropiedadesListingIndexRoute
   '/panel/proyectos/$id/': typeof PanelProyectosIdIndexRoute
+  '/panel/terrenos/$id/': typeof PanelTerrenosIdIndexRoute
   '/_public/propiedades/_detail/$contract/$slug': typeof PublicPropiedadesDetailContractSlugRoute
   '/panel/proyectos/$id/asociados/$associateId': typeof PanelProyectosIdAsociadosAssociateIdRoute
   '/panel/proyectos/$id/asociados/nuevo': typeof PanelProyectosIdAsociadosNuevoRoute
@@ -497,6 +533,7 @@ export interface FileRouteTypes {
     | '/panel/proyectos/$id'
     | '/blog/$slug'
     | '/proyectos/$project'
+    | '/terrenos/$slug'
     | '/panel/blog/$id'
     | '/panel/blog/nuevo'
     | '/panel/citas/$id'
@@ -507,6 +544,7 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/panel/proyectos/nuevo'
+    | '/panel/terrenos/nuevo'
     | '/panel/usuarios/$id'
     | '/panel/usuarios/nuevo'
     | '/blog'
@@ -519,10 +557,12 @@ export interface FileRouteTypes {
     | '/panel/perfil'
     | '/panel/propiedades'
     | '/panel/proyectos'
+    | '/panel/terrenos'
     | '/panel/usuarios'
     | '/panel/proyectos/$id/asociados'
     | '/propiedades/'
     | '/panel/proyectos/$id/'
+    | '/panel/terrenos/$id'
     | '/propiedades/$contract/$slug'
     | '/panel/proyectos/$id/asociados/$associateId'
     | '/panel/proyectos/$id/asociados/nuevo'
@@ -544,6 +584,7 @@ export interface FileRouteTypes {
     | '/propiedades'
     | '/blog/$slug'
     | '/proyectos/$project'
+    | '/terrenos/$slug'
     | '/panel/blog/$id'
     | '/panel/blog/nuevo'
     | '/panel/citas/$id'
@@ -554,6 +595,7 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/panel/proyectos/nuevo'
+    | '/panel/terrenos/nuevo'
     | '/panel/usuarios/$id'
     | '/panel/usuarios/nuevo'
     | '/blog'
@@ -566,8 +608,10 @@ export interface FileRouteTypes {
     | '/panel/perfil'
     | '/panel/propiedades'
     | '/panel/proyectos'
+    | '/panel/terrenos'
     | '/panel/usuarios'
     | '/panel/proyectos/$id'
+    | '/panel/terrenos/$id'
     | '/propiedades/$contract/$slug'
     | '/panel/proyectos/$id/asociados/$associateId'
     | '/panel/proyectos/$id/asociados/nuevo'
@@ -595,6 +639,7 @@ export interface FileRouteTypes {
     | '/panel/proyectos/$id'
     | '/_public/blog/$slug'
     | '/_public/proyectos/$project'
+    | '/_public/terrenos/$slug'
     | '/panel/blog/$id'
     | '/panel/blog/nuevo'
     | '/panel/citas/$id'
@@ -605,6 +650,7 @@ export interface FileRouteTypes {
     | '/panel/propiedades/$id'
     | '/panel/propiedades/nueva'
     | '/panel/proyectos/nuevo'
+    | '/panel/terrenos/nuevo'
     | '/panel/usuarios/$id'
     | '/panel/usuarios/nuevo'
     | '/_public/blog/'
@@ -617,10 +663,12 @@ export interface FileRouteTypes {
     | '/panel/perfil/'
     | '/panel/propiedades/'
     | '/panel/proyectos/'
+    | '/panel/terrenos/'
     | '/panel/usuarios/'
     | '/panel/proyectos/$id/asociados'
     | '/_public/propiedades/_listing/'
     | '/panel/proyectos/$id/'
+    | '/panel/terrenos/$id/'
     | '/_public/propiedades/_detail/$contract/$slug'
     | '/panel/proyectos/$id/asociados/$associateId'
     | '/panel/proyectos/$id/asociados/nuevo'
@@ -748,6 +796,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelUsuariosIndexRouteImport
       parentRoute: typeof PanelRouteRoute
     }
+    '/panel/terrenos/': {
+      id: '/panel/terrenos/'
+      path: '/terrenos'
+      fullPath: '/panel/terrenos'
+      preLoaderRoute: typeof PanelTerrenosIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
     '/panel/proyectos/': {
       id: '/panel/proyectos/'
       path: '/proyectos'
@@ -832,6 +887,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelUsuariosIdRouteImport
       parentRoute: typeof PanelRouteRoute
     }
+    '/panel/terrenos/nuevo': {
+      id: '/panel/terrenos/nuevo'
+      path: '/terrenos/nuevo'
+      fullPath: '/panel/terrenos/nuevo'
+      preLoaderRoute: typeof PanelTerrenosNuevoRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
     '/panel/proyectos/nuevo': {
       id: '/panel/proyectos/nuevo'
       path: '/proyectos/nuevo'
@@ -902,6 +964,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelBlogIdRouteImport
       parentRoute: typeof PanelRouteRoute
     }
+    '/_public/terrenos/$slug': {
+      id: '/_public/terrenos/$slug'
+      path: '/terrenos/$slug'
+      fullPath: '/terrenos/$slug'
+      preLoaderRoute: typeof PublicTerrenosSlugRouteImport
+      parentRoute: typeof PublicRouteRoute
+    }
     '/_public/proyectos/$project': {
       id: '/_public/proyectos/$project'
       path: '/$project'
@@ -936,6 +1005,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/propiedades'
       preLoaderRoute: typeof PublicPropiedadesDetailRouteRouteImport
       parentRoute: typeof PublicPropiedadesRoute
+    }
+    '/panel/terrenos/$id/': {
+      id: '/panel/terrenos/$id/'
+      path: '/terrenos/$id'
+      fullPath: '/panel/terrenos/$id'
+      preLoaderRoute: typeof PanelTerrenosIdIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
     }
     '/panel/proyectos/$id/': {
       id: '/panel/proyectos/$id/'
@@ -1066,6 +1142,7 @@ interface PublicRouteRouteChildren {
   PublicIndexRoute: typeof PublicIndexRoute
   PublicPropiedadesRoute: typeof PublicPropiedadesRouteWithChildren
   PublicBlogSlugRoute: typeof PublicBlogSlugRoute
+  PublicTerrenosSlugRoute: typeof PublicTerrenosSlugRoute
   PublicBlogIndexRoute: typeof PublicBlogIndexRoute
 }
 
@@ -1082,6 +1159,7 @@ const PublicRouteRouteChildren: PublicRouteRouteChildren = {
   PublicIndexRoute: PublicIndexRoute,
   PublicPropiedadesRoute: PublicPropiedadesRouteWithChildren,
   PublicBlogSlugRoute: PublicBlogSlugRoute,
+  PublicTerrenosSlugRoute: PublicTerrenosSlugRoute,
   PublicBlogIndexRoute: PublicBlogIndexRoute,
 }
 
@@ -1139,6 +1217,7 @@ interface PanelRouteRouteChildren {
   PanelPropiedadesIdRoute: typeof PanelPropiedadesIdRoute
   PanelPropiedadesNuevaRoute: typeof PanelPropiedadesNuevaRoute
   PanelProyectosNuevoRoute: typeof PanelProyectosNuevoRoute
+  PanelTerrenosNuevoRoute: typeof PanelTerrenosNuevoRoute
   PanelUsuariosIdRoute: typeof PanelUsuariosIdRoute
   PanelUsuariosNuevoRoute: typeof PanelUsuariosNuevoRoute
   PanelAnaliticasIndexRoute: typeof PanelAnaliticasIndexRoute
@@ -1149,7 +1228,9 @@ interface PanelRouteRouteChildren {
   PanelPerfilIndexRoute: typeof PanelPerfilIndexRoute
   PanelPropiedadesIndexRoute: typeof PanelPropiedadesIndexRoute
   PanelProyectosIndexRoute: typeof PanelProyectosIndexRoute
+  PanelTerrenosIndexRoute: typeof PanelTerrenosIndexRoute
   PanelUsuariosIndexRoute: typeof PanelUsuariosIndexRoute
+  PanelTerrenosIdIndexRoute: typeof PanelTerrenosIdIndexRoute
 }
 
 const PanelRouteRouteChildren: PanelRouteRouteChildren = {
@@ -1165,6 +1246,7 @@ const PanelRouteRouteChildren: PanelRouteRouteChildren = {
   PanelPropiedadesIdRoute: PanelPropiedadesIdRoute,
   PanelPropiedadesNuevaRoute: PanelPropiedadesNuevaRoute,
   PanelProyectosNuevoRoute: PanelProyectosNuevoRoute,
+  PanelTerrenosNuevoRoute: PanelTerrenosNuevoRoute,
   PanelUsuariosIdRoute: PanelUsuariosIdRoute,
   PanelUsuariosNuevoRoute: PanelUsuariosNuevoRoute,
   PanelAnaliticasIndexRoute: PanelAnaliticasIndexRoute,
@@ -1175,7 +1257,9 @@ const PanelRouteRouteChildren: PanelRouteRouteChildren = {
   PanelPerfilIndexRoute: PanelPerfilIndexRoute,
   PanelPropiedadesIndexRoute: PanelPropiedadesIndexRoute,
   PanelProyectosIndexRoute: PanelProyectosIndexRoute,
+  PanelTerrenosIndexRoute: PanelTerrenosIndexRoute,
   PanelUsuariosIndexRoute: PanelUsuariosIndexRoute,
+  PanelTerrenosIdIndexRoute: PanelTerrenosIdIndexRoute,
 }
 
 const PanelRouteRouteWithChildren = PanelRouteRoute._addFileChildren(

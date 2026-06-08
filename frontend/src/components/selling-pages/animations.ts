@@ -21,12 +21,16 @@ export function animateSection(section: HTMLElement, obsv: IntersectionObserver)
             continue;
         }
 
-        tl.to(section.querySelectorAll(anim.selector), {
-            ...anim.animateToOpts,
-            onComplete: () => {
-                obsv.unobserve(section);
+        tl.to(
+            section.querySelectorAll(anim.selector),
+            {
+                ...anim.animateToOpts,
+                onComplete: () => {
+                    obsv.unobserve(section);
+                },
             },
-        }, "<");
+            "<",
+        );
     }
 }
 
@@ -154,7 +158,8 @@ export const InviewAnimations = [
                 },
             },
         ],
-    }, {
+    },
+    {
         id: "pasos",
         animations: [
             {
@@ -168,5 +173,5 @@ export const InviewAnimations = [
                 },
             },
         ],
-    }
+    },
 ] as const;

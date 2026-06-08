@@ -11,7 +11,13 @@ export type TPagination = {
     hasPrev: boolean;
 };
 
-export type TPropertyStatus = "borrador" | "archivada" | "publicada" | "en_revision" | "vendida" | "no_disponible";
+export type TPropertyStatus =
+    | "borrador"
+    | "archivada"
+    | "publicada"
+    | "en_revision"
+    | "vendida"
+    | "no_disponible";
 export type TPropertyType = "casa" | "apartamento" | "terreno";
 export type TPropertyContract = "venta" | "renta";
 
@@ -121,7 +127,10 @@ export type TConqsQuoteSchedule = "fin de semana" | "entre semana" | "otro";
 
 export type TQuoteConquistadores = TQuote & {
     schedule: TConqsQuoteSchedule;
-}
+    // Selling-page attribution (optional; surfaced in the WhatsApp notice).
+    pageSlug?: string;
+    pageName?: string;
+};
 
 export type TQuoteFilters = {
     type?: TQuoteType;
@@ -164,13 +173,18 @@ export type TQuoteUpdateResult = {
     request: TQuote;
 };
 
-export type TContactRequestType = "informacion" | "cita" | "venta" | "precalificacion" | "proyecto";
+export type TContactRequestType =
+    | "informacion"
+    | "cita"
+    | "venta"
+    | "precalificacion"
+    | "proyecto";
 
 export type TContactRequest = {
     name: string;
     phone: string;
     type: TContactRequestType;
-}
+};
 
 export type TPropInfoRequest = TContactRequest & {
     id: string;
@@ -202,7 +216,7 @@ export type TProjectAmenity = {
 export type TProjectDocsResult = {
     success: boolean;
     docs: TProjectDoc[];
-}
+};
 
 export type TProjectDoc = {
     id: string;
@@ -225,8 +239,8 @@ export type TProjectSection = {
     title: string;
     body: string;
     image: string;
-    image_side: 'left' | 'right';
-}
+    image_side: "left" | "right";
+};
 
 export type TProject = {
     id: string;
@@ -255,7 +269,7 @@ export type TProject = {
 
     created_at: string;
     updated_at: string;
-}
+};
 
 export type TProjectInput = Partial<Omit<TProject, "created_at" | "updated_at">>;
 
@@ -296,13 +310,15 @@ export type TProjectAssociateDetailResult = {
     associate: TProjectAssociate;
 };
 
-export type TProjectCheckAccessResult = {
-    authorized: true;
-    associate: TProjectAssociate;
-} | {
-    authorized: false;
-    etc: Record<string, any>;
-};
+export type TProjectCheckAccessResult =
+    | {
+          authorized: true;
+          associate: TProjectAssociate;
+      }
+    | {
+          authorized: false;
+          etc: Record<string, any>;
+      };
 
 export type TProjectAssociate = {
     id: string;
@@ -313,7 +329,7 @@ export type TProjectAssociate = {
     lotNum?: string;
     appleNum?: string;
     pendingPayment: boolean;
-}
+};
 
 export type TProjectAssociateFilter = { rfcOrCurp?: string } & Partial<TProjectAssociate>;
 
@@ -322,7 +338,7 @@ export type TProjectCheckAccessData = {
     idcode: string;
     lotNum: string;
     appleNum: string;
-}
+};
 
 // Users
 export type TUserRole = "admin" | "editor" | "user";
@@ -334,14 +350,14 @@ export type TUser = {
     email: string;
     phone: string;
     img: string;
-}
+};
 
 export type TPublicUser = {
     name: string;
     email: string;
     phone: string;
     img: string;
-}
+};
 
 export type TUserDetail = TUser & {
     emailVerified: boolean;
@@ -349,19 +365,19 @@ export type TUserDetail = TUser & {
 
     createdAt: Date;
     updatedAt: Date;
-}
+};
 
 export type TLogin = {
     username: string;
     password: string;
-}
+};
 
 export type TUserProfileResult = {
     success: boolean;
     user: TUser;
-}
+};
 
-export type TLoginResult = TUserProfileResult
+export type TLoginResult = TUserProfileResult;
 
 export type TUserFilters = {
     search?: string;
@@ -504,3 +520,67 @@ export type TBlogImageUploadResult = {
     markdown: string;
 };
 
+// ---- Selling Pages (terrenos) ----
+// Mirrors internal/db.SellingPage JSON. The four jsonb fields arrive as parsed
+// JSON (array) or null; typed as `unknown` and coerced safely in normalize.
+export type TSellingPage = {
+    id: string;
+    slug: string;
+    name: string;
+    variant: string;
+    published: boolean;
+
+    seoTitle: string;
+    seoDescription: string;
+    pixelId: string;
+    whatsappNumber: string;
+    whatsappMessage: string;
+
+    heroVideo: string;
+    heroPoster: string;
+    heroImage: string;
+    heroTitle: string;
+    heroSubtitle: string;
+    heroCtaLabel: string;
+    heroCtaTarget: string;
+
+    availabilityImg: string;
+    availabilityCtaUrl: string;
+
+    contactBgImg: string;
+    contactHeading: string;
+
+    financingHeading: string;
+    financingBody: string;
+    financingImg: string;
+
+    offerPrice: string;
+    offerPeriod: string;
+    offerDimensions: string;
+    offerFinePrint: string;
+    offerLandImg: string;
+    offerFeatures: unknown;
+
+    cards: unknown;
+    steps: unknown;
+
+    locationImg: string;
+    locationMapEmbed: string;
+    locationCaption: string;
+    locationChips: unknown;
+
+    contactAddress: string;
+    contactHours: string;
+    contactPhone: string;
+
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type TSellingPageResult = {
+    page: TSellingPage;
+};
+
+export type TSellingPagesListResult = {
+    pages: TSellingPage[];
+};

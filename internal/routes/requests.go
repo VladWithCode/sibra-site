@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -201,17 +202,28 @@ func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
 		Language: "es",
 	}
 
-	if req.Schedule != "" {
-		tplData.BodyVars = append(tplData.BodyVars, wsp.TemplateVar{
-			"type": "text",
-			"text": req.Schedule,
-		})
-	} else {
-		tplData.BodyVars = append(tplData.BodyVars, wsp.TemplateVar{
-			"type": "text",
-			"text": "sin especificar",
-		})
+	scheduleText := string(req.Schedule)
+	if scheduleText == "" {
+		scheduleText = "sin especificar"
 	}
+	// Append selling-page attribution to the (existing) schedule body var so the
+	// WhatsApp template var count stays the same. No suffix when no page info is
+	// sent, preserving existing conquistadores behavior.
+	if req.PageName != "" || req.PageSlug != "" {
+		name := req.PageName
+		if name == "" {
+			name = req.PageSlug
+		}
+		if req.PageSlug != "" {
+			scheduleText = fmt.Sprintf("%s · Página: %s (%s)", scheduleText, name, req.PageSlug)
+		} else {
+			scheduleText = fmt.Sprintf("%s · Página: %s", scheduleText, name)
+		}
+	}
+	tplData.BodyVars = append(tplData.BodyVars, wsp.TemplateVar{
+		"type": "text",
+		"text": scheduleText,
+	})
 
 	notifPhone := os.Getenv(wsp.EnvVarNotificationPhone)
 	if notifPhone == "" {

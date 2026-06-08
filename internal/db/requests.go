@@ -102,6 +102,10 @@ type ConqsRequest struct {
 	Request
 
 	Schedule QuoteSchedule `json:"quoteSchedule" db:"quote_schedule"`
+
+	// Selling-page attribution (not persisted; surfaced in the WhatsApp notice).
+	PageSlug string `json:"pageSlug" db:"-"`
+	PageName string `json:"pageName" db:"-"`
 }
 
 type RequestFilter struct {
