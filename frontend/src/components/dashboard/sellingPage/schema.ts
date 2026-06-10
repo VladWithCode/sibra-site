@@ -73,7 +73,7 @@ export type SellingPageFormValues = z.infer<typeof SellingPageFormSchema>;
 export const sellingPageFormDefaults: SellingPageFormValues = {
     name: "",
     slug: "",
-    variant: "right",
+    variant: "left",
     published: false,
     seoTitle: "",
     seoDescription: "",
@@ -179,27 +179,27 @@ function asStringArray(v: unknown): string[] {
 export function formValuesFromPage(page: TSellingPage): SellingPageFormValues {
     const cards: FormCard[] = Array.isArray(page.cards)
         ? (page.cards as any[]).map((c) => ({
-              title: String(c?.title ?? ""),
-              description: String(c?.description ?? ""),
-              image: String(c?.image ?? ""),
-          }))
+            title: String(c?.title ?? ""),
+            description: String(c?.description ?? ""),
+            image: String(c?.image ?? ""),
+        }))
         : [];
 
     const steps: FormStep[] = Array.isArray(page.steps)
         ? (page.steps as any[]).map((s) => ({
-              step: String(s?.step ?? ""),
-              title: String(s?.title ?? ""),
-              descriptionText: Array.isArray(s?.description)
-                  ? (s.description as any[]).join("\n")
-                  : String(s?.description ?? ""),
-              icon: String(s?.icon ?? ""),
-          }))
+            step: String(s?.step ?? ""),
+            title: String(s?.title ?? ""),
+            descriptionText: Array.isArray(s?.description)
+                ? (s.description as any[]).join("\n")
+                : String(s?.description ?? ""),
+            icon: String(s?.icon ?? ""),
+        }))
         : [];
 
     const chips: string[] = Array.isArray(page.locationChips)
         ? (page.locationChips as any[]).map((c) =>
-              typeof c === "string" ? c : String(c?.text ?? ""),
-          )
+            typeof c === "string" ? c : String(c?.text ?? ""),
+        )
         : [];
 
     return {
@@ -207,7 +207,7 @@ export function formValuesFromPage(page: TSellingPage): SellingPageFormValues {
         slug: page.slug ?? "",
         variant: (["left", "center", "right"].includes(page.variant)
             ? page.variant
-            : "right") as SellingPageFormValues["variant"],
+            : "left") as SellingPageFormValues["variant"],
         published: !!page.published,
         seoTitle: page.seoTitle ?? "",
         seoDescription: page.seoDescription ?? "",

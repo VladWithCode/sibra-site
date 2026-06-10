@@ -48,30 +48,49 @@ export function SellingPageTemplate({ data, preview = false }: SellingPageTempla
             ref={rootRef}
             className={`relative bg-white text-slate-900 antialiased${preview ? " sp-preview" : ""}`}
         >
-            <HeroSection data={data.hero} alignment={data.alignment} />
-            <AvailabilitySection data={data.availability} alignment={data.alignment} />
-            <CardsSection
-                cards={data.cards}
-                footnote={data.cardsFootnote}
-                alignment={data.alignment}
-            />
-            <ContactSection
-                data={data.contact}
-                alignment={data.alignment}
-                pageSlug={data.slug}
-                pageName={data.name}
-            />
-            <FinancingSection data={data.financing} />
-            <OfferSection data={data.offer} />
-            <StepsSection steps={data.steps} />
-            <LocationSection data={data.location} />
-            <FooterContact
-                data={data.footer}
-                pageSlug={data.slug}
-                pageName={data.name}
-                whatsappHref={data.whatsappHref}
-            />
-            {!preview && (
+            {(data.hero.title ||
+                data.hero.subtitle ||
+                data.hero.image ||
+                data.hero.videoMp4) && (
+                <HeroSection data={data.hero} alignment={data.alignment} />
+            )}
+            {data.availability.image && (
+                <AvailabilitySection data={data.availability} alignment={data.alignment} />
+            )}
+            {data.cards.length > 0 && (
+                <CardsSection
+                    cards={data.cards}
+                    footnote={data.cardsFootnote}
+                    alignment={data.alignment}
+                />
+            )}
+            {(data.contact.bgImage || data.whatsappHref) && (
+                <ContactSection
+                    data={data.contact}
+                    alignment={data.alignment}
+                    pageSlug={data.slug}
+                    pageName={data.name}
+                />
+            )}
+            {(data.financing.heading || data.financing.body || data.financing.image) && (
+                <FinancingSection data={data.financing} />
+            )}
+            {(data.offer.price || data.offer.features.length > 0) && (
+                <OfferSection data={data.offer} />
+            )}
+            {data.steps.length > 0 && <StepsSection steps={data.steps} />}
+            {(data.location.mapEmbedUrl ||
+                data.location.image ||
+                data.location.chips.length > 0) && <LocationSection data={data.location} />}
+            {(data.footer.heading || data.footer.phone || data.footer.address) && (
+                <FooterContact
+                    data={data.footer}
+                    pageSlug={data.slug}
+                    pageName={data.name}
+                    whatsappHref={data.whatsappHref}
+                />
+            )}
+            {!preview && data.whatsappHref && (
                 <a
                     href={data.whatsappHref}
                     target="_blank"
