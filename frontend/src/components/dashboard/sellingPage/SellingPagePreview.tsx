@@ -21,9 +21,9 @@ function PreviewInner({
 }
 
 /**
- * Live preview built from the current (unsaved) form values merged over the
- * conquistadores defaults. Media + ids come from `basePage` (uploads happen
- * separately). Never submits or persists.
+ * Live preview built from the current (unsaved) form values.
+ * Media + ids come from `basePage` (uploads happen separately).
+ * Never submits or persists.
  */
 export function SellingPagePreview({ form, basePage }: { form: any; basePage: TSellingPage }) {
     return (
