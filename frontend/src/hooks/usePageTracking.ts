@@ -19,6 +19,7 @@ export function usePageTracking() {
 
         const unsubscribe = router.subscribe("onResolved", (evt) => {
             const path = evt.toLocation.pathname;
+            if (path.startsWith("/panel")) return;
             const payload = JSON.stringify({
                 path,
                 referrer: document.referrer,
