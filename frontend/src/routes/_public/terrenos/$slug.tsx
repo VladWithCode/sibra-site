@@ -15,11 +15,11 @@ export const Route = createFileRoute("/_public/terrenos/$slug")({
     head: ({ loaderData }) => {
         const page = loaderData?.page;
         const links = [];
-        if (page?.heroImage) {
+        if (page?.heroMedia) {
             links.push({
                 rel: "preload",
-                as: "image",
-                href: `/static/uploads/${page.heroImage}`,
+                as: page.heroMediaType === "video" ? "video" : "image",
+                href: `/static/uploads/${page.heroMedia}`,
             });
         }
         return {

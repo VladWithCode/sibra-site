@@ -153,7 +153,7 @@ export function SellingPageForm({ form }: { form: any }) {
                         label="Destino del botón (#contacto o URL)"
                     />
                     <p className="text-muted-foreground text-xs">
-                        El video, póster e imagen se suben como archivos en la página de
+                        La imagen o video del hero se sube como archivo en la página de
                         edición.
                     </p>
                 </CardContent>

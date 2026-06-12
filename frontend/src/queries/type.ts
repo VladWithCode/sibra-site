@@ -536,9 +536,8 @@ export type TSellingPage = {
     whatsappNumber: string;
     whatsappMessage: string;
 
-    heroVideo: string;
-    heroPoster: string;
-    heroImage: string;
+    heroMedia: string;
+    heroMediaType: string;
     heroTitle: string;
     heroSubtitle: string;
     heroCtaLabel: string;

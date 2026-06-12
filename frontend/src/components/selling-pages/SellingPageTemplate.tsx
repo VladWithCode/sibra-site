@@ -50,8 +50,7 @@ export function SellingPageTemplate({ data, preview = false }: SellingPageTempla
         >
             {(data.hero.title ||
                 data.hero.subtitle ||
-                data.hero.image ||
-                data.hero.videoMp4) && (
+                data.hero.url) && (
                 <HeroSection data={data.hero} alignment={data.alignment} />
             )}
             {data.availability.image && (

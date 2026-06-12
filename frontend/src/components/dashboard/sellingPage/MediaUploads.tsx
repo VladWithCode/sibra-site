@@ -10,17 +10,13 @@ type MediaField = {
     field: string;
     label: string;
     accept: string;
-    isVideo?: boolean;
 };
 
 const MEDIA_FIELDS: MediaField[] = [
-    { field: "hero_image", label: "Hero — Imagen" },
-    { field: "hero_poster", label: "Hero — Poster" },
     {
-        field: "hero_video",
-        label: "Hero — Video",
-        accept: "video/mp4,video/webm",
-        isVideo: true,
+        field: "hero_media",
+        label: "Hero — Imagen o Video",
+        accept: "image/*,video/mp4,video/webm",
     },
     { field: "availability_img", label: "Disponibilidad — Imagen" },
     { field: "contact_bg_img", label: "Contacto — Fondo" },
@@ -31,9 +27,7 @@ const MEDIA_FIELDS: MediaField[] = [
 
 // Map a media field name to the camelCase API key holding its current value.
 const FIELD_TO_KEY: Record<string, keyof TSellingPage> = {
-    hero_image: "heroImage",
-    hero_poster: "heroPoster",
-    hero_video: "heroVideo",
+    hero_media: "heroMedia",
     availability_img: "availabilityImg",
     contact_bg_img: "contactBgImg",
     financing_img: "financingImg",
@@ -49,6 +43,7 @@ function MediaRow({ pageId, page, m }: { pageId: string; page: TSellingPage; m: 
 
     const current = (page[FIELD_TO_KEY[m.field]] as string) || "";
     const currentUrl = current ? `/static/uploads/${current}` : "";
+    const isVideo = m.field === "hero_media" && page.heroMediaType === "video";
 
     async function onUpload() {
         if (!file) return;
@@ -88,7 +83,7 @@ function MediaRow({ pageId, page, m }: { pageId: string; page: TSellingPage; m: 
                     <p className="text-muted-foreground text-xs">(usa default)</p>
                 )}
             </div>
-            {current && !m.isVideo ? (
+            {current && !isVideo ? (
                 <img
                     src={currentUrl}
                     alt=""

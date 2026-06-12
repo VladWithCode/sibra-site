@@ -23,7 +23,7 @@ export function HeroSection({ data, alignment }: HeroSectionProps) {
     return (
         <section id="inicio" className="sp-reveal relative z-0 flex overflow-hidden">
             <div className="absolute inset-0 -z-10">
-                {data.videoMp4 || data.videoWebm || data.videoMov ? (
+                {data.type === "video" && data.url ? (
                     <video
                         className="w-full h-full object-cover object-center"
                         muted
@@ -31,19 +31,16 @@ export function HeroSection({ data, alignment }: HeroSectionProps) {
                         loop
                         preload="metadata"
                         playsInline
-                        poster={data.poster}
                     >
-                        {data.videoWebm && <source src={data.videoWebm} type="video/webm" />}
-                        {data.videoMp4 && <source src={data.videoMp4} type="video/mp4" />}
-                        {data.videoMov && <source src={data.videoMov} type="video/mov" />}
+                        <source src={data.url} type="video/mp4" />
                     </video>
-                ) : (
+                ) : data.url ? (
                     <img
                         className="w-full h-full object-cover object-center"
-                        src={data.image ?? data.poster}
+                        src={data.url}
                         alt=""
                     />
-                )}
+                ) : null}
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/45 to-slate-950/20" />
             </div>
 

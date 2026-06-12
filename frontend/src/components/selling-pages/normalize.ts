@@ -36,7 +36,7 @@ function variantOf(v: unknown): Alignment {
  * absolute (leading "/" or "http") are kept as-is.
  */
 export function mergeSellingPage(api: TSellingPage): SellingPageData {
-    const hasVideo = typeof api.heroVideo === "string" && api.heroVideo.trim() !== "";
+    const hasHero = typeof api.heroMedia === "string" && api.heroMedia.trim() !== "";
     const whatsMsg =
         typeof api.whatsappMessage === "string" && api.whatsappMessage.trim() !== ""
             ? api.whatsappMessage
@@ -48,11 +48,8 @@ export function mergeSellingPage(api: TSellingPage): SellingPageData {
         alignment: variantOf(api.variant),
 
         hero: {
-            videoWebm: undefined,
-            videoMp4: hasVideo ? media(api.heroVideo) : undefined,
-            videoMov: undefined,
-            poster: media(api.heroPoster),
-            image: media(api.heroImage),
+            type: (hasHero ? api.heroMediaType : "image") as "image" | "video",
+            url: media(api.heroMedia) ?? "",
             title: str(api.heroTitle),
             subtitle: str(api.heroSubtitle),
         },

@@ -33,12 +33,8 @@ export type SellingPageData = {
     alignment: Alignment;
 
     hero: {
-        videoWebm?: string;
-        videoMp4?: string;
-        videoMov?: string;
-        poster?: string;
-        /** Fallback image when no video is set. */
-        image?: string;
+        type: "image" | "video";
+        url: string;
         title: string;
         subtitle: string;
     };

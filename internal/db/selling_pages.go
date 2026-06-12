@@ -35,9 +35,8 @@ type SellingPage struct {
 	WhatsAppNumber  string `json:"whatsappNumber"`
 	WhatsAppMessage string `json:"whatsappMessage"`
 
-	HeroVideo     string `json:"heroVideo"`
-	HeroPoster    string `json:"heroPoster"`
-	HeroImage     string `json:"heroImage"`
+	HeroMedia     string `json:"heroMedia"`
+	HeroMediaType string `json:"heroMediaType"`
 	HeroTitle     string `json:"heroTitle"`
 	HeroSubtitle  string `json:"heroSubtitle"`
 	HeroCTALabel  string `json:"heroCtaLabel"`
@@ -79,7 +78,7 @@ type SellingPage struct {
 const sellingPageColumns = `
 	id, slug, name, variant, published,
 	seo_title, seo_description, pixel_id, whatsapp_number, whatsapp_message,
-	hero_video, hero_poster, hero_image, hero_title, hero_subtitle, hero_cta_label, hero_cta_target,
+	hero_media, hero_media_type, hero_title, hero_subtitle, hero_cta_label, hero_cta_target,
 	availability_img, availability_cta_url,
 	contact_bg_img, contact_heading,
 	financing_heading, financing_body, financing_img,
@@ -93,9 +92,7 @@ const sellingPageColumns = `
 // endpoint. Maps an allowed field name -> its SQL column (identical here).
 // Prevents arbitrary column updates from user input.
 var sellingPageMediaColumns = map[string]string{
-	"hero_video":       "hero_video",
-	"hero_poster":      "hero_poster",
-	"hero_image":       "hero_image",
+	"hero_media":       "hero_media",
 	"availability_img": "availability_img",
 	"contact_bg_img":   "contact_bg_img",
 	"financing_img":    "financing_img",
@@ -109,9 +106,9 @@ func IsSellingPageMediaField(field string) bool {
 	return ok
 }
 
-// IsSellingPageVideoField reports whether the field expects a video (vs image).
-func IsSellingPageVideoField(field string) bool {
-	return field == "hero_video"
+// IsSellingPageHeroField reports whether the field is the unified hero media.
+func IsSellingPageHeroField(field string) bool {
+	return field == "hero_media"
 }
 
 func validateSellingPage(p *SellingPage) error {
@@ -136,7 +133,7 @@ func scanSellingPage(row pgx.Row) (*SellingPage, error) {
 	err := row.Scan(
 		&p.ID, &p.Slug, &p.Name, &p.Variant, &p.Published,
 		&p.SEOTitle, &p.SEODescription, &p.PixelID, &p.WhatsAppNumber, &p.WhatsAppMessage,
-		&p.HeroVideo, &p.HeroPoster, &p.HeroImage, &p.HeroTitle, &p.HeroSubtitle, &p.HeroCTALabel, &p.HeroCTATarget,
+		&p.HeroMedia, &p.HeroMediaType, &p.HeroTitle, &p.HeroSubtitle, &p.HeroCTALabel, &p.HeroCTATarget,
 		&p.AvailabilityImg, &p.AvailabilityCTAURL,
 		&p.ContactBgImg, &p.ContactHeading,
 		&p.FinancingHeading, &p.FinancingBody, &p.FinancingImg,
@@ -164,9 +161,8 @@ func sellingPageArgs(p *SellingPage) pgx.NamedArgs {
 		"pixel_id":             p.PixelID,
 		"whatsapp_number":      p.WhatsAppNumber,
 		"whatsapp_message":     p.WhatsAppMessage,
-		"hero_video":           p.HeroVideo,
-		"hero_poster":          p.HeroPoster,
-		"hero_image":           p.HeroImage,
+		"hero_media":           p.HeroMedia,
+		"hero_media_type":      p.HeroMediaType,
 		"hero_title":           p.HeroTitle,
 		"hero_subtitle":        p.HeroSubtitle,
 		"hero_cta_label":       p.HeroCTALabel,
@@ -227,7 +223,7 @@ func CreateSellingPage(ctx context.Context, p *SellingPage) error {
 		`INSERT INTO selling_pages (`+sellingPageColumns+`)
 		VALUES (@id, @slug, @name, @variant, @published,
 			@seo_title, @seo_description, @pixel_id, @whatsapp_number, @whatsapp_message,
-			@hero_video, @hero_poster, @hero_image, @hero_title, @hero_subtitle, @hero_cta_label, @hero_cta_target,
+			@hero_media, @hero_media_type, @hero_title, @hero_subtitle, @hero_cta_label, @hero_cta_target,
 			@availability_img, @availability_cta_url,
 			@contact_bg_img, @contact_heading,
 			@financing_heading, @financing_body, @financing_img,
@@ -316,7 +312,7 @@ func UpdateSellingPage(ctx context.Context, p *SellingPage) error {
 			slug = @slug, name = @name, variant = @variant, published = @published,
 			seo_title = @seo_title, seo_description = @seo_description, pixel_id = @pixel_id,
 			whatsapp_number = @whatsapp_number, whatsapp_message = @whatsapp_message,
-			hero_video = @hero_video, hero_poster = @hero_poster, hero_image = @hero_image,
+			hero_media = @hero_media, hero_media_type = @hero_media_type,
 			hero_title = @hero_title, hero_subtitle = @hero_subtitle, hero_cta_label = @hero_cta_label, hero_cta_target = @hero_cta_target,
 			availability_img = @availability_img, availability_cta_url = @availability_cta_url,
 			contact_bg_img = @contact_bg_img, contact_heading = @contact_heading,
@@ -399,6 +395,52 @@ func UpdateSellingPageMediaField(ctx context.Context, id, field, value string) e
 
 	query := fmt.Sprintf("UPDATE selling_pages SET %s = $2, updated_at = NOW() WHERE id = $1", col)
 	tag, err := conn.Exec(ctx, query, id, value)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+	return nil
+}
+
+// UpdateSellingPageHeroMedia sets both hero_media and hero_media_type.
+func UpdateSellingPageHeroMedia(ctx context.Context, id, filename, mediaType string) error {
+	conn, err := GetPoolWithCtx(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	tag, err := conn.Exec(ctx,
+		`UPDATE selling_pages SET hero_media = $2, hero_media_type = $3, updated_at = NOW() WHERE id = $1`,
+		id, filename, mediaType)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return pgx.ErrNoRows
+	}
+	return nil
+}
+
+// ClearSellingPageHeroMedia clears hero_media and hero_media_type.
+func ClearSellingPageHeroMedia(ctx context.Context, id string) error {
+	conn, err := GetPoolWithCtx(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	tag, err := conn.Exec(ctx,
+		`UPDATE selling_pages SET hero_media = '', hero_media_type = '', updated_at = NOW() WHERE id = $1`,
+		id)
 	if err != nil {
 		return err
 	}
