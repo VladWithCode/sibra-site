@@ -6,10 +6,8 @@ export const conquistadoresDefaults: SellingPageData = {
     name: "Conquistadores",
     alignment: "right",
     hero: {
-        videoWebm: "/conquistadores_hero.webm",
-        videoMp4: "/conquistadores_hero.mp4",
-        videoMov: "/conquistadores_hero.mov",
-        poster: "/conq_video_poster.webp",
+        type: "video" as const,
+        url: "/conquistadores_hero.mp4",
         title: "Conquistadores",
         subtitle:
             "Servicios completos · Acceso controlado · Financiamiento directo sin intereses.",

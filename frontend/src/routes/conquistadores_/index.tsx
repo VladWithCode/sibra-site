@@ -3,7 +3,7 @@ import { useUIStore } from "@/stores/uiStore";
 import { createFileRoute } from "@tanstack/react-router";
 import { useLayoutEffect } from "react";
 import { SellingPageTemplate } from "@/components/selling-pages/SellingPageTemplate";
-import { conquistadoresDefaults } from "./conquistadoresDefaults";
+import { conquistadoresDefaults } from "./-conquistadoresDefaults";
 
 export const Route = createFileRoute("/conquistadores_/")({
     component: RouteComponent,
