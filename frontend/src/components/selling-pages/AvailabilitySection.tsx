@@ -13,8 +13,8 @@ export function AvailabilitySection({ data, alignment }: AvailabilitySectionProp
     const rowDir = centered
         ? "md:flex-col md:items-center text-center"
         : reversed
-          ? "md:flex-row-reverse md:items-center"
-          : "md:flex-row md:items-center";
+            ? "md:flex-row-reverse md:items-center"
+            : "md:flex-row md:items-center";
 
     const textAlign = centered ? "text-center items-center" : "text-left items-start";
 
@@ -46,7 +46,7 @@ export function AvailabilitySection({ data, alignment }: AvailabilitySectionProp
                     </p>
                     <PlanoDialog
                         image={data.planImage || data.image}
-                        ctaLabel={data.ctaLabel || "Ver Plano"}
+                        ctaLabel="Ver plano"
                         className="mt-1 inline-flex items-center gap-2 rounded-full border border-slate-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-900 font-semibold px-7 py-3 transition-colors bg-transparent shadow-none w-fit"
                     />
                 </div>
