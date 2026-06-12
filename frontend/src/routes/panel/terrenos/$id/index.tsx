@@ -39,7 +39,7 @@ function RouteComponent() {
         validators: { onChange: SellingPageFormSchema },
         onSubmit: async ({ value }) => {
             try {
-                await updateMut.mutateAsync(buildSellingPagePayload(value));
+                await updateMut.mutateAsync(buildSellingPagePayload(value, page));
                 toast.success("Página actualizada", { closeButton: true });
             } catch (e: any) {
                 toast.error(e?.message || "Error al actualizar", { closeButton: true });

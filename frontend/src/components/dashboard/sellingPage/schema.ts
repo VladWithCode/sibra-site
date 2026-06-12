@@ -109,8 +109,12 @@ function splitLines(text: string): string[] {
         .filter((l) => l !== "");
 }
 
-/** Build the API payload from form values (visual fields -> backend JSON shapes). */
-export function buildSellingPagePayload(values: SellingPageFormValues): TSellingPageInput {
+/** Build the API payload from form values (visual fields -> backend JSON shapes).
+ *  `basePage` preserves media fields so the PUT doesn't overwrite them with empties. */
+export function buildSellingPagePayload(
+    values: SellingPageFormValues,
+    basePage?: Partial<TSellingPage>,
+): TSellingPageInput {
     const features = values.offerFeatures.map((f) => f.trim()).filter((f) => f !== "");
 
     const cards = values.cards
@@ -168,6 +172,13 @@ export function buildSellingPagePayload(values: SellingPageFormValues): TSelling
         cards: cards.length > 0 ? cards : null,
         steps: steps.length > 0 ? steps : null,
         locationChips: chips.length > 0 ? chips : null,
+        // Preserve media fields from the original page so the PUT doesn't wipe them.
+        ...(basePage?.heroMedia ? { heroMedia: basePage.heroMedia, heroMediaType: basePage.heroMediaType } : {}),
+        ...(basePage?.availabilityImg ? { availabilityImg: basePage.availabilityImg } : {}),
+        ...(basePage?.contactBgImg ? { contactBgImg: basePage.contactBgImg } : {}),
+        ...(basePage?.financingImg ? { financingImg: basePage.financingImg } : {}),
+        ...(basePage?.offerLandImg ? { offerLandImg: basePage.offerLandImg } : {}),
+        ...(basePage?.locationImg ? { locationImg: basePage.locationImg } : {}),
     } as TSellingPageInput;
 }
 
@@ -243,7 +254,7 @@ export function formValuesToApiPage(
     values: SellingPageFormValues,
     base?: Partial<TSellingPage>,
 ): TSellingPage {
-    const payload = buildSellingPagePayload(values);
+    const payload = buildSellingPagePayload(values, base);
     return {
         ...(base as TSellingPage),
         ...(payload as unknown as TSellingPage),
