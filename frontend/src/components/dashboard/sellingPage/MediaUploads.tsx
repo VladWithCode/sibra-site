@@ -18,7 +18,8 @@ const MEDIA_FIELDS: MediaField[] = [
         label: "Hero — Imagen o Video",
         accept: "image/*,video/mp4,video/webm",
     },
-    { field: "availability_img", label: "Disponibilidad — Imagen" },
+    { field: "availability_img", label: "Disponibilidad — Imagen layout" },
+    { field: "availability_plan_img", label: "Disponibilidad — Imagen plano (modal)" },
     { field: "contact_bg_img", label: "Contacto — Fondo" },
     { field: "financing_img", label: "Financiamiento — Imagen" },
     { field: "offer_land_img", label: "Oferta — Imagen terreno" },
@@ -29,6 +30,7 @@ const MEDIA_FIELDS: MediaField[] = [
 const FIELD_TO_KEY: Record<string, keyof TSellingPage> = {
     hero_media: "heroMedia",
     availability_img: "availabilityImg",
+    availability_plan_img: "availabilityPlanImg",
     contact_bg_img: "contactBgImg",
     financing_img: "financingImg",
     offer_land_img: "offerLandImg",

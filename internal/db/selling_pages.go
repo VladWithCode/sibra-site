@@ -42,8 +42,9 @@ type SellingPage struct {
 	HeroCTALabel  string `json:"heroCtaLabel"`
 	HeroCTATarget string `json:"heroCtaTarget"`
 
-	AvailabilityImg    string `json:"availabilityImg"`
-	AvailabilityCTAURL string `json:"availabilityCtaUrl"`
+	AvailabilityImg     string `json:"availabilityImg"`
+	AvailabilityPlanImg string `json:"availabilityPlanImg"`
+	AvailabilityCTAURL  string `json:"availabilityCtaUrl"`
 
 	ContactBgImg   string `json:"contactBgImg"`
 	ContactHeading string `json:"contactHeading"`
@@ -79,7 +80,7 @@ const sellingPageColumns = `
 	id, slug, name, variant, published,
 	seo_title, seo_description, pixel_id, whatsapp_number, whatsapp_message,
 	hero_media, hero_media_type, hero_title, hero_subtitle, hero_cta_label, hero_cta_target,
-	availability_img, availability_cta_url,
+	availability_img, availability_plan_img, availability_cta_url,
 	contact_bg_img, contact_heading,
 	financing_heading, financing_body, financing_img,
 	offer_price, offer_period, offer_dimensions, offer_fine_print, offer_land_img, offer_features,
@@ -92,8 +93,9 @@ const sellingPageColumns = `
 // endpoint. Maps an allowed field name -> its SQL column (identical here).
 // Prevents arbitrary column updates from user input.
 var sellingPageMediaColumns = map[string]string{
-	"hero_media":       "hero_media",
-	"availability_img": "availability_img",
+	"hero_media":            "hero_media",
+	"availability_img":      "availability_img",
+	"availability_plan_img": "availability_plan_img",
 	"contact_bg_img":   "contact_bg_img",
 	"financing_img":    "financing_img",
 	"offer_land_img":   "offer_land_img",
@@ -134,7 +136,7 @@ func scanSellingPage(row pgx.Row) (*SellingPage, error) {
 		&p.ID, &p.Slug, &p.Name, &p.Variant, &p.Published,
 		&p.SEOTitle, &p.SEODescription, &p.PixelID, &p.WhatsAppNumber, &p.WhatsAppMessage,
 		&p.HeroMedia, &p.HeroMediaType, &p.HeroTitle, &p.HeroSubtitle, &p.HeroCTALabel, &p.HeroCTATarget,
-		&p.AvailabilityImg, &p.AvailabilityCTAURL,
+		&p.AvailabilityImg, &p.AvailabilityPlanImg, &p.AvailabilityCTAURL,
 		&p.ContactBgImg, &p.ContactHeading,
 		&p.FinancingHeading, &p.FinancingBody, &p.FinancingImg,
 		&p.OfferPrice, &p.OfferPeriod, &p.OfferDimensions, &p.OfferFinePrint, &p.OfferLandImg, &p.OfferFeatures,
@@ -167,8 +169,9 @@ func sellingPageArgs(p *SellingPage) pgx.NamedArgs {
 		"hero_subtitle":        p.HeroSubtitle,
 		"hero_cta_label":       p.HeroCTALabel,
 		"hero_cta_target":      p.HeroCTATarget,
-		"availability_img":     p.AvailabilityImg,
-		"availability_cta_url": p.AvailabilityCTAURL,
+		"availability_img":      p.AvailabilityImg,
+		"availability_plan_img": p.AvailabilityPlanImg,
+		"availability_cta_url":  p.AvailabilityCTAURL,
 		"contact_bg_img":       p.ContactBgImg,
 		"contact_heading":      p.ContactHeading,
 		"financing_heading":    p.FinancingHeading,
@@ -224,7 +227,7 @@ func CreateSellingPage(ctx context.Context, p *SellingPage) error {
 		VALUES (@id, @slug, @name, @variant, @published,
 			@seo_title, @seo_description, @pixel_id, @whatsapp_number, @whatsapp_message,
 			@hero_media, @hero_media_type, @hero_title, @hero_subtitle, @hero_cta_label, @hero_cta_target,
-			@availability_img, @availability_cta_url,
+			@availability_img, @availability_plan_img, @availability_cta_url,
 			@contact_bg_img, @contact_heading,
 			@financing_heading, @financing_body, @financing_img,
 			@offer_price, @offer_period, @offer_dimensions, @offer_fine_print, @offer_land_img, @offer_features,
@@ -314,7 +317,7 @@ func UpdateSellingPage(ctx context.Context, p *SellingPage) error {
 			whatsapp_number = @whatsapp_number, whatsapp_message = @whatsapp_message,
 			hero_media = @hero_media, hero_media_type = @hero_media_type,
 			hero_title = @hero_title, hero_subtitle = @hero_subtitle, hero_cta_label = @hero_cta_label, hero_cta_target = @hero_cta_target,
-			availability_img = @availability_img, availability_cta_url = @availability_cta_url,
+			availability_img = @availability_img, availability_plan_img = @availability_plan_img, availability_cta_url = @availability_cta_url,
 			contact_bg_img = @contact_bg_img, contact_heading = @contact_heading,
 			financing_heading = @financing_heading, financing_body = @financing_body, financing_img = @financing_img,
 			offer_price = @offer_price, offer_period = @offer_period, offer_dimensions = @offer_dimensions,

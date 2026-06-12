@@ -175,6 +175,7 @@ export function buildSellingPagePayload(
         // Preserve media fields from the original page so the PUT doesn't wipe them.
         ...(basePage?.heroMedia ? { heroMedia: basePage.heroMedia, heroMediaType: basePage.heroMediaType } : {}),
         ...(basePage?.availabilityImg ? { availabilityImg: basePage.availabilityImg } : {}),
+        ...(basePage?.availabilityPlanImg ? { availabilityPlanImg: basePage.availabilityPlanImg } : {}),
         ...(basePage?.contactBgImg ? { contactBgImg: basePage.contactBgImg } : {}),
         ...(basePage?.financingImg ? { financingImg: basePage.financingImg } : {}),
         ...(basePage?.offerLandImg ? { offerLandImg: basePage.offerLandImg } : {}),

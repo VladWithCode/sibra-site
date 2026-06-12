@@ -14,6 +14,7 @@ export const conquistadoresDefaults: SellingPageData = {
     },
     availability: {
         image: "/disp1.webp",
+        planImage: "",
         ctaLabel: "Ver Plano",
     },
     cards: [

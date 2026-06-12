@@ -45,7 +45,7 @@ export function AvailabilitySection({ data, alignment }: AvailabilitySectionProp
                         proyecto. Los lugares son limitados.
                     </p>
                     <PlanoDialog
-                        image={data.image}
+                        image={data.planImage || data.image}
                         ctaLabel={data.ctaLabel || "Ver Plano"}
                         className="mt-1 inline-flex items-center gap-2 rounded-full border border-slate-300 hover:border-slate-900 hover:bg-slate-900 hover:text-white text-slate-900 font-semibold px-7 py-3 transition-colors bg-transparent shadow-none w-fit"
                     />

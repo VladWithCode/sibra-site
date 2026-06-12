@@ -544,6 +544,7 @@ export type TSellingPage = {
     heroCtaTarget: string;
 
     availabilityImg: string;
+    availabilityPlanImg: string;
     availabilityCtaUrl: string;
 
     contactBgImg: string;

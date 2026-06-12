@@ -41,6 +41,7 @@ export type SellingPageData = {
 
     availability: {
         image: string;
+        planImage: string;
         ctaLabel: string;
     };
 

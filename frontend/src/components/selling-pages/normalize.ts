@@ -56,6 +56,7 @@ export function mergeSellingPage(api: TSellingPage): SellingPageData {
 
         availability: {
             image: media(api.availabilityImg) ?? "",
+            planImage: media(api.availabilityPlanImg) ?? "",
             ctaLabel: str(api.heroCtaLabel),
         },
 
