@@ -1,8 +1,85 @@
+import { LucideIconPicker } from "@/components/dashboard/LucideIconPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { uploadSellingPageImageOpts } from "@/queries/sellingPages";
+import { useMutation } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import type { FormCard, FormStep } from "./schema";
+
+/** Resolve a stored card image (bare upload filename or explicit path/URL) to a
+ * displayable src. Uploaded files are bare names served from /static/uploads. */
+function imageSrc(value: string): string {
+    if (!value) return "";
+    if (value.startsWith("/") || value.startsWith("http")) return value;
+    return `/static/uploads/${value}`;
+}
+
+/** Image field with its own "Subir" button. Uploading is decoupled from the
+ * main create/edit form: it hits the page-independent upload endpoint and sets
+ * the card's image to the returned filename. */
+function CardImageField({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (v: string) => void;
+}) {
+    const inputRef = useRef<HTMLInputElement>(null);
+    const [file, setFile] = useState<File | null>(null);
+    const uploadMut = useMutation(uploadSellingPageImageOpts());
+
+    const previewUrl = imageSrc(value);
+
+    async function onUpload() {
+        if (!file) return;
+        try {
+            const res = await uploadMut.mutateAsync(file);
+            onChange(res.filename);
+            toast.success("Imagen subida", { closeButton: true });
+            setFile(null);
+            if (inputRef.current) inputRef.current.value = "";
+        } catch (e: any) {
+            toast.error(e?.message || "Error al subir la imagen", { closeButton: true });
+        }
+    }
+
+    return (
+        <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-3">
+                {previewUrl ? (
+                    <img
+                        src={previewUrl}
+                        alt=""
+                        className="h-12 w-16 rounded border object-cover"
+                    />
+                ) : null}
+                <input
+                    ref={inputRef}
+                    type="file"
+                    accept="image/*"
+                    className="flex-1 text-sm"
+                    onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+                />
+                <Button
+                    type="button"
+                    size="sm"
+                    disabled={!file || uploadMut.isPending}
+                    onClick={onUpload}
+                >
+                    {uploadMut.isPending ? "Subiendo..." : "Subir"}
+                </Button>
+            </div>
+            <Input
+                value={value}
+                placeholder="Imagen (ruta, ej. /imagen.webp, o súbela arriba)"
+                onChange={(e) => onChange(e.target.value)}
+            />
+        </div>
+    );
+}
 
 /** Editable list of plain strings (features, chips). */
 export function DynamicStringList({
@@ -113,10 +190,9 @@ export function DynamicCardsField({ form, name }: { form: any; name: string }) {
                                     placeholder="Descripción"
                                     onChange={(e) => setAt(i, { description: e.target.value })}
                                 />
-                                <Input
+                                <CardImageField
                                     value={c.image}
-                                    placeholder="Imagen (ruta, ej. /imagen.webp)"
-                                    onChange={(e) => setAt(i, { image: e.target.value })}
+                                    onChange={(v) => setAt(i, { image: v })}
                                 />
                             </div>
                         ))}
@@ -166,16 +242,15 @@ export function DynamicStepsField({ form, name }: { form: any; name: string }) {
                                         <Trash2 className="size-4" />
                                     </Button>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     <Input
                                         value={s.step}
                                         placeholder="Número (1)"
                                         onChange={(e) => setAt(i, { step: e.target.value })}
                                     />
-                                    <Input
+                                    <LucideIconPicker
                                         value={s.icon}
-                                        placeholder="Icono (opcional)"
-                                        onChange={(e) => setAt(i, { icon: e.target.value })}
+                                        onChange={(v) => setAt(i, { icon: v })}
                                     />
                                 </div>
                                 <Input

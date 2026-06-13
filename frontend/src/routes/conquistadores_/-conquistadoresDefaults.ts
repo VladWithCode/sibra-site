@@ -71,21 +71,25 @@ export const conquistadoresDefaults: SellingPageData = {
         {
             step: 1,
             title: "Agenda Cita",
+            icon: "calendar-check",
             description: ["Contactanos para conocer el desarrollo."],
         },
         {
             step: 2,
             title: "Aparta tu lote",
+            icon: "map-pin",
             description: ["Aprovecha esta gran oferta...", "¡Ultimos 11 lotes disponibles!"],
         },
         {
             step: 3,
             title: "Entrega del terreno",
+            icon: "handshake",
             description: ["Recibe tu terreno contra-anticipo."],
         },
         {
             step: 4,
             title: "Construye",
+            icon: "hammer",
             description: ["Junto a tus seres queridos da un paso a su patrimonio seguro."],
         },
     ],

@@ -5,6 +5,7 @@ import { LocationSection } from "@/components/dashboard/project/LocationSection"
 import { MainInfoSection } from "@/components/dashboard/project/MainInfoSection";
 import { MediaSection } from "@/components/dashboard/project/MediaSection";
 import { SectionsSection } from "@/components/dashboard/project/SectionsSection";
+import { toIconName } from "@/components/dashboard/property/LucideIcon";
 import {
     ProjectFormSchema,
     buildProjectPayload,
@@ -116,7 +117,7 @@ function RouteComponent() {
                         await amenityMut.mutateAsync({
                             projectId: newId,
                             name: amenity.name,
-                            icon: amenity.icon,
+                            icon: toIconName(amenity.icon),
                             file: amenity.file,
                         });
                     } catch (e: any) {

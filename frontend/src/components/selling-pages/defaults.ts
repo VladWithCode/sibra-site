@@ -1,6 +1,8 @@
 // Selling Page data model.
 // These types drive the reusable SellingPageTemplate.
 
+import type { IconName } from "lucide-react/dynamic";
+
 export type Alignment = "left" | "center" | "right";
 
 export type SellingCard = {
@@ -12,6 +14,7 @@ export type SellingCard = {
 export type SellingStep = {
     step: number;
     title: string;
+    icon: IconName;
     description: string[];
 };
 

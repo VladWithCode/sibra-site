@@ -115,6 +115,12 @@ export const uploadSellingPageMediaOpts = (id: string) =>
         },
     });
 
+export const uploadSellingPageImageOpts = () =>
+    mutationOptions({
+        mutationKey: [...SellingPageQueryKeys.all(), "image", "upload"],
+        mutationFn: (file: File) => uploadSellingPageImage(file),
+    });
+
 export const removeSellingPageMediaOpts = (id: string) =>
     mutationOptions({
         mutationKey: [...SellingPageQueryKeys.all(), "media", "remove", { id }],
@@ -228,6 +234,18 @@ export async function uploadSellingPageMedia({
         `/api/terrenos/${id}/medios/${field}`,
         { method: "PUT", body: fd },
         "Error al subir el archivo",
+    );
+}
+
+export async function uploadSellingPageImage(
+    file: File,
+): Promise<{ success: boolean; filename: string }> {
+    const fd = new FormData();
+    fd.append("file", file);
+    return jsonFetch(
+        "/api/terrenos/medios/imagen",
+        { method: "POST", body: fd },
+        "Error al subir la imagen",
     );
 }
 

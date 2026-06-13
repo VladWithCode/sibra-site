@@ -8,7 +8,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { LucideIconPicker } from "@/components/dashboard/LucideIconPicker";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createFeatureOpts } from "@/queries/features";
@@ -16,7 +17,7 @@ import type { TPropertyFeature } from "@/queries/type";
 import { useMutation } from "@tanstack/react-query";
 import { useState, type PropsWithChildren } from "react";
 import { toast } from "sonner";
-import { LucideIcon, resolveIconName } from "./LucideIcon";
+import { toIconName } from "./LucideIcon";
 
 export function CreateFeatureDialog({
     onCreated,
@@ -29,7 +30,6 @@ export function CreateFeatureDialog({
     const [touched, setTouched] = useState(false);
     const mutation = useMutation(createFeatureOpts());
 
-    const iconResolved = resolveIconName(icon);
     const titleError = touched && title.trim().length === 0 ? "El título es obligatorio" : null;
     const iconError = touched && icon.trim().length === 0 ? "El ícono es obligatorio" : null;
 
@@ -46,7 +46,7 @@ export function CreateFeatureDialog({
         try {
             const created = await mutation.mutateAsync({
                 title: title.trim(),
-                icon: icon.trim(),
+                icon: toIconName(icon),
                 description: description.trim(),
             });
             toast.success("Característica creada", { closeButton: true });
@@ -91,36 +91,7 @@ export function CreateFeatureDialog({
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="feature-icon">Ícono (Lucide)</FieldLabel>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                id="feature-icon"
-                                value={icon}
-                                onChange={(e) => setIcon(e.target.value)}
-                                placeholder="Ej. Waves"
-                            />
-                            <div className="bg-muted/40 flex size-9 items-center justify-center rounded-md border">
-                                {iconResolved ? (
-                                    <LucideIcon
-                                        name={iconResolved}
-                                        className="text-primary size-5"
-                                    />
-                                ) : (
-                                    <span className="text-muted-foreground text-xs">?</span>
-                                )}
-                            </div>
-                        </div>
-                        <FieldDescription>
-                            Nombre de un ícono de{" "}
-                            <a
-                                href="https://lucide.dev/icons"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="underline"
-                            >
-                                lucide.dev
-                            </a>
-                            . Ej: Waves, Wifi, Sun.
-                        </FieldDescription>
+                        <LucideIconPicker id="feature-icon" value={icon} onChange={setIcon} />
                         {iconError ? (
                             <FieldError errors={[{ message: iconError }]} />
                         ) : null}

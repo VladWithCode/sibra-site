@@ -5,7 +5,7 @@ function getSessionId(): string {
     const key = "sibra_session_id";
     let id = sessionStorage.getItem(key);
     if (!id) {
-        id = crypto.randomUUID();
+        id = crypto.randomUUID?.() ?? Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
         sessionStorage.setItem(key, id);
     }
     return id;

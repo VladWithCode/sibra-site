@@ -1,8 +1,8 @@
+import { LucideIconPicker } from "@/components/dashboard/LucideIconPicker";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { LucideIcon, resolveIconName } from "@/components/dashboard/property/LucideIcon";
 import { CloudUpload, Plus, Trash2, Trees } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 
@@ -61,49 +61,19 @@ function AmenityRow({ form, index }: { form: any; index: number }) {
                         </form.Field>
 
                         <form.Field name={`amenities[${index}].icon`}>
-                            {(field: any) => {
-                                const resolved = resolveIconName(field.state.value ?? "");
-                                return (
-                                    <Field>
-                                        <FieldLabel htmlFor={`amenity-${index}-icon`}>
-                                            Ícono (Lucide)
-                                        </FieldLabel>
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                id={`amenity-${index}-icon`}
-                                                value={field.state.value ?? ""}
-                                                onBlur={field.handleBlur}
-                                                onChange={(e) => field.handleChange(e.target.value)}
-                                                placeholder="Ej. Trees, Dumbbell"
-                                            />
-                                            <div className="bg-muted/40 flex size-9 items-center justify-center rounded-md border">
-                                                {resolved ? (
-                                                    <LucideIcon
-                                                        name={resolved}
-                                                        className="text-primary size-5"
-                                                    />
-                                                ) : (
-                                                    <span className="text-muted-foreground text-xs">
-                                                        ?
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <FieldDescription>
-                                            Nombre de un ícono de{" "}
-                                            <a
-                                                href="https://lucide.dev/icons"
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="underline"
-                                            >
-                                                lucide.dev
-                                            </a>
-                                        </FieldDescription>
-                                        <FieldError errors={errsOf(field)} />
-                                    </Field>
-                                );
-                            }}
+                            {(field: any) => (
+                                <Field>
+                                    <FieldLabel htmlFor={`amenity-${index}-icon`}>
+                                        Ícono (Lucide)
+                                    </FieldLabel>
+                                    <LucideIconPicker
+                                        id={`amenity-${index}-icon`}
+                                        value={field.state.value ?? ""}
+                                        onChange={(v) => field.handleChange(v)}
+                                    />
+                                    <FieldError errors={errsOf(field)} />
+                                </Field>
+                            )}
                         </form.Field>
                     </div>
 

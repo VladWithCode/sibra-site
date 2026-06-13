@@ -1,3 +1,4 @@
+import { DynamicIcon } from "lucide-react/dynamic";
 import { type SellingStep, type SellingPageData } from "./defaults";
 
 type StepsSectionProps = {
@@ -12,7 +13,7 @@ function StepCard({ data }: { data: SellingStep }) {
                     {String(data.step).padStart(2, "0")}
                 </span>
                 <span className="flex items-center justify-center w-11 h-11 rounded-full bg-emerald-50 text-emerald-700 font-semibold">
-                    {data.step}
+                    <DynamicIcon name={data.icon} />
                 </span>
             </div>
             <h3 className="text-lg font-semibold text-slate-900">{data.title}</h3>

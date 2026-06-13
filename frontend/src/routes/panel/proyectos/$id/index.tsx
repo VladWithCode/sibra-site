@@ -12,7 +12,7 @@ import {
     isSectionValid,
     projectToFormValues,
 } from "@/components/dashboard/project/schema";
-import { LucideIcon } from "@/components/dashboard/property/LucideIcon";
+import { LucideIcon, toIconName } from "@/components/dashboard/property/LucideIcon";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -182,7 +182,7 @@ function RouteComponent() {
                         await amenityMut.mutateAsync({
                             projectId: id,
                             name: amenity.name,
-                            icon: amenity.icon,
+                            icon: toIconName(amenity.icon),
                             file: amenity.file,
                         });
                     } catch (e: any) {

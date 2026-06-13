@@ -9,6 +9,7 @@ import (
 	"mime/multipart"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
@@ -31,6 +32,10 @@ func RegisterSellingPageRoutes(router *customServeMux) {
 	router.HandleFunc("PUT /api/terrenos/{id}", auth.WithAuthAccessLevelMiddleware(UpdateSellingPageHandler, auth.AccessLevelEditor))
 	router.HandleFunc("PATCH /api/terrenos/{id}/published", auth.WithAuthAccessLevelMiddleware(SetSellingPagePublishedHandler, auth.AccessLevelEditor))
 	router.HandleFunc("DELETE /api/terrenos/{id}", auth.WithAuthAccessLevelMiddleware(DeleteSellingPageHandler, auth.AccessLevelAdmin))
+
+	// Page-independent image upload for repeating JSON content (e.g. card images),
+	// usable during creation when no page id exists yet.
+	router.HandleFunc("POST /api/terrenos/medios/imagen", auth.WithAuthAccessLevelMiddleware(UploadSellingPageImage, auth.AccessLevelEditor))
 
 	router.HandleFunc("PUT /api/terrenos/{id}/medios/{field}", auth.WithAuthAccessLevelMiddleware(UploadSellingPageMedia, auth.AccessLevelEditor))
 	router.HandleFunc("DELETE /api/terrenos/{id}/medios/{field}", auth.WithAuthAccessLevelMiddleware(RemoveSellingPageMedia, auth.AccessLevelEditor))
@@ -302,6 +307,49 @@ func RemoveSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	respondWithJSON(w, http.StatusOK, map[string]any{"success": true, "field": field})
+}
+
+// UploadSellingPageImage stores a single image and returns its bare filename
+// without binding it to any page column. Used for repeating JSON content (e.g.
+// card images) whose paths live inside the page's own JSON, including during
+// page creation when no page id exists yet. MIME is sniffed (not trusted from
+// the client); the stored filename is random so it can't be used for traversal.
+func UploadSellingPageImage(w http.ResponseWriter, r *http.Request) {
+	maxSize := int64(uploads.MaxImageUploadSize)
+	r.Body = http.MaxBytesReader(w, r.Body, maxSize+1<<20)
+	if err := r.ParseMultipartForm(maxSize); err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "El archivo excede el tamaño permitido o es inválido"})
+		log.Printf("Error parsing multipart form: %v\n", err)
+		return
+	}
+
+	files := r.MultipartForm.File["file"]
+	if len(files) != 1 {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "Debes proporcionar exactamente un archivo"})
+		return
+	}
+	fileHeader := files[0]
+
+	if _, ok, msg := validateMediaContentType(fileHeader, false); !ok {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: msg})
+		return
+	}
+	if fileHeader.Size > maxSize {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "La imagen excede 8MB"})
+		return
+	}
+
+	filename, err := uploads.Upload(&uploads.FileData{
+		Filename: fmt.Sprintf("tarjeta-%s", uuid.NewString()),
+		File:     fileHeader,
+	})
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{ErrorMessage: "Ocurrió un error al guardar el archivo"})
+		log.Printf("Error uploading file: %v\n", err)
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, map[string]any{"success": true, "filename": filename})
 }
 
 // validateMediaContentType sniffs the file's first bytes and returns the detected

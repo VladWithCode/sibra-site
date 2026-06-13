@@ -1,3 +1,4 @@
+import { toIconName } from "@/components/dashboard/property/LucideIcon";
 import type { TSellingPage } from "@/queries/type";
 import type { TSellingPageInput } from "@/queries/sellingPages";
 import z from "zod";
@@ -131,7 +132,7 @@ export function buildSellingPagePayload(
             step: Number(s.step) || i + 1,
             title: s.title.trim(),
             description: splitLines(s.descriptionText),
-            icon: s.icon.trim(),
+            icon: toIconName(s.icon),
         }));
 
     const chips = values.chips

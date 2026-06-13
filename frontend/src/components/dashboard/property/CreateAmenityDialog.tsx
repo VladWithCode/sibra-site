@@ -8,14 +8,15 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { LucideIconPicker } from "@/components/dashboard/LucideIconPicker";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { createAmenityOpts } from "@/queries/amenities";
 import type { TPropertyAmenity } from "@/queries/type";
 import { useMutation } from "@tanstack/react-query";
 import { useState, type PropsWithChildren } from "react";
 import { toast } from "sonner";
-import { LucideIcon, resolveIconName } from "./LucideIcon";
+import { toIconName } from "./LucideIcon";
 
 export function CreateAmenityDialog({
     onCreated,
@@ -27,7 +28,6 @@ export function CreateAmenityDialog({
     const [touched, setTouched] = useState(false);
     const mutation = useMutation(createAmenityOpts());
 
-    const iconResolved = resolveIconName(icon);
     const titleError = touched && title.trim().length === 0 ? "El título es obligatorio" : null;
     const iconError = touched && icon.trim().length === 0 ? "El ícono es obligatorio" : null;
 
@@ -43,7 +43,7 @@ export function CreateAmenityDialog({
         try {
             const created = await mutation.mutateAsync({
                 title: title.trim(),
-                icon: icon.trim(),
+                icon: toIconName(icon),
             });
             toast.success("Amenidad creada", { closeButton: true });
             onCreated(created);
@@ -87,36 +87,7 @@ export function CreateAmenityDialog({
                     </Field>
                     <Field>
                         <FieldLabel htmlFor="amenity-icon">Ícono (Lucide)</FieldLabel>
-                        <div className="flex items-center gap-2">
-                            <Input
-                                id="amenity-icon"
-                                value={icon}
-                                onChange={(e) => setIcon(e.target.value)}
-                                placeholder="Ej. Dumbbell"
-                            />
-                            <div className="bg-muted/40 flex size-9 items-center justify-center rounded-md border">
-                                {iconResolved ? (
-                                    <LucideIcon
-                                        name={iconResolved}
-                                        className="text-primary size-5"
-                                    />
-                                ) : (
-                                    <span className="text-muted-foreground text-xs">?</span>
-                                )}
-                            </div>
-                        </div>
-                        <FieldDescription>
-                            Nombre de un ícono de{" "}
-                            <a
-                                href="https://lucide.dev/icons"
-                                target="_blank"
-                                rel="noreferrer"
-                                className="underline"
-                            >
-                                lucide.dev
-                            </a>
-                            . Ej: Dumbbell, ParkingCircle, Sparkles.
-                        </FieldDescription>
+                        <LucideIconPicker id="amenity-icon" value={icon} onChange={setIcon} />
                         {iconError ? (
                             <FieldError errors={[{ message: iconError }]} />
                         ) : null}
