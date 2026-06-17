@@ -37,6 +37,25 @@ export const AmenityInputSchema = z.object({
     title: z.string().min(1, "El título es obligatorio"),
 });
 
+export const DETAIL_CATEGORIES = ["interior", "exterior"] as const;
+
+export const DetailInputSchema = z.object({
+    id: z.string().optional(),
+    category: z.enum(DETAIL_CATEGORIES),
+    icon: z.string(),
+    name: z.string().min(1, "El nombre es obligatorio"),
+    value: z.string(),
+    position: z.number(),
+});
+
+export const NamedImageInputSchema = z.object({
+    id: z.string().optional(),
+    category: z.enum(DETAIL_CATEGORIES),
+    image: z.string().min(1, "La imagen es obligatoria"),
+    caption: z.string(),
+    position: z.number(),
+});
+
 export const PropertyFormSchema = z.object({
     title: z.string(),
     address: z.string().min(1, "La dirección es obligatoria"),
@@ -64,6 +83,8 @@ export const PropertyFormSchema = z.object({
 
     features: z.array(FeatureInputSchema),
     amenities: z.array(AmenityInputSchema),
+    details: z.array(DetailInputSchema),
+    namedImages: z.array(NamedImageInputSchema),
 
     mainImg: z.instanceof(File).optional(),
     gallery: z.array(z.instanceof(File)),
@@ -93,6 +114,8 @@ export const propertyFormDefaults: PropertyFormValues = {
     featured: false,
     features: [],
     amenities: [],
+    details: [],
+    namedImages: [],
     mainImg: undefined,
     gallery: [],
 };
@@ -139,6 +162,8 @@ export function buildPropertyPayload(v: PropertyFormValues): Partial<TProperty> 
         featured: v.featured,
         features: v.features as TProperty["features"],
         amenities: v.amenities as TProperty["amenities"],
+        details: v.details as TProperty["details"],
+        namedImages: v.namedImages as TProperty["namedImages"],
     };
     if (typeof v.yearBuilt === "number") payload.yearBuilt = v.yearBuilt;
     if (typeof v.lat === "number") payload.lat = v.lat;
@@ -169,6 +194,8 @@ export function propertyToFormValues(p: TProperty): PropertyFormValues {
         featured: p.featured ?? false,
         features: p.features ?? [],
         amenities: p.amenities ?? [],
+        details: p.details ?? [],
+        namedImages: p.namedImages ?? [],
         mainImg: undefined,
         gallery: [],
     };

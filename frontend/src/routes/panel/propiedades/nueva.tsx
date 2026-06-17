@@ -1,4 +1,5 @@
 import { AmenitiesSection } from "@/components/dashboard/property/AmenitiesSection";
+import { DetailsSection } from "@/components/dashboard/property/DetailsSection";
 import { FeaturesSection } from "@/components/dashboard/property/FeaturesSection";
 import { GallerySection } from "@/components/dashboard/property/GallerySection";
 import { LocationMapSection } from "@/components/dashboard/property/LocationMapSection";
@@ -102,8 +103,8 @@ function RouteComponent() {
                             Agregar nueva propiedad
                         </h1>
                         <p className="text-muted-foreground max-w-lg text-sm">
-                            Completa los detalles arquitectónicos y financieros para
-                            registrar la propiedad.
+                            Completa los detalles arquitectónicos y financieros para registrar
+                            la propiedad.
                         </p>
                     </div>
                     <form.Subscribe
@@ -138,6 +139,7 @@ function RouteComponent() {
                     <MainInfoSection form={form} />
                     <LocationMapSection form={form} />
                     <GallerySection form={form} />
+                    <DetailsSection form={form} />
                     <FeaturesSection form={form} />
                     <AmenitiesSection form={form} />
                 </form>

@@ -1,5 +1,6 @@
 import { PropertyImage } from "@/components/Image";
 import { AmenitiesSection } from "@/components/dashboard/property/AmenitiesSection";
+import { DetailsSection } from "@/components/dashboard/property/DetailsSection";
 import { FeaturesSection } from "@/components/dashboard/property/FeaturesSection";
 import { GallerySection } from "@/components/dashboard/property/GallerySection";
 import { LocationMapSection } from "@/components/dashboard/property/LocationMapSection";
@@ -91,8 +92,7 @@ function RouteComponent() {
         deleteImgMut.mutate(
             { id, imgName, type },
             {
-                onSuccess: () =>
-                    toast.success("Imagen eliminada", { closeButton: true }),
+                onSuccess: () => toast.success("Imagen eliminada", { closeButton: true }),
                 onError: (e: any) =>
                     toast.error(e?.message || "Error al eliminar la imagen", {
                         closeButton: true,
@@ -153,6 +153,7 @@ function RouteComponent() {
                         isDeleting={deleteImgMut.isPending}
                     />
                     <GallerySection form={form} />
+                    <DetailsSection form={form} property={property} />
                     <FeaturesSection form={form} />
                     <AmenitiesSection form={form} />
                 </form>

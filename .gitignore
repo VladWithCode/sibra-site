@@ -5,8 +5,10 @@ cmd/**/*
 !cmd/**/*.go
 bin
 
-# Ignore env files
+# Ignore env files (but keep example templates)
 .env*
+!.env.example
+!**/.env.example
 
 # Ignore static
 web/static/properties/*
