@@ -95,37 +95,39 @@ func (p Point) Value() (driver.Value, error) {
 }
 
 type Property struct {
-	Id                string            `json:"id" db:"id"`
-	Address           string            `json:"address" db:"address"`
-	Description       string            `json:"description" db:"description"`
-	City              string            `json:"city" db:"city"`
-	State             string            `json:"state" db:"state"`
-	Zip               string            `json:"zip" db:"zip"`
-	Title             string            `json:"title" db:"title"`
-	Country           string            `json:"country" db:"country"`
-	Price             float64           `json:"price" db:"price"`
-	PropertyType      string            `json:"propertyType" db:"property_type"`
-	Contract          string            `json:"contract" db:"contract"`
-	Beds              int               `json:"beds" db:"beds"`
-	Baths             int               `json:"baths" db:"baths"`
-	SqMt              float64           `json:"sqMt" db:"square_mt"`
-	LotSize           float64           `json:"lotSize" db:"lot_size"`
-	ListingDate       time.Time         `json:"listingDate,omitzero" db:"listing_date"`
-	YearBuilt         int               `json:"yearBuilt" db:"year_built"`
-	Status            PropertyStatus    `json:"status" db:"status"`
-	Coords            *Point            `json:"coords" db:"earth_coords"`
-	Features          []PropertyFeature `json:"features" db:"features"`
-	Amenities         []PropertyAmenity `json:"amenities" db:"amenities"`
-	Lat               float64           `json:"lat" db:"lat"`
-	Lon               float64           `json:"lon" db:"lon"`
-	Featured          bool              `json:"featured" db:"featured"`
-	FeaturedExpiresAt time.Time         `json:"featuredExpiresAt,omitzero" db:"featured_expires_at"`
-	MainImg           string            `json:"mainImg" db:"main_img"`
-	Images            []string          `json:"imgs" db:"imgs"`
-	Agent             string            `json:"agent" db:"agent"`
-	Slug              string            `json:"slug" db:"slug"`
-	AgentData         *AgentData        `json:"agentData" db:"agent_data"`
-	DeletedAt         *time.Time        `json:"deletedAt,omitzero" db:"deleted_at"`
+	Id                string               `json:"id" db:"id"`
+	Address           string               `json:"address" db:"address"`
+	Description       string               `json:"description" db:"description"`
+	City              string               `json:"city" db:"city"`
+	State             string               `json:"state" db:"state"`
+	Zip               string               `json:"zip" db:"zip"`
+	Title             string               `json:"title" db:"title"`
+	Country           string               `json:"country" db:"country"`
+	Price             float64              `json:"price" db:"price"`
+	PropertyType      string               `json:"propertyType" db:"property_type"`
+	Contract          string               `json:"contract" db:"contract"`
+	Beds              int                  `json:"beds" db:"beds"`
+	Baths             int                  `json:"baths" db:"baths"`
+	SqMt              float64              `json:"sqMt" db:"square_mt"`
+	LotSize           float64              `json:"lotSize" db:"lot_size"`
+	ListingDate       time.Time            `json:"listingDate,omitzero" db:"listing_date"`
+	YearBuilt         int                  `json:"yearBuilt" db:"year_built"`
+	Status            PropertyStatus       `json:"status" db:"status"`
+	Coords            *Point               `json:"coords" db:"earth_coords"`
+	Features          []PropertyFeature    `json:"features" db:"features"`
+	Amenities         []PropertyAmenity    `json:"amenities" db:"amenities"`
+	Details           []PropertyDetail     `json:"details" db:"details"`
+	NamedImages       []PropertyNamedImage `json:"namedImages" db:"named_images"`
+	Lat               float64              `json:"lat" db:"lat"`
+	Lon               float64              `json:"lon" db:"lon"`
+	Featured          bool                 `json:"featured" db:"featured"`
+	FeaturedExpiresAt time.Time            `json:"featuredExpiresAt,omitzero" db:"featured_expires_at"`
+	MainImg           string               `json:"mainImg" db:"main_img"`
+	Images            []string             `json:"imgs" db:"imgs"`
+	Agent             string               `json:"agent" db:"agent"`
+	Slug              string               `json:"slug" db:"slug"`
+	AgentData         *AgentData           `json:"agentData" db:"agent_data"`
+	DeletedAt         *time.Time           `json:"deletedAt,omitzero" db:"deleted_at"`
 }
 
 type PropertyFeature struct {
@@ -139,6 +141,28 @@ type PropertyAmenity struct {
 	ID    string `json:"id" db:"id"`
 	Icon  string `json:"icon" db:"icon"`
 	Title string `json:"title" db:"title"`
+}
+
+// PropertyDetail is a per-property characteristic shown under the Interior /
+// Exterior tabs of the property detail section. Unlike PropertyFeature it is
+// not deduplicated into a shared catalog: Name and Value are per-property.
+type PropertyDetail struct {
+	ID       string `json:"id" db:"id"`
+	Category string `json:"category" db:"category"`
+	Icon     string `json:"icon" db:"icon"`
+	Name     string `json:"name" db:"name"`
+	Value    string `json:"value" db:"value"`
+	Position int    `json:"position" db:"position"`
+}
+
+// PropertyNamedImage links an existing gallery image (a filename present in
+// Property.Images) to a caption and a category (interior / exterior).
+type PropertyNamedImage struct {
+	ID       string `json:"id" db:"id"`
+	Category string `json:"category" db:"category"`
+	Image    string `json:"image" db:"image"`
+	Caption  string `json:"caption" db:"caption"`
+	Position int    `json:"position" db:"position"`
 }
 
 type AgentData struct {
@@ -395,6 +419,13 @@ func CreateProperty(prop *Property) error {
 		return err
 	}
 
+	if err := replacePropertyDetails(ctx, tx, prop.Id, prop.Details); err != nil {
+		return err
+	}
+	if err := replacePropertyNamedImages(ctx, tx, prop.Id, prop.NamedImages, prop.Images); err != nil {
+		return err
+	}
+
 	return tx.Commit(ctx)
 }
 
@@ -493,6 +524,13 @@ func UpdateProperty(property *Property) error {
 		return err
 	}
 	if err := replacePropertyAmenityLinks(ctx, tx, property.Id, amenityIDs); err != nil {
+		return err
+	}
+
+	if err := replacePropertyDetails(ctx, tx, property.Id, property.Details); err != nil {
+		return err
+	}
+	if err := replacePropertyNamedImages(ctx, tx, property.Id, property.NamedImages, property.Images); err != nil {
 		return err
 	}
 
@@ -997,6 +1035,33 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 				JOIN amenities a ON a.id = pa.amenity_id
 				WHERE pa.property_id = p.id
 			), '[]'::jsonb) AS amenities,
+			COALESCE((
+				SELECT jsonb_agg(
+					jsonb_build_object(
+						'id', d.id,
+						'category', d.category,
+						'icon', d.icon,
+						'name', d.name,
+						'value', d.value,
+						'position', d.position
+					) ORDER BY d.position
+				)
+				FROM property_details d
+				WHERE d.property_id = p.id
+			), '[]'::jsonb) AS details,
+			COALESCE((
+				SELECT jsonb_agg(
+					jsonb_build_object(
+						'id', ni.id,
+						'category', ni.category,
+						'image', ni.image,
+						'caption', ni.caption,
+						'position', ni.position
+					) ORDER BY ni.position
+				)
+				FROM property_named_images ni
+				WHERE ni.property_id = p.id
+			), '[]'::jsonb) AS named_images,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at,
             p.title, p.main_img, p.imgs, p.agent, p.slug,
 			u.fullname AS agent_name,
@@ -1009,6 +1074,8 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 
 	var featsJSON []byte
 	var amsJSON []byte
+	var detailsJSON []byte
+	var namedImgsJSON []byte
 	var phone sql.NullString
 	var img sql.NullString
 	var featuredExpiresAt sql.NullTime
@@ -1036,6 +1103,8 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		&property.Coords,
 		&featsJSON,
 		&amsJSON,
+		&detailsJSON,
+		&namedImgsJSON,
 		&property.Lat,
 		&property.Lon,
 		&property.Contract,
@@ -1067,6 +1136,18 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 	if amsJSON != nil {
 		if err = json.Unmarshal(amsJSON, &property.Amenities); err != nil {
 			log.Printf("failed to unmarshal amenities for property with id %s: %v\n", propId, err)
+		}
+	}
+
+	if detailsJSON != nil {
+		if err = json.Unmarshal(detailsJSON, &property.Details); err != nil {
+			log.Printf("failed to unmarshal details for property with id %s: %v\n", propId, err)
+		}
+	}
+
+	if namedImgsJSON != nil {
+		if err = json.Unmarshal(namedImgsJSON, &property.NamedImages); err != nil {
+			log.Printf("failed to unmarshal named images for property with id %s: %v\n", propId, err)
 		}
 	}
 
@@ -1123,6 +1204,33 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 				JOIN amenities a ON a.id = pa.amenity_id
 				WHERE pa.property_id = p.id
 			), '[]'::jsonb) AS amenities,
+			COALESCE((
+				SELECT jsonb_agg(
+					jsonb_build_object(
+						'id', d.id,
+						'category', d.category,
+						'icon', d.icon,
+						'name', d.name,
+						'value', d.value,
+						'position', d.position
+					) ORDER BY d.position
+				)
+				FROM property_details d
+				WHERE d.property_id = p.id
+			), '[]'::jsonb) AS details,
+			COALESCE((
+				SELECT jsonb_agg(
+					jsonb_build_object(
+						'id', ni.id,
+						'category', ni.category,
+						'image', ni.image,
+						'caption', ni.caption,
+						'position', ni.position
+					) ORDER BY ni.position
+				)
+				FROM property_named_images ni
+				WHERE ni.property_id = p.id
+			), '[]'::jsonb) AS named_images,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.title, p.main_img, p.imgs, p.agent, p.slug,
 			u.fullname AS agent_name,
 			u.phone AS agent_number,
@@ -1134,6 +1242,8 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 
 	var featsJSON []byte
 	var amsJSON []byte
+	var detailsJSON []byte
+	var namedImgsJSON []byte
 	var phone sql.NullString
 	var img sql.NullString
 	var featuredExpiresAt sql.NullTime
@@ -1161,6 +1271,8 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 		&property.Coords,
 		&featsJSON,
 		&amsJSON,
+		&detailsJSON,
+		&namedImgsJSON,
 		&property.Lat,
 		&property.Lon,
 		&property.Contract,
@@ -1185,7 +1297,25 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 
 	if featsJSON != nil {
 		if err = json.Unmarshal(featsJSON, &property.Features); err != nil {
+			log.Printf("failed to unmarshal features for property with slug %s: %v\n", slug, err)
+		}
+	}
+
+	if amsJSON != nil {
+		if err = json.Unmarshal(amsJSON, &property.Amenities); err != nil {
 			log.Printf("failed to unmarshal amenities for property with slug %s: %v\n", slug, err)
+		}
+	}
+
+	if detailsJSON != nil {
+		if err = json.Unmarshal(detailsJSON, &property.Details); err != nil {
+			log.Printf("failed to unmarshal details for property with slug %s: %v\n", slug, err)
+		}
+	}
+
+	if namedImgsJSON != nil {
+		if err = json.Unmarshal(namedImgsJSON, &property.NamedImages); err != nil {
+			log.Printf("failed to unmarshal named images for property with slug %s: %v\n", slug, err)
 		}
 	}
 

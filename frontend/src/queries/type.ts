@@ -34,6 +34,25 @@ export type TPropertyAmenity = {
     title: string;
 };
 
+export type TPropertyDetailCategory = "interior" | "exterior";
+
+export type TPropertyDetail = {
+    id?: string;
+    category: TPropertyDetailCategory;
+    icon: string;
+    name: string;
+    value: string;
+    position: number;
+};
+
+export type TPropertyNamedImage = {
+    id?: string;
+    category: TPropertyDetailCategory;
+    image: string;
+    caption: string;
+    position: number;
+};
+
 export type TProperty = {
     id: string;
     address: string;
@@ -56,6 +75,8 @@ export type TProperty = {
     coords: string;
     features: TPropertyFeature[];
     amenities: TPropertyAmenity[];
+    details: TPropertyDetail[];
+    namedImages: TPropertyNamedImage[];
     lat: number;
     lon: number;
     featured: boolean;
