@@ -92,6 +92,8 @@ export function mergeSellingPage(api: TSellingPage): SellingPageData {
         location: {
             heading: "",
             image: media(api.locationImg) ?? "",
+            lat: typeof api.locationLat === "number" ? api.locationLat : null,
+            lng: typeof api.locationLng === "number" ? api.locationLng : null,
             mapEmbedUrl: str(api.locationMapEmbed),
             caption: str(api.locationCaption),
             chips: arr<SellingChip>(api.locationChips),

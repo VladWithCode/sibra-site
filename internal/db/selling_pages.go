@@ -65,6 +65,8 @@ type SellingPage struct {
 
 	LocationImg      string          `json:"locationImg"`
 	LocationMapEmbed string          `json:"locationMapEmbed"`
+	LocationLat      *float64        `json:"locationLat"`
+	LocationLng      *float64        `json:"locationLng"`
 	LocationCaption  string          `json:"locationCaption"`
 	LocationChips    json.RawMessage `json:"locationChips"`
 
@@ -85,7 +87,7 @@ const sellingPageColumns = `
 	financing_heading, financing_body, financing_img,
 	offer_price, offer_period, offer_dimensions, offer_fine_print, offer_land_img, offer_features,
 	cards, steps,
-	location_img, location_map_embed, location_caption, location_chips,
+	location_img, location_map_embed, location_lat, location_lng, location_caption, location_chips,
 	contact_address, contact_hours, contact_phone,
 	created_at, updated_at`
 
@@ -141,7 +143,7 @@ func scanSellingPage(row pgx.Row) (*SellingPage, error) {
 		&p.FinancingHeading, &p.FinancingBody, &p.FinancingImg,
 		&p.OfferPrice, &p.OfferPeriod, &p.OfferDimensions, &p.OfferFinePrint, &p.OfferLandImg, &p.OfferFeatures,
 		&p.Cards, &p.Steps,
-		&p.LocationImg, &p.LocationMapEmbed, &p.LocationCaption, &p.LocationChips,
+		&p.LocationImg, &p.LocationMapEmbed, &p.LocationLat, &p.LocationLng, &p.LocationCaption, &p.LocationChips,
 		&p.ContactAddress, &p.ContactHours, &p.ContactPhone,
 		&p.CreatedAt, &p.UpdatedAt,
 	)
@@ -187,6 +189,8 @@ func sellingPageArgs(p *SellingPage) pgx.NamedArgs {
 		"steps":                jsonbOrNil(p.Steps),
 		"location_img":         p.LocationImg,
 		"location_map_embed":   p.LocationMapEmbed,
+		"location_lat":         p.LocationLat,
+		"location_lng":         p.LocationLng,
 		"location_caption":     p.LocationCaption,
 		"location_chips":       jsonbOrNil(p.LocationChips),
 		"contact_address":      p.ContactAddress,
@@ -232,7 +236,7 @@ func CreateSellingPage(ctx context.Context, p *SellingPage) error {
 			@financing_heading, @financing_body, @financing_img,
 			@offer_price, @offer_period, @offer_dimensions, @offer_fine_print, @offer_land_img, @offer_features,
 			@cards, @steps,
-			@location_img, @location_map_embed, @location_caption, @location_chips,
+			@location_img, @location_map_embed, @location_lat, @location_lng, @location_caption, @location_chips,
 			@contact_address, @contact_hours, @contact_phone,
 			NOW(), NOW())`,
 		sellingPageArgs(p),
@@ -324,6 +328,7 @@ func UpdateSellingPage(ctx context.Context, p *SellingPage) error {
 			offer_fine_print = @offer_fine_print, offer_land_img = @offer_land_img, offer_features = @offer_features,
 			cards = @cards, steps = @steps,
 			location_img = @location_img, location_map_embed = @location_map_embed,
+			location_lat = @location_lat, location_lng = @location_lng,
 			location_caption = @location_caption, location_chips = @location_chips,
 			contact_address = @contact_address, contact_hours = @contact_hours, contact_phone = @contact_phone,
 			updated_at = NOW()

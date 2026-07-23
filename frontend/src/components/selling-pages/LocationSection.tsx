@@ -1,9 +1,55 @@
+import { AdvancedMarker, Map, Pin } from "@vis.gl/react-google-maps";
 import { MapPin } from "lucide-react";
 import { type SellingPageData } from "./defaults";
+
+const MAP_ID = import.meta.env.VITE_MAPS_PROPERTY_LOCATION_ID as string | undefined;
 
 type LocationSectionProps = {
     data: SellingPageData["location"];
 };
+
+/** Renders the location map: coordinates via the Maps JS API when set,
+ * otherwise the legacy embed-URL iframe. */
+function LocationMap({ data }: LocationSectionProps) {
+    if (typeof data.lat === "number" && typeof data.lng === "number") {
+        const position = { lat: data.lat, lng: data.lng };
+        return (
+            <div className="overflow-hidden rounded-2xl ring-1 ring-slate-200/70 shadow-sm min-h-64">
+                <Map
+                    mapId={MAP_ID}
+                    defaultZoom={15}
+                    defaultCenter={position}
+                    fullscreenControl={false}
+                    mapTypeControl={false}
+                    streetViewControl={false}
+                    className="w-full h-full min-h-64"
+                >
+                    <AdvancedMarker position={position}>
+                        <Pin
+                            background="var(--color-sbr-green)"
+                            borderColor="var(--color-sbr-green-light)"
+                            glyphColor="var(--color-gray-50)"
+                        />
+                    </AdvancedMarker>
+                </Map>
+            </div>
+        );
+    }
+    if (data.mapEmbedUrl) {
+        return (
+            <div className="overflow-hidden rounded-2xl ring-1 ring-slate-200/70 shadow-sm min-h-64">
+                <iframe
+                    title="Mapa de ubicación"
+                    src={data.mapEmbedUrl}
+                    className="w-full h-full min-h-64 border-0"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                />
+            </div>
+        );
+    }
+    return null;
+}
 
 export function LocationSection({ data }: LocationSectionProps) {
     return (
@@ -32,17 +78,7 @@ export function LocationSection({ data }: LocationSectionProps) {
                             className="w-full h-64 md:h-full object-cover"
                         />
                     </div>
-                    {data.mapEmbedUrl && (
-                        <div className="overflow-hidden rounded-2xl ring-1 ring-slate-200/70 shadow-sm min-h-64">
-                            <iframe
-                                title="Mapa de ubicación"
-                                src={data.mapEmbedUrl}
-                                className="w-full h-full min-h-64 border-0"
-                                loading="lazy"
-                                referrerPolicy="no-referrer-when-downgrade"
-                            />
-                        </div>
-                    )}
+                    <LocationMap data={data} />
                 </div>
 
                 {data.chips && data.chips.length > 0 && (

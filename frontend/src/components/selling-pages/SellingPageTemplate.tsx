@@ -78,7 +78,8 @@ export function SellingPageTemplate({ data, preview = false }: SellingPageTempla
                 <OfferSection data={data.offer} />
             )}
             {data.steps.length > 0 && <StepsSection steps={data.steps} />}
-            {(data.location.mapEmbedUrl ||
+            {(data.location.lat !== null ||
+                data.location.mapEmbedUrl ||
                 data.location.image ||
                 data.location.chips.length > 0) && <LocationSection data={data.location} />}
             {(data.footer.heading || data.footer.phone || data.footer.address) && (

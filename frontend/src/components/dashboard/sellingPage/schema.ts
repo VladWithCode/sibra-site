@@ -42,7 +42,8 @@ export const SellingPageFormSchema = z.object({
     offerDimensions: z.string(),
     offerFinePrint: z.string(),
 
-    locationMapEmbed: z.string(),
+    locationLat: z.number().nullable(),
+    locationLng: z.number().nullable(),
     locationCaption: z.string(),
 
     contactAddress: z.string(),
@@ -92,7 +93,8 @@ export const sellingPageFormDefaults: SellingPageFormValues = {
     offerPeriod: "",
     offerDimensions: "",
     offerFinePrint: "",
-    locationMapEmbed: "",
+    locationLat: null,
+    locationLng: null,
     locationCaption: "",
     contactAddress: "",
     contactHours: "",
@@ -164,7 +166,11 @@ export function buildSellingPagePayload(
         offerPeriod: values.offerPeriod,
         offerDimensions: values.offerDimensions,
         offerFinePrint: values.offerFinePrint,
-        locationMapEmbed: values.locationMapEmbed,
+        // Legacy embed URL is no longer editable; preserve it so old pages keep
+        // rendering their iframe until coordinates are set.
+        locationMapEmbed: basePage?.locationMapEmbed ?? "",
+        locationLat: values.locationLat,
+        locationLng: values.locationLng,
         locationCaption: values.locationCaption,
         contactAddress: values.contactAddress,
         contactHours: values.contactHours,
@@ -238,7 +244,8 @@ export function formValuesFromPage(page: TSellingPage): SellingPageFormValues {
         offerPeriod: page.offerPeriod ?? "",
         offerDimensions: page.offerDimensions ?? "",
         offerFinePrint: page.offerFinePrint ?? "",
-        locationMapEmbed: page.locationMapEmbed ?? "",
+        locationLat: typeof page.locationLat === "number" ? page.locationLat : null,
+        locationLng: typeof page.locationLng === "number" ? page.locationLng : null,
         locationCaption: page.locationCaption ?? "",
         contactAddress: page.contactAddress ?? "",
         contactHours: page.contactHours ?? "",

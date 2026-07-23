@@ -77,6 +77,10 @@ export type SellingPageData = {
     location: {
         heading: string;
         image: string;
+        /** Preferred: coordinates rendered with the Google Maps JS API. */
+        lat: number | null;
+        lng: number | null;
+        /** Legacy fallback: full embed URL rendered in an iframe. */
         mapEmbedUrl: string;
         caption: string;
         chips: SellingChip[];

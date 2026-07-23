@@ -587,6 +587,8 @@ export type TSellingPage = {
 
     locationImg: string;
     locationMapEmbed: string;
+    locationLat: number | null;
+    locationLng: number | null;
     locationCaption: string;
     locationChips: unknown;
 

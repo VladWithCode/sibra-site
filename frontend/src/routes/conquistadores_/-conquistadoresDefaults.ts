@@ -96,6 +96,8 @@ export const conquistadoresDefaults: SellingPageData = {
     location: {
         heading: "Ubicación",
         image: "/sample.webp",
+        lat: null,
+        lng: null,
         mapEmbedUrl:
             "https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d2249.4186266257207!2d-104.6054537871626!3d23.99755376264779!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjPCsDU5JzUxLjUiTiAxMDTCsDM2JzE2LjkiVw!5e1!3m2!1sen!2smx!4v1760571453942!5m2!1sen!2smx",
         caption:

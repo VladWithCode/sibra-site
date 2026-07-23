@@ -3,6 +3,7 @@ import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { DynamicCardsField, DynamicStepsField, DynamicStringList } from "./DynamicFields";
+import { LocationPickerField } from "./LocationPickerField";
 
 type ErrorList = Array<{ message?: string } | undefined>;
 function errsOf(field: { state: { meta: { errors: unknown } } }) {
@@ -246,11 +247,10 @@ export function SellingPageForm({ form }: { form: any }) {
                     <CardTitle className="text-xl">Ubicación</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <AreaField
-                        form={form}
-                        name="locationMapEmbed"
-                        label="URL del mapa (Google Maps embed)"
-                    />
+                    <Field>
+                        <FieldLabel>Mapa</FieldLabel>
+                        <LocationPickerField form={form} />
+                    </Field>
                     <AreaField form={form} name="locationCaption" label="Descripción" />
                     <Field>
                         <FieldLabel>Chips de ubicación</FieldLabel>
