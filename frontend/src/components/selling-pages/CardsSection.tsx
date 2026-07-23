@@ -1,3 +1,4 @@
+import { Image } from "../Image";
 import { type Alignment, type SellingCard, type SellingPageData } from "./defaults";
 
 type CardsSectionProps = {
@@ -7,12 +8,13 @@ type CardsSectionProps = {
 };
 
 function FeatureCard({ data }: { data: SellingCard }) {
+    console.log(data.image);
     return (
         <article className="group flex flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm hover:shadow-md transition-shadow">
             <div className="overflow-hidden">
-                <img
-                    src={data.image}
-                    alt={data.title}
+                <Image
+                    src={"/uploads/" + data.image}
+                    alt={data.description}
                     className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
             </div>
@@ -29,8 +31,8 @@ export function CardsSection({ cards, footnote, alignment }: CardsSectionProps) 
     const intro = centered
         ? "items-center text-center mx-auto"
         : alignment === "right"
-          ? "items-end text-right ml-auto"
-          : "items-start text-left";
+            ? "items-end text-right ml-auto"
+            : "items-start text-left";
 
     return (
         <section
