@@ -18,6 +18,7 @@ func NewRouter() http.Handler {
 	RegisterRequestsRouter(router)
 	RegisterProjectRoutes(router)
 	RegisterSellingPageRoutes(router)
+	RegisterFeaturedContentRoutes(router)
 	RegisterFeatureRoutes(router)
 	RegisterAmenityRoutes(router)
 	RegisterBlogRoutes(router)

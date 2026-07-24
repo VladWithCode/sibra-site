@@ -23,7 +23,6 @@ import (
 
 func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/propiedades", FindFilteredProperties)
-	router.HandleFunc("GET /api/propiedades/destacadas", FindFeaturedProperties)
 	router.HandleFunc("GET /api/propiedades/panel/{id}", auth.ValidateAuthMiddleware(FindSingleProperty))
 	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
@@ -414,19 +413,6 @@ func FindFilteredProperties(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, map[string]any{
 		"properties": props,
 		"pagination": pagination,
-	})
-}
-
-func FindFeaturedProperties(w http.ResponseWriter, r *http.Request) {
-	props, err := db.FindFeaturedProperties()
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, ErrorParams{})
-		log.Printf("Error finding featured properties: %v\n", err)
-		return
-	}
-
-	respondWithJSON(w, http.StatusOK, map[string]any{
-		"properties": props,
 	})
 }
 

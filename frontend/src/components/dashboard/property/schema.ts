@@ -79,8 +79,6 @@ export const PropertyFormSchema = z.object({
     lat: optionalNumber,
     lon: optionalNumber,
 
-    featured: z.boolean(),
-
     features: z.array(FeatureInputSchema),
     amenities: z.array(AmenityInputSchema),
     details: z.array(DetailInputSchema),
@@ -111,7 +109,6 @@ export const propertyFormDefaults: PropertyFormValues = {
     yearBuilt: undefined,
     lat: undefined,
     lon: undefined,
-    featured: false,
     features: [],
     amenities: [],
     details: [],
@@ -159,7 +156,6 @@ export function buildPropertyPayload(v: PropertyFormValues): Partial<TProperty> 
         baths: v.baths,
         sqMt: v.sqMt,
         lotSize: v.lotSize,
-        featured: v.featured,
         features: v.features as TProperty["features"],
         amenities: v.amenities as TProperty["amenities"],
         details: v.details as TProperty["details"],
@@ -191,7 +187,6 @@ export function propertyToFormValues(p: TProperty): PropertyFormValues {
         yearBuilt: p.yearBuilt || undefined,
         lat: p.lat || undefined,
         lon: p.lon || undefined,
-        featured: p.featured ?? false,
         features: p.features ?? [],
         amenities: p.amenities ?? [],
         details: p.details ?? [],

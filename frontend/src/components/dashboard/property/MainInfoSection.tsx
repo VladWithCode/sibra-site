@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,7 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { DollarSign, Home } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import type { CSSProperties } from "react";
 import { LucideIcon } from "./LucideIcon";
 import {
@@ -258,22 +257,6 @@ export function MainInfoSection({ form }: { form: any }) {
                     <NumericStat form={form} name="lotSize" label="Construcción (m²)" iconName="Home" />
                     <NumericStat form={form} name="yearBuilt" label="Año de construcción" iconName="Calendar" />
                 </div>
-
-                <form.Field name="featured">
-                    {(field: any) => (
-                        <Field orientation="horizontal">
-                            <Checkbox
-                                id="featured"
-                                checked={!!field.state.value}
-                                onCheckedChange={(c) => field.handleChange(c === true)}
-                            />
-                            <FieldLabel htmlFor="featured" className="flex items-center gap-1.5">
-                                <Home className="size-4" />
-                                Marcar como destacada
-                            </FieldLabel>
-                        </Field>
-                    )}
-                </form.Field>
             </CardContent>
         </Card>
     );

@@ -31,6 +31,7 @@ import { Route as PanelProyectosIndexRouteImport } from './routes/panel/proyecto
 import { Route as PanelPropiedadesIndexRouteImport } from './routes/panel/propiedades/index'
 import { Route as PanelPerfilIndexRouteImport } from './routes/panel/perfil/index'
 import { Route as PanelEquipoIndexRouteImport } from './routes/panel/equipo/index'
+import { Route as PanelDestacadosIndexRouteImport } from './routes/panel/destacados/index'
 import { Route as PanelCitasIndexRouteImport } from './routes/panel/citas/index'
 import { Route as PanelBlogIndexRouteImport } from './routes/panel/blog/index'
 import { Route as PanelAsociadosIndexRouteImport } from './routes/panel/asociados/index'
@@ -172,6 +173,11 @@ const PanelPerfilIndexRoute = PanelPerfilIndexRouteImport.update({
 const PanelEquipoIndexRoute = PanelEquipoIndexRouteImport.update({
   id: '/equipo/',
   path: '/equipo/',
+  getParentRoute: () => PanelRouteRoute,
+} as any)
+const PanelDestacadosIndexRoute = PanelDestacadosIndexRouteImport.update({
+  id: '/destacados/',
+  path: '/destacados/',
   getParentRoute: () => PanelRouteRoute,
 } as any)
 const PanelCitasIndexRoute = PanelCitasIndexRouteImport.update({
@@ -390,6 +396,7 @@ export interface FileRoutesByFullPath {
   '/panel/asociados': typeof PanelAsociadosIndexRoute
   '/panel/blog': typeof PanelBlogIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
+  '/panel/destacados': typeof PanelDestacadosIndexRoute
   '/panel/equipo': typeof PanelEquipoIndexRoute
   '/panel/perfil': typeof PanelPerfilIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
@@ -441,6 +448,7 @@ export interface FileRoutesByTo {
   '/panel/asociados': typeof PanelAsociadosIndexRoute
   '/panel/blog': typeof PanelBlogIndexRoute
   '/panel/citas': typeof PanelCitasIndexRoute
+  '/panel/destacados': typeof PanelDestacadosIndexRoute
   '/panel/equipo': typeof PanelEquipoIndexRoute
   '/panel/perfil': typeof PanelPerfilIndexRoute
   '/panel/propiedades': typeof PanelPropiedadesIndexRoute
@@ -497,6 +505,7 @@ export interface FileRoutesById {
   '/panel/asociados/': typeof PanelAsociadosIndexRoute
   '/panel/blog/': typeof PanelBlogIndexRoute
   '/panel/citas/': typeof PanelCitasIndexRoute
+  '/panel/destacados/': typeof PanelDestacadosIndexRoute
   '/panel/equipo/': typeof PanelEquipoIndexRoute
   '/panel/perfil/': typeof PanelPerfilIndexRoute
   '/panel/propiedades/': typeof PanelPropiedadesIndexRoute
@@ -553,6 +562,7 @@ export interface FileRouteTypes {
     | '/panel/asociados'
     | '/panel/blog'
     | '/panel/citas'
+    | '/panel/destacados'
     | '/panel/equipo'
     | '/panel/perfil'
     | '/panel/propiedades'
@@ -604,6 +614,7 @@ export interface FileRouteTypes {
     | '/panel/asociados'
     | '/panel/blog'
     | '/panel/citas'
+    | '/panel/destacados'
     | '/panel/equipo'
     | '/panel/perfil'
     | '/panel/propiedades'
@@ -659,6 +670,7 @@ export interface FileRouteTypes {
     | '/panel/asociados/'
     | '/panel/blog/'
     | '/panel/citas/'
+    | '/panel/destacados/'
     | '/panel/equipo/'
     | '/panel/perfil/'
     | '/panel/propiedades/'
@@ -829,6 +841,13 @@ declare module '@tanstack/react-router' {
       path: '/equipo'
       fullPath: '/panel/equipo'
       preLoaderRoute: typeof PanelEquipoIndexRouteImport
+      parentRoute: typeof PanelRouteRoute
+    }
+    '/panel/destacados/': {
+      id: '/panel/destacados/'
+      path: '/destacados'
+      fullPath: '/panel/destacados'
+      preLoaderRoute: typeof PanelDestacadosIndexRouteImport
       parentRoute: typeof PanelRouteRoute
     }
     '/panel/citas/': {
@@ -1224,6 +1243,7 @@ interface PanelRouteRouteChildren {
   PanelAsociadosIndexRoute: typeof PanelAsociadosIndexRoute
   PanelBlogIndexRoute: typeof PanelBlogIndexRoute
   PanelCitasIndexRoute: typeof PanelCitasIndexRoute
+  PanelDestacadosIndexRoute: typeof PanelDestacadosIndexRoute
   PanelEquipoIndexRoute: typeof PanelEquipoIndexRoute
   PanelPerfilIndexRoute: typeof PanelPerfilIndexRoute
   PanelPropiedadesIndexRoute: typeof PanelPropiedadesIndexRoute
@@ -1253,6 +1273,7 @@ const PanelRouteRouteChildren: PanelRouteRouteChildren = {
   PanelAsociadosIndexRoute: PanelAsociadosIndexRoute,
   PanelBlogIndexRoute: PanelBlogIndexRoute,
   PanelCitasIndexRoute: PanelCitasIndexRoute,
+  PanelDestacadosIndexRoute: PanelDestacadosIndexRoute,
   PanelEquipoIndexRoute: PanelEquipoIndexRoute,
   PanelPerfilIndexRoute: PanelPerfilIndexRoute,
   PanelPropiedadesIndexRoute: PanelPropiedadesIndexRoute,

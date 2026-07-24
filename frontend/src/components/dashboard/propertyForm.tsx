@@ -8,7 +8,6 @@ import { Textarea } from "../ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import { Checkbox } from "../ui/checkbox";
 import { useMutation } from "@tanstack/react-query";
 import { createPropertyOpts, deletePropertyImgOpts, updatePropertyDetailsOpts, updatePropertyGalleryOpts, updatePropertyMainImgOpts } from "@/queries/properties";
 import { toast } from "sonner";
@@ -38,7 +37,6 @@ export function CreatePropertyForm({ }: {}) {
             yearBuilt: 0,
             lat: 0,
             lon: 0,
-            featured: false,
             status: "publicada",
         },
     });
@@ -417,28 +415,6 @@ export function CreatePropertyForm({ }: {}) {
                                         {...field}
                                     />
                                 </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-                <div className="flex items-start gap-3">
-                    <FormField
-                        control={form.control}
-                        name="featured"
-                        render={({ field }) => (
-                            <FormItem>
-                                <div className="flex items-center gap-2 basis-1/2">
-                                    <FormControl>
-                                        <Checkbox
-                                            className="bg-card shadow-lg"
-                                            name={field.name}
-                                            defaultChecked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                    <FormLabel className="leading-none">Marcar como destacada</FormLabel>
-                                </div>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -844,28 +820,6 @@ export function EditPropertyForm({ property }: { property: TProperty }) {
                         )}
                     />
                 </div>
-                <div className="flex items-start gap-3">
-                    <FormField
-                        control={form.control}
-                        name="featured"
-                        render={({ field }) => (
-                            <FormItem>
-                                <div className="flex items-center gap-2 basis-1/2">
-                                    <FormControl>
-                                        <Checkbox
-                                            className="bg-card shadow-lg"
-                                            name={field.name}
-                                            defaultChecked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
-                                    </FormControl>
-                                    <FormLabel className="leading-none">Marcar como destacada</FormLabel>
-                                </div>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
                 <div className="flex gap-3 justify-end">
                     <Button
                         className="bg-gray-200 text-primary shadow-md active:shadow-sm hover:scale-105 active:scale-95"
@@ -906,7 +860,6 @@ const propertyFormSchema = z.object({
     yearBuilt: z.coerce.number("El año de construcción no es válido.").min(0, "El año de construcción no puede ser negativo.").optional(),
     lat: z.coerce.number("La latitud debe ser un número válido.").optional(),
     lon: z.coerce.number("La longitud debe ser un número válido.").optional(),
-    featured: z.boolean().optional(),
 })
 
 export type TPropertyFormData = z.infer<typeof propertyFormSchema>

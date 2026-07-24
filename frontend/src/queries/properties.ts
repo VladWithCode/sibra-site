@@ -19,7 +19,6 @@ export const PropertyQueryKeys = {
     all: () => ["properties"] as const,
     // Property listings
     listing: () => [...PropertyQueryKeys.all(), "listing"] as const,
-    featured: () => [...PropertyQueryKeys.listing(), "featured"] as const,
     filtered: (filters: Partial<TPropertyQueryFilters>) =>
         [...PropertyQueryKeys.listing(), "filtered", { filters }] as const,
     byContract: (contract: string | undefined, filters: TPropertyQueryFilters) =>
@@ -39,7 +38,6 @@ export const PropertyQueryKeys = {
 
 // Type helpers for queryFns to recognize the queryKey type
 export type QKPropertiesListing = ReturnType<typeof PropertyQueryKeys.listing>;
-export type QKPropertiesFeatured = ReturnType<typeof PropertyQueryKeys.featured>;
 export type QKPropertiesFiltered = ReturnType<typeof PropertyQueryKeys.filtered>;
 export type QKPropertyByContract = ReturnType<typeof PropertyQueryKeys.byContract>;
 export type QKPropertiesNearby = ReturnType<typeof PropertyQueryKeys.nearby>;
@@ -50,11 +48,6 @@ export type QKPropertySingle = ReturnType<typeof PropertyQueryKeys.single>;
 export const getPropertiesOpts = queryOptions({
     queryKey: PropertyQueryKeys.listing(),
     queryFn: getProperties,
-});
-
-export const getFeaturedPropertiesOpts = queryOptions({
-    queryKey: PropertyQueryKeys.featured(),
-    queryFn: getFeaturedProperties,
 });
 
 export const getPropertyListingOpts = (filters: TPropertyFilters) =>
@@ -179,17 +172,6 @@ export async function getProperties(): Promise<TPropertyListingResult> {
     }
 
     return data;
-}
-
-export async function getFeaturedProperties(): Promise<TProperty[]> {
-    const response = await fetch("/api/propiedades/destacadas");
-    const data = await response.json();
-
-    if (response.status < 200 || response.status >= 300) {
-        throw new Error(data.error || "Error al obtener las propiedades");
-    }
-
-    return data.properties;
 }
 
 export async function getPropertiesByContract({

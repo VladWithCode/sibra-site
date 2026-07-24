@@ -7,6 +7,7 @@ import {
     LayoutDashboard,
     Map,
     Newspaper,
+    Sparkles,
     Tag,
     User,
     UserCircle,
@@ -30,6 +31,7 @@ import {
 const sidebarMenuItems = linkOptions([
     { label: "Panel", to: "/panel", icon: LayoutDashboard },
     { label: "Propiedades", to: "/panel/propiedades", icon: Home },
+    { label: "Destacados", to: "/panel/destacados", icon: Sparkles },
     { label: "Terrenos y proyectos", to: "/panel/proyectos", icon: Map },
     { label: "Páginas de venta", to: "/panel/terrenos", icon: Tag },
     { label: "Asociados", to: "/panel/asociados", icon: Users },

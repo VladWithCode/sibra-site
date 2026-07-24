@@ -2,20 +2,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import { SecondaryLinkButton } from "@/components/sibra_buttons";
 import { HomeIcon, LoanIcon, ProjectsIcon, SellHomeIcon } from "@/components/icons/icons";
-import { getFeaturedPropertiesOpts } from "@/queries/properties";
+import { getFeaturedContentOpts, type TResolvedFeaturedItem } from "@/queries/featured";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useUIStore } from "@/stores/uiStore";
-import { useEffect } from "react";
-import { HomePropertyCard } from "@/components/properties/HomePropertyCard";
-import { ArrowRight, Check } from "lucide-react";
-import { motion } from "motion/react";
-import type { TProperty } from "@/queries/type";
+import { useEffect, useState } from "react";
+import { FeaturedCard } from "@/components/home/FeaturedCard";
+import { ArrowRight, Check, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_public/")({
     component: RouteComponent,
     loader: async ({ context }) => {
-        await context.queryClient.ensureQueryData(getFeaturedPropertiesOpts);
+        await context.queryClient.ensureQueryData(getFeaturedContentOpts);
     },
     head: () => ({
         links: [{
@@ -92,14 +92,24 @@ function HeroSection() {
     );
 }
 
-function FeaturedListings({ properties }: { properties: TProperty[]; }) {
+function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedItem[]; visibleCount: number; }) {
+    const [expanded, setExpanded] = useState(false);
+
+    if (items.length === 0) return null;
+
+    const visible = items.slice(0, visibleCount);
+    const collapsed = items.slice(visibleCount);
+    // First 3 cards keep the original hero composition; the rest flow in a grid.
+    const heroItems = visible.slice(0, 3);
+    const gridItems = visible.slice(3);
+
     return (
         <section className="py-32 px-6 md:px-12 bg-surface-container-low">
             <div className="max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
                     <div>
                         <span className="text-label-md text-primary mb-3 block">Oportunidades únicas</span>
-                        <h2 className="text-headline-lg">Últimas propiedades en oferta</h2>
+                        <h2 className="text-headline-lg">Destacados para ti</h2>
                     </div>
                     <Link to="/propiedades" className="flex items-center gap-1 text-sm text-sbr-blue-dark leading-0">
                         <span>Ver todas las propiedades</span>
@@ -114,36 +124,82 @@ function FeaturedListings({ properties }: { properties: TProperty[]; }) {
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true, amount: 0.3 }}
                         transition={{ duration: 0.5 }}
-                        className="md:col-span-7 relative overflow-hidden group h-[600px] shadow-2xl"
+                        className={cn(
+                            "md:col-span-7 relative overflow-hidden group h-[600px] shadow-2xl",
+                            heroItems.length === 1 && "md:col-span-12",
+                        )}
                     >
-                        <HomePropertyCard propData={properties[0]} />
+                        <FeaturedCard item={heroItems[0]} />
                     </motion.div>
 
                     {/* Side Cards */}
-                    <div className="md:col-span-5 flex flex-col justify-between gap-6">
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0 }}
-                            viewport={{ once: true, amount: 0.3 }}
-                            transition={{ duration: 0.5 }}
-                            className="relative overflow-hidden group h-[284px] shadow-xl"
-                        >
-                            <HomePropertyCard propData={properties[1]} />
-                        </motion.div>
-
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            whileInView={{ opacity: 1, x: 0, transitionDuration: 0.5 }}
-                            viewport={{ once: true, amount: 0.3 }}
-                            transition={{ delay: 0.1, duration: 0.5 }}
-                            className="relative overflow-hidden group h-[284px] shadow-xl"
-                        >
-                            <HomePropertyCard propData={properties[2]} />
-                        </motion.div>
-                    </div>
+                    {heroItems.length > 1 && (
+                        <div className="md:col-span-5 flex flex-col justify-between gap-6">
+                            {heroItems.slice(1).map((item, idx) => (
+                                <motion.div
+                                    key={item.id}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    viewport={{ once: true, amount: 0.3 }}
+                                    transition={{ delay: idx * 0.1, duration: 0.5 }}
+                                    className="relative overflow-hidden group h-[284px] shadow-xl"
+                                >
+                                    <FeaturedCard item={item} />
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
+
+                {gridItems.length > 0 && <FeaturedGrid items={gridItems} />}
+
+                <AnimatePresence initial={false}>
+                    {expanded && collapsed.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.35 }}
+                            className="overflow-hidden"
+                        >
+                            <FeaturedGrid items={collapsed} />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                {collapsed.length > 0 && (
+                    <div className="flex justify-center mt-10">
+                        <Button
+                            variant="outline"
+                            className="gap-2"
+                            onClick={() => setExpanded((prev) => !prev)}
+                        >
+                            <span>{expanded ? "Ver menos destacados" : "Ver más destacados"}</span>
+                            <ChevronDown className={cn("size-4 transition-transform", expanded && "rotate-180")} />
+                        </Button>
+                    </div>
+                )}
             </div>
         </section>
+    );
+}
+
+function FeaturedGrid({ items }: { items: TResolvedFeaturedItem[] }) {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            {items.map((item, idx) => (
+                <motion.div
+                    key={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ delay: (idx % 3) * 0.1, duration: 0.5 }}
+                    className="relative overflow-hidden group h-[284px] shadow-xl"
+                >
+                    <FeaturedCard item={item} />
+                </motion.div>
+            ))}
+        </div>
     );
 }
 
@@ -332,12 +388,12 @@ function CTASection() {
 }
 
 function RouteComponent() {
-    const { data: properties } = useSuspenseQuery(getFeaturedPropertiesOpts);
+    const { data: featured } = useSuspenseQuery(getFeaturedContentOpts);
 
     return (
         <main>
             <HeroSection />
-            <FeaturedListings properties={properties} />
+            <FeaturedListings items={featured.items} visibleCount={featured.visibleCount} />
             <AboutSection />
             <ServiceSection />
             <CTASection />
