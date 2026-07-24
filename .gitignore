@@ -35,6 +35,7 @@ count.txt
 .nitro
 .tanstack
 .vite
+*.tsbuildinfo
 
 # Ignore agent related files
 /tmp/
