@@ -102,39 +102,6 @@ export const updatePropertyDetailsOpts = (id: string) =>
         },
     });
 
-export const updatePropertyMainImgOpts = (id: string) =>
-    mutationOptions({
-        mutationKey: PropertyQueryKeys.single(id),
-        mutationFn: updatePropertyMainImg,
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: PropertyQueryKeys.single(id),
-            });
-        },
-    });
-
-export const updatePropertyGalleryOpts = (id: string) =>
-    mutationOptions({
-        mutationKey: PropertyQueryKeys.single(id),
-        mutationFn: updatePropertyGallery,
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: PropertyQueryKeys.single(id),
-            });
-        },
-    });
-
-export const deletePropertyImgOpts = (id: string) =>
-    mutationOptions({
-        mutationKey: PropertyQueryKeys.single(id),
-        mutationFn: deletePropertyImg,
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: PropertyQueryKeys.single(id),
-            });
-        },
-    });
-
 export const deletePropertyOpts = (id: string) =>
     mutationOptions({
         mutationKey: PropertyQueryKeys.single(id),
@@ -295,63 +262,6 @@ export async function updateProperty(property: Partial<TProperty>): Promise<TPro
 
     if (response.status < 200 || response.status >= 300) {
         throw new Error(data.error || "Ocurrió un error al actualizar la propiedad");
-    }
-
-    return data;
-}
-
-export async function updatePropertyMainImg({ id, file }: { id: string, file: File }): Promise<TPropertyDetailResult> {
-    const formData = new FormData();
-    formData.append("main-pic", file);
-    const response = await fetch("/api/property/pictures/" + id, {
-        method: "POST",
-        body: formData,
-    });
-    const data = await response.json();
-
-    if (response.status < 200 || response.status >= 300) {
-        throw new Error(data.error || "Ocurrió un error al actualizar la propiedad");
-    }
-
-    return data;
-}
-
-export async function updatePropertyGallery({ id, files }: { id: string, files: FileList | File[] }): Promise<TPropertyDetailResult> {
-    const formData = new FormData();
-
-    for (let f of files) {
-        formData.append("pics", f);
-    }
-
-    const response = await fetch("/api/property/pictures/" + id, {
-        method: "POST",
-        body: formData,
-    });
-    const data = await response.json();
-
-    if (response.status < 200 || response.status >= 300) {
-        throw new Error(data.error || "Ocurrió un error al actualizar la galería de fotos");
-    }
-
-    return data;
-}
-
-export async function deletePropertyImg({ id, imgName, type }: {
-    id: string;
-    imgName: string;
-    type: "main" | "gallery";
-}): Promise<{ success: boolean }> {
-    const response = await fetch("/api/property/pictures/" + id, {
-        method: "DELETE",
-        body: JSON.stringify({
-            imgName,
-            type,
-        }),
-    });
-    const data = await response.json();
-
-    if (response.status < 200 || response.status >= 300) {
-        throw new Error(data.error || "Ocurrió un error al eliminar la foto");
     }
 
     return data;

@@ -51,7 +51,7 @@ export const DetailInputSchema = z.object({
 export const NamedImageInputSchema = z.object({
     id: z.string().optional(),
     category: z.enum(DETAIL_CATEGORIES),
-    image: z.string().min(1, "La imagen es obligatoria"),
+    mediaId: z.string().min(1, "La imagen es obligatoria"),
     caption: z.string(),
     position: z.number(),
 });
@@ -84,6 +84,8 @@ export const PropertyFormSchema = z.object({
     details: z.array(DetailInputSchema),
     namedImages: z.array(NamedImageInputSchema),
 
+    // Staged files for a property being created (existing properties manage
+    // media through PropertyMediaManager).
     mainImg: z.instanceof(File).optional(),
     gallery: z.array(z.instanceof(File)),
 });

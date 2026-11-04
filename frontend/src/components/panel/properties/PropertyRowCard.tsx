@@ -1,4 +1,5 @@
 import { FormatMoney } from "@/lib/format";
+import { isReady, stillSrc } from "@/lib/media";
 import type { TProperty } from "@/queries/type";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Edit2, Trash2 } from "lucide-react";
@@ -23,7 +24,7 @@ export function PropertyRowCard({ property }: { property: TProperty }) {
     const [deleteOpen, setDeleteOpen] = useState(false);
 
     const detailHref = { to: "/panel/propiedades/$id", params: { id: property.id } } as const;
-    const imgSrc = property.mainImg ? `/static/properties/${property.id}/${property.mainImg}` : undefined;
+    const imgSrc = isReady(property.mainImage) ? stillSrc(property.mainImage, 480) : undefined;
 
     const INTERACTIVE = "a, button, [role='button']";
     const onCardClick = (e: React.MouseEvent<HTMLDivElement>) => {

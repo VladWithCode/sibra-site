@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { isReady, stillSrc } from "@/lib/media";
 import { ImgPlaceholder } from '@/components/ui/img-placeholder';
 import { PropertyStatusBadge } from '@/components/panel/properties/PropertyStatusBadge';
 import { RequestStatusBadge } from '@/components/panel/requests/RequestStatusBadge';
@@ -441,9 +442,7 @@ function RecentPropertiesCard({
 }
 
 function PropertyMiniRow({ property }: { property: TProperty }) {
-    const imgSrc = property.mainImg
-        ? `/static/properties/${property.id}/${property.mainImg}`
-        : undefined;
+    const imgSrc = isReady(property.mainImage) ? stillSrc(property.mainImage, 480) : undefined;
     return (
         <Link
             to="/panel/propiedades/$id"

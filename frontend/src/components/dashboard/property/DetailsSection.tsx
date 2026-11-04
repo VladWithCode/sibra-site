@@ -1,4 +1,6 @@
-import { PropertyImage } from "@/components/Image";
+import { stillSrc, type TMediaAsset } from "@/lib/media";
+import { getPropertyMediaOpts } from "@/queries/propertyMedia";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,7 +23,15 @@ const CATEGORY_LABELS: Record<TPropertyDetailCategory, string> = {
 
 export function DetailsSection({ form, property }: { form: any; property?: TProperty }) {
     const [category, setCategory] = useState<TPropertyDetailCategory>("interior");
-    const gallery = property?.imgs ?? [];
+    // Shares the panel media query, so images become selectable as soon as
+    // they finish encoding.
+    const { data: mediaState } = useQuery({
+        ...getPropertyMediaOpts(property?.id ?? ""),
+        enabled: !!property?.id,
+    });
+    const gallery = (mediaState?.media ?? [])
+        .filter((m) => m.asset.kind === "image" && m.asset.status === "ready")
+        .map((m) => ({ id: m.id, asset: m.asset }));
 
     return (
         <Card>
@@ -49,12 +59,7 @@ export function DetailsSection({ form, property }: { form: any; property?: TProp
                     </TabsList>
                     {DETAIL_CATEGORIES.map((c) => (
                         <TabsContent key={c} value={c} className="space-y-8 pt-6">
-                            <NamedImagesEditor
-                                form={form}
-                                category={c}
-                                gallery={gallery}
-                                property={property}
-                            />
+                            <NamedImagesEditor form={form} category={c} gallery={gallery} />
                             <DetailRowsEditor form={form} category={c} />
                         </TabsContent>
                     ))}
@@ -175,13 +180,12 @@ function NamedImagesEditor({
     form,
     category,
     gallery,
-    property,
 }: {
     form: any;
     category: TPropertyDetailCategory;
-    gallery: string[];
-    property?: TProperty;
+    gallery: { id: string; asset: TMediaAsset }[];
 }) {
+    const assetById = new Map(gallery.map((g) => [g.id, g.asset]));
     return (
         <form.Field name="namedImages">
             {(field: any) => {
@@ -189,13 +193,13 @@ function NamedImagesEditor({
                 const selected = all
                     .map((item, idx) => ({ item, idx }))
                     .filter(({ item }) => item.category === category);
-                const selectedImages = new Set(selected.map(({ item }) => item.image));
-                const available = gallery.filter((img) => !selectedImages.has(img));
+                const selectedImages = new Set(selected.map(({ item }) => item.mediaId));
+                const available = gallery.filter((g) => !selectedImages.has(g.id));
 
-                const addImage = (image: string) =>
+                const addImage = (mediaId: string) =>
                     field.handleChange([
                         ...all,
-                        { category, image, caption: "", position: all.length },
+                        { category, mediaId, caption: "", position: all.length },
                     ]);
                 const updateAt = (idx: number, patch: Partial<TPropertyNamedImage>) => {
                     const next = all.slice();
@@ -212,8 +216,7 @@ function NamedImagesEditor({
                         {gallery.length === 0 ? (
                             <div className="text-muted-foreground flex items-center gap-2 rounded-md border border-dashed p-4 text-sm">
                                 <ImageOff className="size-4 shrink-0" />
-                                Sube imágenes a la galería y guarda la propiedad para poder
-                                nombrarlas aquí.
+                                Sube imágenes a la galería para poder nombrarlas aquí.
                             </div>
                         ) : (
                             <>
@@ -224,13 +227,20 @@ function NamedImagesEditor({
                                                 key={idx}
                                                 className="flex items-center gap-3 rounded-md border p-2"
                                             >
-                                                <div className="size-14 shrink-0 overflow-hidden rounded-md border">
-                                                    <PropertyImage
-                                                        propId={property?.id ?? ""}
-                                                        propName={item.caption || item.image}
-                                                        src={item.image}
-                                                        className="h-full w-full object-cover"
-                                                    />
+                                                <div className="bg-surface-container size-14 shrink-0 overflow-hidden rounded-md border">
+                                                    {assetById.has(item.mediaId) && (
+                                                        <img
+                                                            src={stillSrc(
+                                                                assetById.get(item.mediaId)!,
+                                                                480,
+                                                            )}
+                                                            alt={
+                                                                item.caption ||
+                                                                "Imagen nombrada"
+                                                            }
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    )}
                                                 </div>
                                                 <Input
                                                     value={item.caption}
@@ -263,15 +273,15 @@ function NamedImagesEditor({
                                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                                             {available.map((img) => (
                                                 <button
-                                                    key={img}
+                                                    key={img.id}
                                                     type="button"
-                                                    onClick={() => addImage(img)}
+                                                    onClick={() => addImage(img.id)}
                                                     className="hover:ring-primary group relative aspect-[4/3] overflow-hidden rounded-md border transition hover:ring-2"
                                                 >
-                                                    <PropertyImage
-                                                        propId={property?.id ?? ""}
-                                                        propName={img}
-                                                        src={img}
+                                                    <img
+                                                        src={stillSrc(img.asset, 480)}
+                                                        alt="Imagen de la galería"
+                                                        loading="lazy"
                                                         className="h-full w-full object-cover"
                                                     />
                                                     <span className="bg-background/80 absolute inset-x-0 bottom-0 flex items-center justify-center py-1 opacity-0 backdrop-blur transition group-hover:opacity-100">

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { CloudUpload, Trash2 } from "lucide-react";
+import { MEDIA_ACCEPT } from "@/queries/propertyMedia";
 import { useEffect, useMemo, useRef } from "react";
 
 type ErrorList = Array<{ message?: string } | undefined>;
@@ -38,7 +39,7 @@ function MainImageField({ form }: { form: any }) {
                     <Field>
                         <FieldLabel>Imagen principal</FieldLabel>
                         <FieldDescription>
-                            Máx 90MB. Formatos: JPEG, PNG, WebP.
+                            Máx 25MB. Formatos: JPEG, PNG, WebP.
                         </FieldDescription>
                         <input
                             ref={inputRef}
@@ -109,12 +110,14 @@ function GalleryField({ form }: { form: any }) {
                     <Field>
                         <FieldLabel>Galería</FieldLabel>
                         <FieldDescription>
-                            Puedes agregar varias imágenes para la galería.
+                            Fotos (máx 25MB) y videos MP4, MOV o WebM (máx 500MB y 3
+                            minutos). Podrás ordenarlos y elegir el video de portada al
+                            guardar.
                         </FieldDescription>
                         <input
                             ref={inputRef}
                             type="file"
-                            accept="image/jpeg,image/png,image/webp"
+                            accept={MEDIA_ACCEPT}
                             multiple
                             className="hidden"
                             onChange={(e) => {
@@ -157,7 +160,11 @@ function GalleryPreview({
                     key={`${f.name}-${i}`}
                     className="group relative aspect-square overflow-hidden rounded-md border"
                 >
-                    <img src={urls[i]} alt={f.name} className="h-full w-full object-cover" />
+                    {f.type.startsWith("video/") ? (
+                        <video src={urls[i]} muted preload="metadata" className="h-full w-full object-cover" />
+                    ) : (
+                        <img src={urls[i]} alt={f.name} className="h-full w-full object-cover" />
+                    )}
                     <button
                         type="button"
                         onClick={() => onRemove(i)}

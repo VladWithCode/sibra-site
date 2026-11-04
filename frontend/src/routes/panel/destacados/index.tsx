@@ -1,3 +1,4 @@
+import { stillSrc } from "@/lib/media";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -282,7 +283,9 @@ function SortableFeaturedRow({
     const cardName =
         resolved?.title || item.title || item.externalUrl || featuredKindLabel(item.kind);
 
-    const imageSrc = featuredImageSrc(resolved?.image ?? item.image);
+    const imageSrc = resolved?.imageAsset
+        ? stillSrc(resolved.imageAsset, 480)
+        : featuredImageSrc(resolved?.image || item.image);
 
     return (
         <Card
