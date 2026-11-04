@@ -189,6 +189,18 @@ type NewMediaUpload struct {
 	Kind    string
 }
 
+// unmarshalAsset decodes an optional asset JSON column (NULL -> nil).
+func unmarshalAsset(b []byte) (*MediaAsset, error) {
+	if b == nil {
+		return nil, nil
+	}
+	var a MediaAsset
+	if err := json.Unmarshal(b, &a); err != nil {
+		return nil, err
+	}
+	return &a, nil
+}
+
 // propertyMediaJSONAgg aggregates the gallery of property alias `p` ordered
 // by position. readyOnly hides items still encoding (public pages).
 func propertyMediaJSONAgg(readyOnly bool) string {
@@ -207,14 +219,14 @@ func propertyMediaJSONAgg(readyOnly bool) string {
 	), '[]'::jsonb)`
 }
 
-// propertyMainImageJSON selects the main image asset of property alias `p`
-// (NULL when unset or, with readyOnly, still encoding).
-func propertyMainImageJSON(readyOnly bool) string {
+// propertyMainImageJSON selects the main image asset of the property row
+// aliased `alias` (NULL when unset or, with readyOnly, still encoding).
+func propertyMainImageJSON(alias string, readyOnly bool) string {
 	cond := ""
 	if readyOnly {
 		cond = " AND mi.status = 'ready'"
 	}
-	return `(SELECT ` + mediaAssetJSON("mi") + ` FROM media_assets mi WHERE mi.id = p.main_asset_id` + cond + `)`
+	return `(SELECT ` + mediaAssetJSON("mi") + ` FROM media_assets mi WHERE mi.id = ` + alias + `.main_asset_id` + cond + `)`
 }
 
 // AddPropertyMedia appends uploaded assets to the end of a property's
@@ -268,7 +280,7 @@ type PropertyMediaState struct {
 // regardless of encoding status.
 func GetPropertyMediaState(ctx context.Context, propertyID string) (*PropertyMediaState, error) {
 	var mediaJSON, mainJSON []byte
-	err := DB.QueryRow(ctx, `SELECT `+propertyMediaJSONAgg(false)+`, `+propertyMainImageJSON(false)+`
+	err := DB.QueryRow(ctx, `SELECT `+propertyMediaJSONAgg(false)+`, `+propertyMainImageJSON("p", false)+`
 		FROM properties p WHERE p.id = $1 AND p.deleted_at IS NULL`, propertyID).Scan(&mediaJSON, &mainJSON)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrMediaNotFound

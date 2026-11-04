@@ -67,47 +67,36 @@ func replacePropertyDetails(ctx context.Context, tx pgx.Tx, propertyID string, d
 }
 
 // replacePropertyNamedImages wipes and re-inserts the per-property named image
-// rows. Intended to run inside an existing transaction. Only images that belong
-// to the property's gallery (validImages) are persisted, preventing dangling
-// references. Position is taken from the slice order.
-func replacePropertyNamedImages(ctx context.Context, tx pgx.Tx, propertyID string, images []PropertyNamedImage, validImages []string) error {
+// rows. Intended to run inside an existing transaction. Only image items of
+// the property's own gallery are persisted (the INSERT ... SELECT skips any
+// other media id), preventing dangling or foreign references. Position is
+// taken from the slice order.
+func replacePropertyNamedImages(ctx context.Context, tx pgx.Tx, propertyID string, images []PropertyNamedImage) error {
 	if _, err := tx.Exec(ctx, `DELETE FROM property_named_images WHERE property_id = $1`, propertyID); err != nil {
 		return err
 	}
-	if len(images) == 0 {
-		return nil
-	}
-
-	valid := make(map[string]struct{}, len(validImages))
-	for _, img := range validImages {
-		valid[img] = struct{}{}
-	}
 
 	batch := pgx.Batch{}
-	position := 0
-	for _, ni := range images {
-		img := strings.TrimSpace(ni.Image)
-		if img == "" {
+	for position, ni := range images {
+		mediaID := strings.TrimSpace(ni.MediaID)
+		if uuid.Validate(mediaID) != nil {
 			continue
 		}
-		if _, ok := valid[img]; !ok {
-			// Skip images that are not part of the property's gallery.
-			continue
-		}
-
 		batch.Queue(
-			`INSERT INTO property_named_images (id, property_id, category, image, caption, position)
-             VALUES (@id, @property_id, @category, @image, @caption, @position)`,
+			`INSERT INTO property_named_images (id, property_id, category, media_id, caption, position)
+             SELECT @id, @property_id, @category, pm.id, @caption, @position
+             FROM property_media pm
+             JOIN media_assets ma ON ma.id = pm.asset_id
+             WHERE pm.id = @media_id AND pm.property_id = @property_id AND ma.kind = 'image'`,
 			pgx.NamedArgs{
 				"id":          uuid.Must(uuid.NewV7()).String(),
 				"property_id": propertyID,
 				"category":    normalizeDetailCategory(ni.Category),
-				"image":       img,
+				"media_id":    mediaID,
 				"caption":     strings.TrimSpace(ni.Caption),
 				"position":    position,
 			},
 		)
-		position++
 	}
 
 	if batch.Len() == 0 {

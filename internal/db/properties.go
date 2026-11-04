@@ -9,13 +9,11 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/vladwithcode/sibra-site/internal"
 )
 
@@ -122,8 +120,8 @@ type Property struct {
 	Lon               float64              `json:"lon" db:"lon"`
 	Featured          bool                 `json:"featured" db:"featured"`
 	FeaturedExpiresAt time.Time            `json:"featuredExpiresAt,omitzero" db:"featured_expires_at"`
-	MainImg           string               `json:"mainImg" db:"main_img"`
-	Images            []string             `json:"imgs" db:"imgs"`
+	MainImage         *MediaAsset          `json:"mainImage"`
+	Media             []PropertyMedia      `json:"media"`
 	Agent             string               `json:"agent" db:"agent"`
 	Slug              string               `json:"slug" db:"slug"`
 	AgentData         *AgentData           `json:"agentData" db:"agent_data"`
@@ -155,14 +153,15 @@ type PropertyDetail struct {
 	Position int    `json:"position" db:"position"`
 }
 
-// PropertyNamedImage links an existing gallery image (a filename present in
-// Property.Images) to a caption and a category (interior / exterior).
+// PropertyNamedImage links an image of the property's gallery (a
+// property_media id) to a caption and a category (interior / exterior).
 type PropertyNamedImage struct {
-	ID       string `json:"id" db:"id"`
-	Category string `json:"category" db:"category"`
-	Image    string `json:"image" db:"image"`
-	Caption  string `json:"caption" db:"caption"`
-	Position int    `json:"position" db:"position"`
+	ID       string      `json:"id" db:"id"`
+	Category string      `json:"category" db:"category"`
+	MediaID  string      `json:"mediaId" db:"media_id"`
+	Caption  string      `json:"caption" db:"caption"`
+	Position int         `json:"position" db:"position"`
+	Asset    *MediaAsset `json:"asset,omitempty"`
 }
 
 type AgentData struct {
@@ -191,17 +190,6 @@ func (p *Property) SyncLatLon() {
 		p.Lat = p.Coords.Lat
 		p.Lon = p.Coords.Lon
 	}
-}
-
-func (p *Property) CreateStaticDir() error {
-	staticDir := "web/static/properties/" + p.Id
-	err := os.Mkdir(staticDir, 0755)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (p *Property) ToMap() map[string]any {
@@ -382,19 +370,17 @@ func CreateProperty(prop *Property) error {
 		"title":        prop.Title,
 		"agent":        prop.Agent,
 		"slug":         prop.Slug,
-		"main_img":     prop.MainImg,
-		"imgs":         prop.Images,
 	}
 	_, err = tx.Exec(
 		ctx,
 		`INSERT INTO properties (
 			id, address, description, city, state, zip, country, price, property_type,
 			contract, beds, baths, square_mt, lot_size, year_built, listing_date,
-			status, earth_coords, lat, lon, title, agent, slug, main_img, imgs
+			status, earth_coords, lat, lon, title, agent, slug
 		) VALUES (
             @id, @address, @description, @city, @state, @zip, @country, @price, @property_type,
             @contract, @beds, @baths, @square_mt, @lot_size, @year_built, @listing_date,
-            @status, @earth_coords, @lat, @lon, @title, @agent, @slug, @main_img, @imgs
+            @status, @earth_coords, @lat, @lon, @title, @agent, @slug
         )`,
 		args,
 	)
@@ -422,7 +408,7 @@ func CreateProperty(prop *Property) error {
 	if err := replacePropertyDetails(ctx, tx, prop.Id, prop.Details); err != nil {
 		return err
 	}
-	if err := replacePropertyNamedImages(ctx, tx, prop.Id, prop.NamedImages, prop.Images); err != nil {
+	if err := replacePropertyNamedImages(ctx, tx, prop.Id, prop.NamedImages); err != nil {
 		return err
 	}
 
@@ -530,7 +516,7 @@ func UpdateProperty(property *Property) error {
 	if err := replacePropertyDetails(ctx, tx, property.Id, property.Details); err != nil {
 		return err
 	}
-	if err := replacePropertyNamedImages(ctx, tx, property.Id, property.NamedImages, property.Images); err != nil {
+	if err := replacePropertyNamedImages(ctx, tx, property.Id, property.NamedImages); err != nil {
 		return err
 	}
 
@@ -734,7 +720,7 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 				JOIN amenities a ON a.id = pa.amenity_id
 				WHERE pa.property_id = p.id
 			), '[]'::jsonb) AS amenities,
-			p.lat, p.lon, p.contract, p.title, p.main_img, p.imgs, p.agent, p.slug,
+			p.lat, p.lon, p.contract, p.title, ` + propertyMainImageJSON("p", true) + `, p.agent, p.slug,
 			p.earth_coords
 		FROM properties p WHERE 1=1 AND p.deleted_at IS NULL
 	`
@@ -776,8 +762,8 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 		var (
 			featsJSON   []byte
 			amsJSON     []byte
+			mainJSON    []byte
 			listingDate sql.NullTime
-			imgs        pgtype.Array[pgtype.Text]
 		)
 		err = rows.Scan(
 			&prop.Id,
@@ -802,8 +788,7 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 			&prop.Lon,
 			&prop.Contract,
 			&prop.Title,
-			&prop.MainImg,
-			&imgs,
+			&mainJSON,
 			&prop.Agent,
 			&prop.Slug,
 			&prop.Coords,
@@ -831,12 +816,8 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 			prop.ListingDate = listingDate.Time
 		}
 
-		if imgs.Valid {
-			for _, img := range imgs.Elements {
-				if img.Valid {
-					prop.Images = append(prop.Images, img.String)
-				}
-			}
+		if prop.MainImage, err = unmarshalAsset(mainJSON); err != nil {
+			return
 		}
 
 		// Sync lat/lon from coords if needed
@@ -867,7 +848,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 		ctx,
 		`SELECT
 			p2.id, p2.address, p2.city, p2.state, p2.zip, p2.price,
-			p2.beds, p2.baths, p2.square_mt, p2.main_img, p2.contract, p2.title,
+			p2.beds, p2.baths, p2.square_mt, `+propertyMainImageJSON("p2", true)+`, p2.contract, p2.title,
 			(p1.earth_coords <@> p2.earth_coords) as distance
 		FROM properties p1
 		CROSS JOIN properties p2
@@ -893,6 +874,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 	for rows.Next() {
 		var prop Property
 		var distance float64
+		var mainJSON []byte
 
 		err := rows.Scan(
 			&prop.Id,
@@ -904,13 +886,16 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 			&prop.Beds,
 			&prop.Baths,
 			&prop.SqMt,
-			&prop.MainImg,
+			&mainJSON,
 			&prop.Contract,
 			&prop.Title,
 			&distance,
 		)
 
 		if err != nil {
+			return nil, err
+		}
+		if prop.MainImage, err = unmarshalAsset(mainJSON); err != nil {
 			return nil, err
 		}
 
@@ -979,16 +964,19 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 					jsonb_build_object(
 						'id', ni.id,
 						'category', ni.category,
-						'image', ni.image,
+						'mediaId', ni.media_id,
 						'caption', ni.caption,
-						'position', ni.position
+						'position', ni.position,
+						'asset', `+mediaAssetJSON("nma")+`
 					) ORDER BY ni.position
 				)
 				FROM property_named_images ni
+				JOIN property_media npm ON npm.id = ni.media_id
+				JOIN media_assets nma ON nma.id = npm.asset_id AND nma.status = 'ready'
 				WHERE ni.property_id = p.id
 			), '[]'::jsonb) AS named_images,
 			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at,
-            p.title, p.main_img, p.imgs, p.agent, p.slug,
+            p.title, `+propertyMainImageJSON("p", true)+`, `+propertyMediaJSONAgg(true)+`, p.agent, p.slug,
 			u.fullname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
@@ -1001,6 +989,8 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 	var amsJSON []byte
 	var detailsJSON []byte
 	var namedImgsJSON []byte
+	var mainJSON []byte
+	var mediaJSON []byte
 	var phone sql.NullString
 	var img sql.NullString
 	var featuredExpiresAt sql.NullTime
@@ -1036,8 +1026,8 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		&property.Featured,
 		&featuredExpiresAt,
 		&property.Title,
-		&property.MainImg,
-		&property.Images,
+		&mainJSON,
+		&mediaJSON,
 		&property.Agent,
 		&property.Slug,
 		&property.AgentData.Name,
@@ -1074,6 +1064,13 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		if err = json.Unmarshal(namedImgsJSON, &property.NamedImages); err != nil {
 			log.Printf("failed to unmarshal named images for property with id %s: %v\n", propId, err)
 		}
+	}
+
+	if property.MainImage, err = unmarshalAsset(mainJSON); err != nil {
+		return nil, err
+	}
+	if err = json.Unmarshal(mediaJSON, &property.Media); err != nil {
+		return nil, err
 	}
 
 	if listingDate.Valid {
@@ -1148,15 +1145,19 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 					jsonb_build_object(
 						'id', ni.id,
 						'category', ni.category,
-						'image', ni.image,
+						'mediaId', ni.media_id,
 						'caption', ni.caption,
-						'position', ni.position
+						'position', ni.position,
+						'asset', `+mediaAssetJSON("nma")+`
 					) ORDER BY ni.position
 				)
 				FROM property_named_images ni
+				JOIN property_media npm ON npm.id = ni.media_id
+				JOIN media_assets nma ON nma.id = npm.asset_id AND nma.status = 'ready'
 				WHERE ni.property_id = p.id
 			), '[]'::jsonb) AS named_images,
-			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.title, p.main_img, p.imgs, p.agent, p.slug,
+			p.lat, p.lon, p.contract, p.featured, p.featured_expires_at, p.title,
+			`+propertyMainImageJSON("p", true)+`, `+propertyMediaJSONAgg(true)+`, p.agent, p.slug,
 			u.fullname AS agent_name,
 			u.phone AS agent_number,
 			u.img AS agent_img
@@ -1169,6 +1170,8 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 	var amsJSON []byte
 	var detailsJSON []byte
 	var namedImgsJSON []byte
+	var mainJSON []byte
+	var mediaJSON []byte
 	var phone sql.NullString
 	var img sql.NullString
 	var featuredExpiresAt sql.NullTime
@@ -1204,8 +1207,8 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 		&property.Featured,
 		&featuredExpiresAt,
 		&property.Title,
-		&property.MainImg,
-		&property.Images,
+		&mainJSON,
+		&mediaJSON,
 		&property.Agent,
 		&property.Slug,
 		&property.AgentData.Name,
@@ -1244,6 +1247,13 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 		}
 	}
 
+	if property.MainImage, err = unmarshalAsset(mainJSON); err != nil {
+		return nil, err
+	}
+	if err = json.Unmarshal(mediaJSON, &property.Media); err != nil {
+		return nil, err
+	}
+
 	if listingDate.Valid {
 		property.ListingDate = listingDate.Time
 	}
@@ -1256,76 +1266,6 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 	property.SyncLatLon()
 
 	return
-}
-
-func UpdatePropertyImages(property *Property) error {
-	conn, err := GetPool()
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	tx, err := conn.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
-	args := pgx.NamedArgs{
-		"images":   property.Images,
-		"main_img": property.MainImg,
-		"id":       property.Id,
-	}
-
-	_, err = tx.Exec(
-		ctx,
-		"UPDATE properties SET imgs = @images, main_img = @main_img WHERE id = @id",
-		args,
-	)
-	if err != nil {
-		return err
-	}
-
-	return tx.Commit(ctx)
-}
-
-func UpdatePropertyImgs(id string, images []string) error {
-	conn, err := GetPool()
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	_, err = conn.Exec(ctx, "UPDATE properties SET imgs = $1 WHERE id = $2", images, id)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func UpdatePropertyMainImg(id, img string) error {
-	conn, err := GetPool()
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	_, err = conn.Exec(ctx, "UPDATE properties SET main_img = $1 WHERE id = $2", img, id)
-
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func DeletePropertyById(id string) error {

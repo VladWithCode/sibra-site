@@ -44,6 +44,11 @@ type ResolvedFeaturedItem struct {
 	Subtitle string `json:"subtitle"`
 	// Image is a browser-servable path (/static/...) or absolute URL.
 	Image string `json:"image"`
+	// ImageAsset is the encoded image (with responsive widths) when the card
+	// image comes from a media asset; Image is empty then.
+	ImageAsset *MediaAsset `json:"imageAsset,omitempty"`
+	// Video is the encoded cover video the card plays, when any.
+	Video *MediaAsset `json:"video,omitempty"`
 	// Href is an SPA path for internal kinds or an absolute URL for external.
 	Href     string `json:"href"`
 	External bool   `json:"external"`
@@ -53,11 +58,13 @@ type ResolvedFeaturedItem struct {
 
 // featuredResource is what a resolver reports for one linked resource.
 type featuredResource struct {
-	Title    string
-	Subtitle string
-	Image    string
-	Href     string
-	Meta     map[string]any
+	Title      string
+	Subtitle   string
+	Image      string
+	ImageAsset *MediaAsset
+	Video      *MediaAsset
+	Href       string
+	Meta       map[string]any
 }
 
 // featuredResolvers maps a kind to a batch resolver. Adding a new linkable
@@ -357,7 +364,9 @@ func ResolveFeaturedItems(ctx context.Context, items []*FeaturedItem) ([]*Resolv
 		}
 		if card.Image == "" {
 			card.Image = resource.Image
+			card.ImageAsset = resource.ImageAsset
 		}
+		card.Video = resource.Video
 		resolved = append(resolved, card)
 	}
 
@@ -375,9 +384,13 @@ func resolveFeaturedProperties(ctx context.Context, ids []string) (map[string]fe
 	defer cancel()
 
 	rows, err := conn.Query(ctx, `
-        SELECT id, title, address, COALESCE(zip, ''), price, contract, beds, baths, square_mt, COALESCE(main_img, '')
-        FROM properties
-        WHERE id::text = ANY($1) AND deleted_at IS NULL`,
+        SELECT p.id, p.title, p.address, COALESCE(p.zip, ''), p.price, p.contract, p.beds, p.baths, p.square_mt,
+            `+propertyMainImageJSON("p", true)+`,
+            (SELECT `+mediaAssetJSON("cv")+`
+             FROM property_media pm JOIN media_assets cv ON cv.id = pm.asset_id
+             WHERE pm.property_id = p.id AND pm.is_cover AND cv.status = 'ready')
+        FROM properties p
+        WHERE p.id::text = ANY($1) AND p.deleted_at IS NULL`,
 		ids,
 	)
 	if err != nil {
@@ -388,26 +401,32 @@ func resolveFeaturedProperties(ctx context.Context, ids []string) (map[string]fe
 	resources := map[string]featuredResource{}
 	for rows.Next() {
 		var (
-			id, title, address, zip, contract, mainImg string
-			price, squareMt                            float64
-			beds, baths                                int
+			id, title, address, zip, contract string
+			price, squareMt                   float64
+			beds, baths                       int
+			mainJSON, videoJSON               []byte
 		)
-		if err := rows.Scan(&id, &title, &address, &zip, &price, &contract, &beds, &baths, &squareMt, &mainImg); err != nil {
+		if err := rows.Scan(&id, &title, &address, &zip, &price, &contract, &beds, &baths, &squareMt, &mainJSON, &videoJSON); err != nil {
+			return nil, err
+		}
+		mainImage, err := unmarshalAsset(mainJSON)
+		if err != nil {
+			return nil, err
+		}
+		video, err := unmarshalAsset(videoJSON)
+		if err != nil {
 			return nil, err
 		}
 
-		image := ""
-		if mainImg != "" {
-			image = fmt.Sprintf("/static/properties/%s/%s", id, mainImg)
-		}
 		if title == "" {
 			title = address
 		}
 		resources[id] = featuredResource{
-			Title:    title,
-			Subtitle: fmt.Sprintf("%s. C.P. %s", address, zip),
-			Image:    image,
-			Href:     fmt.Sprintf("/propiedades/%s/%s", contract, id),
+			Title:      title,
+			Subtitle:   fmt.Sprintf("%s. C.P. %s", address, zip),
+			ImageAsset: mainImage,
+			Video:      video,
+			Href:       fmt.Sprintf("/propiedades/%s/%s", contract, id),
 			Meta: map[string]any{
 				"price":    price,
 				"contract": contract,

@@ -14,6 +14,7 @@ func NewRouter() http.Handler {
 	// Api router
 	RegisterAdminRoutes(router)
 	RegisterPropertyRoutes(router)
+	RegisterPropertyMediaRoutes(router)
 	RegisterUserRoutes(router)
 	RegisterRequestsRouter(router)
 	RegisterProjectRoutes(router)
