@@ -47,3 +47,7 @@ count.txt
 !/web/static/uploads/.keep
 /web/static/team/*
 !/web/static/team/.keep
+
+# Encoded media (internal/media)
+/web/static/media/*
+!/web/static/media/.keep
