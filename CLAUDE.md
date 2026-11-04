@@ -24,6 +24,13 @@ npm test        # Vitest
 npm run format  # Prettier
 ```
 
+### Media backfill
+```bash
+go run ./cmd/media-backfill           # Dry run: legacy property images / selling page heroes to encode
+go run ./cmd/media-backfill --apply   # Encode and link them (idempotent)
+```
+DB-backed tests need `TEST_DATABASE_URL` (a migrated, disposable database).
+
 ### Database migrations (Goose)
 ```bash
 goose up    # Apply migrations (uses GOOSE_* env vars from .env)
@@ -42,6 +49,7 @@ Entry point: `main.go` → connects to PostgreSQL via `internal/db`, then regist
 | `internal/db` | pgxpool connection, all SQL queries |
 | `internal/files` / `internal/uploads` | File upload/delete logic |
 | `internal/wsp` | WhatsApp Business API notifications |
+| `internal/media` | Upload validation (ffprobe) and encoding (ffmpeg) of images/videos into `web/static/media/{asset}/`; background encoder lanes started from `main.go`. Requires `ffmpeg`/`ffprobe` with `libx264` and `libwebp` (server panics at startup otherwise) |
 
 Route patterns use Go 1.22+ syntax: `"GET /{$}"`, `"POST /api/users"`. Authenticated handlers use the `AuthedHandler` pattern.
 

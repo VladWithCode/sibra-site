@@ -1,6 +1,6 @@
 # Property Media (Video + Optimized Images) — Implementation Plan
 
-Status: planned · Date: 2026-11-04
+Status: phases 1–6 implemented on branch `feat/property-media` (2026-11-04). Phase 7 (cleanup) pending.
 
 ## Goal
 
@@ -36,7 +36,33 @@ video card into view.
 | Detail gallery | Video slide has native controls, starts muted when selected, pauses when left; hero stays the main image |
 | Selling pages | Hero media also goes through the pipeline |
 
-## Current state (relevant findings)
+## Implementation notes (what changed from the plan)
+
+- **Encoder lanes:** one lane for images and one for videos, each encoding one asset at a time. Images
+  never wait behind a 10-minute video encode. There is no `MEDIA_WORKERS` setting.
+- **Validation:** `http.DetectContentType` is not used. It does not recognize iPhone `.mov` files. ffprobe
+  (probing by content, format allowlist) is the only authority. HEIC/AVIF stills are rejected by
+  their MP4 `major_brand`.
+- **EXIF orientation:** ffmpeg applies JPEG EXIF orientation to stills only in recent builds. The
+  pipeline decodes images with `-noautorotate`, reads the orientation in Go (`internal/media/exif.go`)
+  and applies `transpose`/`flip` itself. Output is the same on any ffmpeg version.
+- **Encoding cost:** the 720 rendition is encoded from the 1080 output, so a 4K source is decoded once.
+  All image widths come from one decode (`split` filter). Widths within 15% of the largest are dropped.
+- **Uploads:** the panel sends one file per request with XHR progress, so every request stays under
+  the 510m nginx limit. The endpoint still accepts up to 16 files per request.
+- **Schema additions:** `media_assets.legacy_file` makes the backfill incrementally re-runnable.
+  `selling_pages.hero_pending_asset_id` keeps the current hero live while a replacement encodes. The
+  worker promotes the replacement in the same transaction that marks it ready, and clears the legacy
+  `hero_media` columns.
+- **Deleted while encoding:** `CompleteMediaAsset` updates zero rows, and the worker removes the
+  output. No separate owner check is needed.
+- **New property page:** files are staged in the form. After the property is created, they are uploaded
+  one per request with a progress toast, and the edit page shows their encoding status.
+- **Audio:** the rule "unmuting one card mutes the others" was dropped. Only one card plays at a time, so
+  paused cards are silent anyway.
+- **Selling page featured cards** use the encoded hero image when the hero is an image.
+
+## Current state before the change (relevant findings)
 
 - `properties.imgs VARCHAR(256)[]` + `properties.main_img` hold bare filenames; files live in
   `web/static/properties/{id}/`. Nothing is compressed.
@@ -128,8 +154,7 @@ one implementation.
 `libx264` and `libwebp` encoders exist. `main.go` panics if a tool is missing, as it does for the DB.
 
 **Validation (trust boundary).**
-1. Sniff the first 512 bytes (`http.DetectContentType`). Allow `image/jpeg|png|webp` and
-   `video/mp4|quicktime|webm|x-matroska`. Ignore the client filename and extension.
+1. Store the original without an extension. Ignore the client filename and extension.
 2. `ffprobe -v error -print_format json -show_format -show_streams`. Reject when
    `format_name` is not in the allowlist (`mov,mp4,m4a,3gp,3g2,mj2`, `matroska,webm`,
    `image2`, `png_pipe`, `jpeg_pipe`, `webp_pipe`). This blocks playlist/concat formats
@@ -163,15 +188,14 @@ ffmpeg -protocol_whitelist file -i SRC -map 0:v:0 -map 0:a:0? -map_metadata -1 \
 least the smallest width, at source size if the source is narrower):
 `ffmpeg -i SRC -map_metadata -1 -vf scale=W:-2 -c:v libwebp -quality 80 wW.webp`.
 
-> **Verify first:** ffmpeg must apply JPEG EXIF orientation. Phone portrait photos rely on it.
-> Add a test fixture with orientation=6. If ffmpeg ignores it, read the tag via ffprobe and apply
-> `transpose` in the filter chain.
+> EXIF orientation is applied by the pipeline itself (see "Implementation notes"), and an
+> integration test with an orientation=6 JPEG covers it.
 > HEIC (iPhone default) is **not** accepted in v1. The panel shows a clear message. iOS Safari
 > converts to JPEG on upload in most cases.
 
 **Worker:**
-- Runs in-process, started from `main.go`. Concurrency comes from `MEDIA_WORKERS`
-  (default 1) so encodes never starve the web server.
+- Runs in-process, started from `main.go`: one lane for images and one for videos, each
+  encoding one asset at a time, so encodes never starve the web server.
 - Claim: `UPDATE media_assets SET status='processing', attempts=attempts+1, updated_at=now()
   WHERE id = (SELECT id FROM media_assets WHERE status='pending' ORDER BY created_at
   FOR UPDATE SKIP LOCKED LIMIT 1) RETURNING ...`.
@@ -179,8 +203,8 @@ least the smallest width, at source size if the source is narrower):
 - Per-job timeout: 20 min (`context.WithTimeout`). ffmpeg is killed on cancel.
 - On error: `attempts < 3` sets the job back to `pending`; otherwise `failed` with `error` text (shown in panel).
 - Crash recovery: at startup, reset `processing` back to `pending`.
-- Orphan safety: after encoding, the worker checks that the asset still has an owner. If the
-  admin deleted it mid-encode, the worker removes the output and the row.
+- Orphan safety: deleting an item deletes its asset row. If that happens mid-encode, completing it
+  updates zero rows, and the worker removes the output.
 - Add graceful shutdown to `main.go`: on SIGINT/SIGTERM, `http.Server.Shutdown`, cancel the worker
   context, and wait for it. An interrupted job goes back to `pending`.
 
@@ -324,8 +348,10 @@ leaves the job `pending` (no attempt counted) while space is low. The backfill c
 estimated space it needs and refuses to `--apply` when the estimate exceeds free space minus 1.5 GB.
 
 - VPS: `dnf/apt install ffmpeg` (must include `libx264`, `libwebp`).
-- New env vars: `MEDIA_WORKERS` (default 1), `MEDIA_INCOMING_PATH` (default `tmp/media-incoming`),
-  `MEDIA_WORK_PATH` (default `tmp/media-work`). Document them in CLAUDE.md.
+- Optional env vars (read by `media.Init` after `.env` is loaded): `MEDIA_OUTPUT_PATH` (default
+  `web/static/media`), `MEDIA_INCOMING_PATH` (default `tmp/media-incoming`), `MEDIA_WORK_PATH`
+  (default `tmp/media-work`). The defaults fit the VPS. The work and output paths must share a
+  filesystem.
 
 #### nginx (`nginx.conf` in the repo root, deployed on the VPS)
 
@@ -414,35 +440,38 @@ head -c 100M /dev/zero | curl -s -o /dev/null -w '%{http_code}\n' -X POST --data
 Order: deploy the nginx change together with phase 2 (upload API). The `/static/media/` location is
 harmless before any asset exists. Rollback: restore the `.bak` file and reload.
 
-## Phases
+## Phases (implemented as one commit each)
 
-Each phase is a separate PR that is deployable on its own.
+1. Pipeline core: migration, `internal/media`, encoder lanes, graceful shutdown.
+2. Property media API.
+3. Backfill command `cmd/media-backfill`.
+4. Public frontend: responsive images, gallery video, featured card playback.
+5. Panel: `PropertyMediaManager`, named images by media id, legacy picture endpoints removed.
+6. Selling page hero on the pipeline, plus its backfill.
+7. **Pending, after ~2 weeks stable:** a migration drops `imgs`, `main_img`,
+   `property_named_images.image`, `hero_media`, `hero_media_type` and `media_assets.legacy_file`.
+   Archive, then remove `web/static/properties/` and the old hero uploads.
 
-1. **Pipeline core.** Migration, `internal/media` (probe, validate, encode, worker), graceful
-   shutdown, `CheckTools`. Tests: ffprobe JSON parsing, scale/rendition selection, state
-   transitions, and an integration test that generates a 4 s `testsrc` + `sine` clip and a
-   rotated JPEG with ffmpeg, then encodes them (skipped when ffmpeg is missing).
-2. **Property media API.** Routes above plus DB functions in `internal/db`. Handler tests for
-   validation, ordering, cover uniqueness, and authorization.
-3. **Backfill command `cmd/media-backfill`.** Modeled on `cmd/blog-cleanup`: dry-run by default,
-   `--apply` runs. For each property, it creates assets for `main_img` + `imgs` (in order), encodes
-   **inline** (same pipeline, no worker), fills `property_media`, `main_asset_id`, and
-   `property_named_images.media_id`. It is idempotent: it skips properties already migrated, and
-   it can be re-run right before cutover to catch uploads made through the old panel. It leaves the
-   legacy files in place.
-4. **Public frontend.** `ResponsiveImage` everywhere, detail gallery with video, `FeaturedVideo`
-   with coordinator and gating, featured resolver video field. Vitest: coordinator selection
-   logic and gating.
-5. **Panel + cutover.** `MediaManager`, named images picker, remove old picture endpoints and fix
-   paths. Cutover sequence:
-   1. Deploy phases 1–3. Run the backfill dry-run, then `--apply`.
-   2. Ask editors to pause gallery edits. Re-run `--apply` to catch the latest changes.
-   3. Deploy phases 4–5.
-6. **Selling pages.** Hero on the pipeline. Backfill existing hero media with the same command
-   (`--selling-pages`).
-7. **Cleanup (after ~2 weeks stable).** Migration drops `imgs`, `main_img`,
-   `property_named_images.image`, `hero_media`, `hero_media_type`. Archive, then remove
-   `web/static/properties/` and the old hero uploads.
+## Deployment runbook
+
+The new server binary **panics at startup if ffmpeg/ffprobe are missing**, so install them first.
+
+1. **VPS prerequisites:** `sudo apt install ffmpeg` (check `ffmpeg -hide_banner -encoders | grep -E
+   'libx264|libwebp'`), then create the 1 GB swap file (section 7).
+2. **Migrate:** `goose up`. The change is additive, and the running old binary ignores the new columns.
+3. **Backfill while the old site still runs:**
+   `go run ./cmd/media-backfill` (dry run: check counts and missing files), then `--apply`.
+   Expect roughly 20 s for ~30 images. A legacy hero video takes minutes.
+4. **nginx:** apply section 7 (headers snippet, upload location, `/static/media/` location), then
+   `nginx -t` and reload.
+5. **Cutover:** ask editors to pause gallery edits. Re-run `go run ./cmd/media-backfill --apply`
+   (it only syncs what changed), build the frontend, then build and restart the Go server.
+6. **Verify:** home and detail pages render images from `/static/media/`. Upload a real phone video
+   in the panel and watch it go from "Procesando" to ready. Measure the encode's peak memory with
+   `ffmpeg -benchmark` on a similar clip.
+
+Rollback: restore the previous binary and frontend build. The legacy columns and files are untouched,
+so the old code works as before. `goose down` removes the new tables if needed.
 
 ## Acceptance criteria
 
@@ -478,7 +507,11 @@ Each phase is a separate PR that is deployable on its own.
 - **Disk:** at 6.4 G, a few large videos plus the backfill can fill the disk. The disk guard
   prevents a full disk but not "can't upload". Plan for a disk upgrade, or move media to object
   storage, if the catalog grows.
-- **EXIF orientation in ffmpeg:** verify with the fixture in phase 1. Fallback documented above.
+- **iPhone HDR video:** HLG/Dolby Vision sources are converted to 8-bit `yuv420p` without tone
+  mapping and can look washed out. Add a `zscale`/`tonemap` step if editors upload HDR clips (it needs
+  ffmpeg built with libzimg).
+- **Not verified yet:** CRF values on real property footage (the tests use synthetic clips), the
+  mobile-width layout of the featured cards in a real phone browser, and peak memory on the VPS.
 - **HEIC images:** rejected in v1. Revisit if editors upload from iPhone desktop sync.
 - **Disk growth:** variants roughly double image storage per photo vs one raw file, but the total is
   far smaller than raw JPEGs. Videos are about 5–15 MB each after encode.
