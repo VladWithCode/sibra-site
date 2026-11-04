@@ -35,8 +35,14 @@ type SellingPage struct {
 	WhatsAppNumber  string `json:"whatsappNumber"`
 	WhatsAppMessage string `json:"whatsappMessage"`
 
-	HeroMedia     string `json:"heroMedia"`
-	HeroMediaType string `json:"heroMediaType"`
+	// HeroAsset is the encoded hero image or video. HeroPendingAsset is a
+	// replacement still encoding (panel only shows its status); the worker
+	// promotes it to HeroAsset once ready. HeroMedia/HeroMediaType are the
+	// legacy filename columns, used until the page is backfilled.
+	HeroAsset        *MediaAsset `json:"heroAsset"`
+	HeroPendingAsset *MediaAsset `json:"heroPendingAsset"`
+	HeroMedia        string      `json:"heroMedia"`
+	HeroMediaType    string      `json:"heroMediaType"`
 	HeroTitle     string `json:"heroTitle"`
 	HeroSubtitle  string `json:"heroSubtitle"`
 	HeroCTALabel  string `json:"heroCtaLabel"`
@@ -91,6 +97,11 @@ const sellingPageColumns = `
 	contact_address, contact_hours, contact_phone,
 	created_at, updated_at`
 
+// sellingPageSelect is sellingPageColumns plus the hero assets, for SELECTs.
+var sellingPageSelect = sellingPageColumns + `,
+	(SELECT ` + mediaAssetJSON("ha") + ` FROM media_assets ha WHERE ha.id = selling_pages.hero_asset_id),
+	(SELECT ` + mediaAssetJSON("hp") + ` FROM media_assets hp WHERE hp.id = selling_pages.hero_pending_asset_id)`
+
 // sellingPageMediaColumns whitelists the columns updatable via the media upload
 // endpoint. Maps an allowed field name -> its SQL column (identical here).
 // Prevents arbitrary column updates from user input.
@@ -134,6 +145,7 @@ func validateSellingPage(p *SellingPage) error {
 
 func scanSellingPage(row pgx.Row) (*SellingPage, error) {
 	var p SellingPage
+	var heroJSON, pendingJSON []byte
 	err := row.Scan(
 		&p.ID, &p.Slug, &p.Name, &p.Variant, &p.Published,
 		&p.SEOTitle, &p.SEODescription, &p.PixelID, &p.WhatsAppNumber, &p.WhatsAppMessage,
@@ -146,8 +158,15 @@ func scanSellingPage(row pgx.Row) (*SellingPage, error) {
 		&p.LocationImg, &p.LocationMapEmbed, &p.LocationLat, &p.LocationLng, &p.LocationCaption, &p.LocationChips,
 		&p.ContactAddress, &p.ContactHours, &p.ContactPhone,
 		&p.CreatedAt, &p.UpdatedAt,
+		&heroJSON, &pendingJSON,
 	)
 	if err != nil {
+		return nil, err
+	}
+	if p.HeroAsset, err = unmarshalAsset(heroJSON); err != nil {
+		return nil, err
+	}
+	if p.HeroPendingAsset, err = unmarshalAsset(pendingJSON); err != nil {
 		return nil, err
 	}
 	return &p, nil
@@ -254,7 +273,7 @@ func GetSellingPageByID(ctx context.Context, id string) (*SellingPage, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	row := conn.QueryRow(ctx, `SELECT `+sellingPageColumns+` FROM selling_pages WHERE id = $1`, id)
+	row := conn.QueryRow(ctx, `SELECT `+sellingPageSelect+` FROM selling_pages WHERE id = $1`, id)
 	return scanSellingPage(row)
 }
 
@@ -268,7 +287,7 @@ func GetSellingPageBySlug(ctx context.Context, slug string) (*SellingPage, error
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	row := conn.QueryRow(ctx, `SELECT `+sellingPageColumns+` FROM selling_pages WHERE slug = $1`, slug)
+	row := conn.QueryRow(ctx, `SELECT `+sellingPageSelect+` FROM selling_pages WHERE slug = $1`, slug)
 	return scanSellingPage(row)
 }
 
@@ -282,7 +301,7 @@ func ListSellingPages(ctx context.Context) ([]*SellingPage, error) {
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	rows, err := conn.Query(ctx, `SELECT `+sellingPageColumns+` FROM selling_pages ORDER BY created_at DESC`)
+	rows, err := conn.Query(ctx, `SELECT `+sellingPageSelect+` FROM selling_pages ORDER BY created_at DESC`)
 	if err != nil {
 		return nil, err
 	}
@@ -403,52 +422,6 @@ func UpdateSellingPageMediaField(ctx context.Context, id, field, value string) e
 
 	query := fmt.Sprintf("UPDATE selling_pages SET %s = $2, updated_at = NOW() WHERE id = $1", col)
 	tag, err := conn.Exec(ctx, query, id, value)
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
-		return pgx.ErrNoRows
-	}
-	return nil
-}
-
-// UpdateSellingPageHeroMedia sets both hero_media and hero_media_type.
-func UpdateSellingPageHeroMedia(ctx context.Context, id, filename, mediaType string) error {
-	conn, err := GetPoolWithCtx(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	tag, err := conn.Exec(ctx,
-		`UPDATE selling_pages SET hero_media = $2, hero_media_type = $3, updated_at = NOW() WHERE id = $1`,
-		id, filename, mediaType)
-	if err != nil {
-		return err
-	}
-	if tag.RowsAffected() == 0 {
-		return pgx.ErrNoRows
-	}
-	return nil
-}
-
-// ClearSellingPageHeroMedia clears hero_media and hero_media_type.
-func ClearSellingPageHeroMedia(ctx context.Context, id string) error {
-	conn, err := GetPoolWithCtx(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Release()
-
-	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	tag, err := conn.Exec(ctx,
-		`UPDATE selling_pages SET hero_media = '', hero_media_type = '', updated_at = NOW() WHERE id = $1`,
-		id)
 	if err != nil {
 		return err
 	}

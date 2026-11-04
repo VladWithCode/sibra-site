@@ -4,6 +4,7 @@ import { getSellingPageBySlugOpts } from "@/queries/sellingPages";
 import { useUIStore } from "@/stores/uiStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { isReady, stillSrc, stillSrcSet } from "@/lib/media";
 import { useLayoutEffect, useMemo } from "react";
 
 export const Route = createFileRoute("/_public/terrenos/$slug")({
@@ -15,7 +16,16 @@ export const Route = createFileRoute("/_public/terrenos/$slug")({
     head: ({ loaderData }) => {
         const page = loaderData?.page;
         const links = [];
-        if (page?.heroMedia) {
+        if (isReady(page?.heroAsset)) {
+            // The hero still (image or video poster) is the LCP element.
+            links.push({
+                rel: "preload",
+                as: "image",
+                href: stillSrc(page.heroAsset, 1600),
+                imageSrcSet: stillSrcSet(page.heroAsset),
+                imageSizes: "100vw",
+            });
+        } else if (page?.heroMedia) {
             links.push({
                 rel: "preload",
                 as: page.heroMediaType === "video" ? "video" : "image",

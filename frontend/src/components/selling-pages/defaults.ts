@@ -2,6 +2,7 @@
 // These types drive the reusable SellingPageTemplate.
 
 import type { IconName } from "lucide-react/dynamic";
+import type { TMediaAsset } from "@/lib/media";
 
 export type Alignment = "left" | "center" | "right";
 
@@ -38,6 +39,8 @@ export type SellingPageData = {
     hero: {
         type: "image" | "video";
         url: string;
+        /** Encoded hero; preferred over `url` (legacy upload) when present. */
+        asset?: TMediaAsset;
         title: string;
         subtitle: string;
     };

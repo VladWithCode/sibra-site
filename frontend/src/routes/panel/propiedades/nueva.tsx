@@ -13,11 +13,8 @@ import { Button } from "@/components/ui/button";
 import { getAmenitiesOpts } from "@/queries/amenities";
 import { getFeaturesOpts } from "@/queries/features";
 import { createPropertyOpts } from "@/queries/properties";
-import {
-    checkMediaFile,
-    uploadPropertyMainImage,
-    uploadPropertyMediaFile,
-} from "@/queries/propertyMedia";
+import { checkMediaFile } from "@/queries/mediaUpload";
+import { uploadPropertyMainImage, uploadPropertyMediaFile } from "@/queries/propertyMedia";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";

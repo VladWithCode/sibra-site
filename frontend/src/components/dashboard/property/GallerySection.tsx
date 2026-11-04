@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { CloudUpload, Trash2 } from "lucide-react";
-import { MEDIA_ACCEPT } from "@/queries/propertyMedia";
+import { MEDIA_ACCEPT } from "@/queries/mediaUpload";
 import { useEffect, useMemo, useRef } from "react";
 
 type ErrorList = Array<{ message?: string } | undefined>;

@@ -49,12 +49,16 @@ ALTER TABLE property_named_images
     ADD COLUMN media_id UUID REFERENCES property_media(id) ON DELETE CASCADE,
     ALTER COLUMN image SET DEFAULT '';
 
-ALTER TABLE selling_pages ADD COLUMN hero_asset_id UUID REFERENCES media_assets(id) ON DELETE SET NULL;
+-- The hero keeps showing hero_asset_id while a replacement encodes in
+-- hero_pending_asset_id; the worker promotes it once ready.
+ALTER TABLE selling_pages
+    ADD COLUMN hero_asset_id UUID REFERENCES media_assets(id) ON DELETE SET NULL,
+    ADD COLUMN hero_pending_asset_id UUID REFERENCES media_assets(id) ON DELETE SET NULL;
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-ALTER TABLE selling_pages DROP COLUMN hero_asset_id;
+ALTER TABLE selling_pages DROP COLUMN hero_asset_id, DROP COLUMN hero_pending_asset_id;
 ALTER TABLE property_named_images
     DROP COLUMN media_id,
     ALTER COLUMN image DROP DEFAULT;

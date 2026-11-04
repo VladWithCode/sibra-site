@@ -8,15 +8,15 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
+	"github.com/vladwithcode/sibra-site/internal/media"
 	"github.com/vladwithcode/sibra-site/internal/uploads"
 )
-
-const maxSellingPageVideoSize = 50 << 20 // 50MB
 
 // RegisterSellingPageRoutes wires the Selling Pages (terrenos) API.
 //
@@ -167,10 +167,11 @@ func DeleteSellingPageHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, map[string]any{"success": true})
 }
 
-// UploadSellingPageMedia stores one whitelisted media file and saves the bare
-// filename to its column. MIME is sniffed (not trusted from the client). The
-// stored filename is deterministic from page slug + field; the client filename
-// is never used for the path, so traversal via filename is impossible.
+// UploadSellingPageMedia stores one whitelisted media file. The hero goes
+// through the media pipeline (image or video, encoded in the background and
+// promoted once ready); other fields store the image as uploaded and save the
+// bare filename to their column. MIME is sniffed (not trusted from the
+// client) and the stored filename never derives from the client filename.
 func UploadSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id := r.PathValue("id")
@@ -180,12 +181,12 @@ func UploadSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "Campo de medios no permitido"})
 		return
 	}
-	isHero := db.IsSellingPageHeroField(field)
+	if db.IsSellingPageHeroField(field) {
+		uploadSellingPageHero(w, r, id)
+		return
+	}
 
 	maxSize := int64(uploads.MaxImageUploadSize)
-	if isHero {
-		maxSize = maxSellingPageVideoSize
-	}
 	r.Body = http.MaxBytesReader(w, r.Body, maxSize+1<<20)
 	if err := r.ParseMultipartForm(maxSize); err != nil {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "El archivo excede el tamaño permitido o es inválido"})
@@ -200,21 +201,9 @@ func UploadSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	fileHeader := files[0]
 
-	mediaType, ok, msg := validateMediaContentType(fileHeader, isHero)
-	if !ok {
+	if ok, msg := validateImageContentType(fileHeader); !ok {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: msg})
 		return
-	}
-
-	if isHero {
-		if mediaType == "image" && fileHeader.Size > int64(uploads.MaxImageUploadSize) {
-			respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "La imagen excede 8MB"})
-			return
-		}
-		if mediaType == "video" && fileHeader.Size > int64(maxSellingPageVideoSize) {
-			respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: "El video excede 50MB"})
-			return
-		}
 	}
 
 	page, err := db.GetSellingPageByID(ctx, id)
@@ -228,11 +217,6 @@ func UploadSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Best-effort delete of previous file for hero_media (different extension possible).
-	if isHero && page.HeroMedia != "" {
-		_ = uploads.Delete(page.HeroMedia)
-	}
-
 	filename, err := uploads.Upload(&uploads.FileData{
 		Filename: fmt.Sprintf("%s-%s", page.Slug, field),
 		File:     fileHeader,
@@ -243,24 +227,45 @@ func UploadSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if isHero {
-		if err := db.UpdateSellingPageHeroMedia(ctx, id, filename, mediaType); err != nil {
-			respondWithError(w, http.StatusInternalServerError, ErrorParams{ErrorMessage: "Ocurrió un error al actualizar la página"})
-			log.Printf("Error updating hero media: %v\n", err)
-			return
-		}
-	} else {
-		if err := db.UpdateSellingPageMediaField(ctx, id, field, filename); err != nil {
-			respondWithError(w, http.StatusInternalServerError, ErrorParams{ErrorMessage: "Ocurrió un error al actualizar la página"})
-			log.Printf("Error updating media field: %v\n", err)
-			return
-		}
+	if err := db.UpdateSellingPageMediaField(ctx, id, field, filename); err != nil {
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{ErrorMessage: "Ocurrió un error al actualizar la página"})
+		log.Printf("Error updating media field: %v\n", err)
+		return
 	}
-	respondWithJSON(w, http.StatusOK, map[string]any{"success": true, "field": field, "filename": filename, "mediaType": mediaType})
+	respondWithJSON(w, http.StatusOK, map[string]any{"success": true, "field": field, "filename": filename})
 }
 
-// RemoveSellingPageMedia clears a whitelisted media column and best-effort
-// deletes the file for hero_media.
+// uploadSellingPageHero stores a hero image or video as a pending asset. The
+// current hero keeps showing until the new one finishes encoding.
+func uploadSellingPageHero(w http.ResponseWriter, r *http.Request, pageID string) {
+	if uuid.Validate(pageID) != nil {
+		respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la página"})
+		return
+	}
+	received, uerr := receiveMediaUploads(w, r, uploadRules{field: "file", maxFiles: 1, allowVideo: true})
+	if uerr != nil {
+		respondWithError(w, uerr.status, ErrorParams{ErrorMessage: uerr.message})
+		return
+	}
+	u := received[0]
+	superseded, err := db.SetSellingPageHeroPending(r.Context(), pageID, u.AssetID, u.Kind)
+	if err != nil {
+		discardUploads(received)
+		if errors.Is(err, db.ErrMediaNotFound) {
+			respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la página"})
+			return
+		}
+		respondWithError(w, http.StatusInternalServerError, ErrorParams{ErrorMessage: "Ocurrió un error al actualizar la página"})
+		log.Printf("Error setting pending hero: %v\n", err)
+		return
+	}
+	removeAssetFilesLogged(superseded)
+	media.Notify(u.Kind)
+	respondWithJSON(w, http.StatusAccepted, map[string]any{"success": true, "field": "hero_media", "assetId": u.AssetID, "mediaType": u.Kind})
+}
+
+// RemoveSellingPageMedia clears a whitelisted media column. For the hero it
+// deletes the current and pending assets and the legacy file.
 func RemoveSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	id := r.PathValue("id")
@@ -271,8 +276,11 @@ func RemoveSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	isHero := db.IsSellingPageHeroField(field)
-	if isHero {
+	if db.IsSellingPageHeroField(field) {
+		if uuid.Validate(id) != nil {
+			respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la página"})
+			return
+		}
 		page, err := db.GetSellingPageByID(ctx, id)
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
@@ -283,17 +291,17 @@ func RemoveSellingPageMedia(w http.ResponseWriter, r *http.Request) {
 			log.Printf("Error finding selling page: %v\n", err)
 			return
 		}
-		if page.HeroMedia != "" {
-			_ = uploads.Delete(page.HeroMedia)
-		}
-		if err := db.ClearSellingPageHeroMedia(ctx, id); err != nil {
-			if errors.Is(err, pgx.ErrNoRows) {
-				respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la página"})
-				return
-			}
+		removed, err := db.ClearSellingPageHero(ctx, id)
+		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, ErrorParams{ErrorMessage: "Ocurrió un error al actualizar la página"})
 			log.Printf("Error clearing hero media: %v\n", err)
 			return
+		}
+		for _, a := range removed {
+			removeAssetFilesLogged(a)
+		}
+		if page.HeroMedia != "" {
+			_ = uploads.Delete(page.HeroMedia)
 		}
 	} else {
 		if err := db.UpdateSellingPageMediaField(ctx, id, field, ""); err != nil {
@@ -330,7 +338,7 @@ func UploadSellingPageImage(w http.ResponseWriter, r *http.Request) {
 	}
 	fileHeader := files[0]
 
-	if _, ok, msg := validateMediaContentType(fileHeader, false); !ok {
+	if ok, msg := validateImageContentType(fileHeader); !ok {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: msg})
 		return
 	}
@@ -352,33 +360,21 @@ func UploadSellingPageImage(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, map[string]any{"success": true, "filename": filename})
 }
 
-// validateMediaContentType sniffs the file's first bytes and returns the detected
-// media type ("image" or "video") and whether it is acceptable. For hero_media
-// both image and video are accepted; for other fields only image is accepted.
-func validateMediaContentType(fh *multipart.FileHeader, allowBoth bool) (string, bool, string) {
+// validateImageContentType sniffs the file's first bytes and reports whether
+// it is an image.
+func validateImageContentType(fh *multipart.FileHeader) (bool, string) {
 	f, err := fh.Open()
 	if err != nil {
-		return "", false, "No se pudo leer el archivo"
+		return false, "No se pudo leer el archivo"
 	}
 	defer f.Close()
 
 	buf := make([]byte, 512)
 	n, _ := io.ReadFull(f, buf)
-	ct := http.DetectContentType(buf[:n])
-
-	if len(ct) >= 6 && ct[:6] == "image/" {
-		return "image", true, ""
+	if strings.HasPrefix(http.DetectContentType(buf[:n]), "image/") {
+		return true, ""
 	}
-	if ct == "video/mp4" || ct == "video/webm" {
-		if allowBoth {
-			return "video", true, ""
-		}
-		return "", false, "El campo solo acepta imágenes"
-	}
-	if allowBoth {
-		return "", false, "El archivo debe ser una imagen o un video (mp4/webm)"
-	}
-	return "", false, "El archivo debe ser una imagen"
+	return false, "El archivo debe ser una imagen"
 }
 
 func sellingPageValidationMessage(err error) (string, bool) {

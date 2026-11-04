@@ -109,7 +109,7 @@ func TestPropertyMediaLifecycle(t *testing.T) {
 	if err != nil || final {
 		t.Fatalf("first failure should retry: final=%v err=%v", final, err)
 	}
-	ok, err := db.CompleteMediaAsset(ctx, claimed.ID, 1920, 1080, 6000, true, db.MediaVariants{Videos: []int{1080, 720}, Poster: []int{480}})
+	ok, _, err := db.CompleteMediaAsset(ctx, claimed.ID, 1920, 1080, 6000, true, db.MediaVariants{Videos: []int{1080, 720}, Poster: []int{480}})
 	if err != nil || !ok {
 		t.Fatalf("complete: %v %v", ok, err)
 	}
@@ -123,7 +123,7 @@ func TestPropertyMediaLifecycle(t *testing.T) {
 	if err != nil || assetID != img {
 		t.Fatalf("delete: %s %v", assetID, err)
 	}
-	if ok, err := db.CompleteMediaAsset(ctx, img, 1, 1, 0, false, db.MediaVariants{}); err != nil || ok {
+	if ok, _, err := db.CompleteMediaAsset(ctx, img, 1, 1, 0, false, db.MediaVariants{}); err != nil || ok {
 		t.Errorf("complete deleted: ok=%v err=%v", ok, err)
 	}
 	if _, err := db.DeletePropertyMedia(ctx, propID, items[0].ID); !errors.Is(err, db.ErrMediaNotFound) {

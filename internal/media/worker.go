@@ -148,7 +148,7 @@ func process(parent context.Context, asset *db.MediaAsset) {
 		return
 	}
 
-	ok, err := db.CompleteMediaAsset(bg, asset.ID, res.Width, res.Height, res.DurationMs, res.HasAudio,
+	ok, replaced, err := db.CompleteMediaAsset(bg, asset.ID, res.Width, res.Height, res.DurationMs, res.HasAudio,
 		db.MediaVariants{Images: res.Images, Videos: res.Videos, Poster: res.Poster})
 	if err != nil {
 		// Output stays in place; the asset is requeued on next start.
@@ -159,6 +159,11 @@ func process(parent context.Context, asset *db.MediaAsset) {
 		// Deleted while encoding: drop the output.
 		_ = RemoveAssetFiles(asset.ID)
 		return
+	}
+	for _, id := range replaced {
+		if err := RemoveAssetFiles(id); err != nil {
+			log.Printf("media: remove replaced %s: %v\n", id, err)
+		}
 	}
 	_ = os.Remove(IncomingFile(asset.ID))
 	log.Printf("media: %s %s ready in %s\n", asset.Kind, asset.ID, time.Since(start).Round(time.Second))

@@ -1,3 +1,6 @@
+import { useEffect, useRef, useState } from "react";
+import { ResponsiveImage } from "@/components/media/ResponsiveImage";
+import { stillSrc, videoSrc, type TMediaAsset } from "@/lib/media";
 import { type Alignment, type SellingPageData } from "./defaults";
 
 type HeroSectionProps = {
@@ -73,26 +76,63 @@ export function HeroSection({ data, alignment }: HeroSectionProps) {
 }
 
 function HeroSectionMedia({ media }: { media: SellingPageData["hero"] }) {
-    const className = "absolute inset-0 w-full h-full object-cover object-center"
+    const className = "absolute inset-0 w-full h-full object-cover object-center";
+    const asset = media.asset;
 
-    return (
-        media.type === "video" && media.url ? (
-            <video
-                className={className}
-                muted
-                autoPlay
-                loop
-                preload="metamedia"
-                playsInline
-            >
-                <source src={media.url} type="video/mp4" />
-            </video>
-        ) : media.url ? (
-            <img
-                className={className}
-                src={media.url}
+    if (asset?.kind === "video") {
+        return <HeroVideo asset={asset} className={className} />;
+    }
+    if (asset) {
+        return (
+            <ResponsiveImage
+                asset={asset}
+                sizes="100vw"
                 alt=""
+                priority
+                className={className}
             />
-        ) : null
+        );
+    }
+
+    // Legacy upload (page not backfilled yet).
+    return media.type === "video" && media.url ? (
+        <video className={className} muted autoPlay loop preload="metadata" playsInline>
+            <source src={media.url} type="video/mp4" />
+        </video>
+    ) : media.url ? (
+        <img className={className} src={media.url} alt="" />
+    ) : null;
+}
+
+/**
+ * Above-the-fold hero video: the poster paints first (and is preloaded by the
+ * route), then the rendition that fits the screen plays muted.
+ */
+function HeroVideo({ asset, className }: { asset: TMediaAsset; className: string }) {
+    const ref = useRef<HTMLVideoElement>(null);
+    const [src] = useState(() =>
+        videoSrc(asset, window.matchMedia("(min-width: 1024px)").matches ? 1080 : 720),
+    );
+    useEffect(() => {
+        const video = ref.current;
+        if (!video) return;
+        video.muted = true;
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+        video.play().catch(() => {
+            /* Autoplay refused: the poster stays. */
+        });
+    }, []);
+    return (
+        <video
+            ref={ref}
+            className={className}
+            src={src}
+            poster={stillSrc(asset, 1600)}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-hidden
+        />
     );
 }

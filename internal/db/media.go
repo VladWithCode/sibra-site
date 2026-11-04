@@ -113,20 +113,61 @@ func ClaimPendingMediaAsset(ctx context.Context, kind string) (*MediaAsset, erro
 }
 
 // CompleteMediaAsset stores the encoding result and marks the asset ready.
-// It returns false when the asset no longer exists (deleted while encoding).
-func CompleteMediaAsset(ctx context.Context, id string, width, height, durationMs int, hasAudio bool, variants MediaVariants) (bool, error) {
+// A selling page hero waiting on this asset is promoted, and the hero it
+// replaces is deleted; the replaced asset ids are returned so the caller can
+// remove their files. ok is false when the asset no longer exists (deleted
+// while encoding).
+func CompleteMediaAsset(ctx context.Context, id string, width, height, durationMs int, hasAudio bool, variants MediaVariants) (ok bool, replaced []string, err error) {
 	vj, err := json.Marshal(variants)
 	if err != nil {
-		return false, err
+		return false, nil, err
 	}
-	tag, err := DB.Exec(ctx, `
+	tx, err := DB.Begin(ctx)
+	if err != nil {
+		return false, nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	tag, err := tx.Exec(ctx, `
 		UPDATE media_assets SET status = 'ready', error = '', width = $2, height = $3,
 			duration_ms = $4, has_audio = $5, variants = $6, updated_at = now()
 		WHERE id = $1`, id, width, height, durationMs, hasAudio, vj)
-	if err != nil {
-		return false, err
+	if err != nil || tag.RowsAffected() == 0 {
+		return false, nil, err
 	}
-	return tag.RowsAffected() == 1, nil
+
+	rows, err := tx.Query(ctx, `
+		WITH old AS (
+			SELECT id, hero_asset_id FROM selling_pages WHERE hero_pending_asset_id = $1 FOR UPDATE
+		)
+		UPDATE selling_pages sp
+		SET hero_asset_id = $1, hero_pending_asset_id = NULL,
+			hero_media = '', hero_media_type = '', updated_at = now()
+		FROM old WHERE sp.id = old.id
+		RETURNING old.hero_asset_id::text`, id)
+	if err != nil {
+		return false, nil, err
+	}
+	for rows.Next() {
+		var prev *string
+		if err := rows.Scan(&prev); err != nil {
+			rows.Close()
+			return false, nil, err
+		}
+		if prev != nil {
+			replaced = append(replaced, *prev)
+		}
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return false, nil, err
+	}
+	for _, prev := range replaced {
+		if _, err := tx.Exec(ctx, `DELETE FROM media_assets WHERE id = $1`, prev); err != nil {
+			return false, nil, err
+		}
+	}
+	return true, replaced, tx.Commit(ctx)
 }
 
 // FailMediaAssetAttempt records a failed encode. The asset returns to
@@ -460,4 +501,80 @@ func ClearPropertyMainImage(ctx context.Context, propertyID string) (string, err
 		return "", err
 	}
 	return *prev, tx.Commit(ctx)
+}
+
+// ------------------------------------------------------------------
+// Selling page hero
+// ------------------------------------------------------------------
+
+// SetSellingPageHeroPending stores a new pending hero asset. The current hero
+// stays visible until the worker promotes the new one. A previous pending
+// upload that never finished is superseded; its id is returned so the caller
+// can delete its files.
+func SetSellingPageHeroPending(ctx context.Context, pageID, assetID, kind string) (string, error) {
+	tx, err := DB.Begin(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback(ctx)
+
+	var prev *string
+	err = tx.QueryRow(ctx, `SELECT hero_pending_asset_id::text FROM selling_pages WHERE id = $1 FOR UPDATE`, pageID).Scan(&prev)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return "", ErrMediaNotFound
+	}
+	if err != nil {
+		return "", err
+	}
+	if err := insertMediaAsset(ctx, tx, assetID, kind); err != nil {
+		return "", err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE selling_pages SET hero_pending_asset_id = $1, updated_at = now() WHERE id = $2`, assetID, pageID); err != nil {
+		return "", err
+	}
+	old := ""
+	if prev != nil {
+		old = *prev
+		if _, err := tx.Exec(ctx, `DELETE FROM media_assets WHERE id = $1`, old); err != nil {
+			return "", err
+		}
+	}
+	return old, tx.Commit(ctx)
+}
+
+// ClearSellingPageHero removes the hero (current, pending and legacy columns)
+// and returns the deleted asset ids so the caller can delete their files.
+func ClearSellingPageHero(ctx context.Context, pageID string) ([]string, error) {
+	tx, err := DB.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	var hero, pending *string
+	err = tx.QueryRow(ctx, `SELECT hero_asset_id::text, hero_pending_asset_id::text FROM selling_pages WHERE id = $1 FOR UPDATE`,
+		pageID).Scan(&hero, &pending)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, ErrMediaNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	if _, err := tx.Exec(ctx, `
+		UPDATE selling_pages SET hero_asset_id = NULL, hero_pending_asset_id = NULL,
+			hero_media = '', hero_media_type = '', updated_at = now()
+		WHERE id = $1`, pageID); err != nil {
+		return nil, err
+	}
+	var removed []string
+	for _, a := range []*string{hero, pending} {
+		if a == nil {
+			continue
+		}
+		if _, err := tx.Exec(ctx, `DELETE FROM media_assets WHERE id = $1`, *a); err != nil {
+			return nil, err
+		}
+		removed = append(removed, *a)
+	}
+	return removed, tx.Commit(ctx)
 }

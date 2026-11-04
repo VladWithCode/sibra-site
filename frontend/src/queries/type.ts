@@ -573,6 +573,11 @@ export type TSellingPage = {
     whatsappNumber: string;
     whatsappMessage: string;
 
+    /** Encoded hero image or video. */
+    heroAsset: TMediaAsset | null;
+    /** Replacement hero still encoding (panel status only). */
+    heroPendingAsset: TMediaAsset | null;
+    /** Legacy hero filename, used until the page is backfilled. */
     heroMedia: string;
     heroMediaType: string;
     heroTitle: string;

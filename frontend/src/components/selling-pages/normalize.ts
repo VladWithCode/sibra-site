@@ -1,3 +1,4 @@
+import { isReady } from "@/lib/media";
 import type { TSellingPage } from "@/queries/type";
 import {
     type Alignment,
@@ -37,6 +38,7 @@ function variantOf(v: unknown): Alignment {
  */
 export function mergeSellingPage(api: TSellingPage): SellingPageData {
     const hasHero = typeof api.heroMedia === "string" && api.heroMedia.trim() !== "";
+    const heroAsset = isReady(api.heroAsset) ? api.heroAsset : undefined;
     const whatsMsg =
         typeof api.whatsappMessage === "string" && api.whatsappMessage.trim() !== ""
             ? api.whatsappMessage
@@ -48,8 +50,11 @@ export function mergeSellingPage(api: TSellingPage): SellingPageData {
         alignment: variantOf(api.variant),
 
         hero: {
-            type: (hasHero ? api.heroMediaType : "image") as "image" | "video",
-            url: media(api.heroMedia) ?? "",
+            type: heroAsset
+                ? heroAsset.kind
+                : ((hasHero ? api.heroMediaType : "image") as "image" | "video"),
+            url: heroAsset ? "" : (media(api.heroMedia) ?? ""),
+            asset: heroAsset,
             title: str(api.heroTitle),
             subtitle: str(api.heroSubtitle),
         },

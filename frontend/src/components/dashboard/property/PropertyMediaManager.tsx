@@ -19,10 +19,8 @@ import {
 } from "@/components/ui/card";
 import { stillSrc, type TMediaAsset } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import { MEDIA_ACCEPT, MEDIA_LIMITS, checkMediaFile } from "@/queries/mediaUpload";
 import {
-    MEDIA_ACCEPT,
-    MEDIA_LIMITS,
-    checkMediaFile,
     deletePropertyMainImageOpts,
     deletePropertyMediaOpts,
     getPropertyMediaOpts,

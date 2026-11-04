@@ -492,10 +492,12 @@ func resolveFeaturedSellingPages(ctx context.Context, ids []string) (map[string]
 	defer cancel()
 
 	rows, err := conn.Query(ctx, `
-        SELECT id, slug, name, hero_title, hero_subtitle,
-            CASE WHEN hero_media_type = 'image' THEN hero_media ELSE offer_land_img END
-        FROM selling_pages
-        WHERE id::text = ANY($1) AND published = true`,
+        SELECT sp.id, sp.slug, sp.name, sp.hero_title, sp.hero_subtitle,
+            CASE WHEN sp.hero_media_type = 'image' THEN sp.hero_media ELSE sp.offer_land_img END,
+            (SELECT `+mediaAssetJSON("ha")+` FROM media_assets ha
+             WHERE ha.id = sp.hero_asset_id AND ha.kind = 'image' AND ha.status = 'ready')
+        FROM selling_pages sp
+        WHERE sp.id::text = ANY($1) AND sp.published = true`,
 		ids,
 	)
 	if err != nil {
@@ -506,7 +508,12 @@ func resolveFeaturedSellingPages(ctx context.Context, ids []string) (map[string]
 	resources := map[string]featuredResource{}
 	for rows.Next() {
 		var id, slug, name, heroTitle, heroSubtitle, img string
-		if err := rows.Scan(&id, &slug, &name, &heroTitle, &heroSubtitle, &img); err != nil {
+		var heroJSON []byte
+		if err := rows.Scan(&id, &slug, &name, &heroTitle, &heroSubtitle, &img, &heroJSON); err != nil {
+			return nil, err
+		}
+		heroImage, err := unmarshalAsset(heroJSON)
+		if err != nil {
 			return nil, err
 		}
 
@@ -515,14 +522,15 @@ func resolveFeaturedSellingPages(ctx context.Context, ids []string) (map[string]
 			title = name
 		}
 		image := ""
-		if img != "" {
+		if heroImage == nil && img != "" {
 			image = "/static/uploads/" + img
 		}
 		resources[id] = featuredResource{
-			Title:    title,
-			Subtitle: heroSubtitle,
-			Image:    image,
-			Href:     "/terrenos/" + slug,
+			Title:      title,
+			Subtitle:   heroSubtitle,
+			Image:      image,
+			ImageAsset: heroImage,
+			Href:       "/terrenos/" + slug,
 		}
 	}
 	return resources, rows.Err()

@@ -44,6 +44,13 @@ export const getSellingPageByIdOpts = (id: string) =>
     queryOptions({
         queryKey: SellingPageQueryKeys.byId(id),
         queryFn: getSellingPageById,
+        // Poll while a new hero is encoding so the panel shows when it's live.
+        refetchInterval: (query) => {
+            const pending = query.state.data?.page?.heroPendingAsset;
+            return pending && (pending.status === "pending" || pending.status === "processing")
+                ? 3000
+                : false;
+        },
     });
 
 export const listSellingPagesOpts = () =>

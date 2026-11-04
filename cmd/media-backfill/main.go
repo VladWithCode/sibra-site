@@ -1,6 +1,7 @@
 // Command media-backfill migrates legacy property images (properties.main_img
-// and properties.imgs, files under web/static/properties/{id}/) to encoded
-// media assets.
+// and properties.imgs, files under web/static/properties/{id}/) and selling
+// page heroes (selling_pages.hero_media, files under web/static/uploads/) to
+// encoded media assets.
 //
 // It is idempotent: assets remember the legacy file they came from, so a
 // re-run only encodes images added since, removes items whose legacy image
@@ -41,6 +42,7 @@ func (p *propertyPlan) empty() bool {
 func main() {
 	apply := flag.Bool("apply", false, "Write changes (default: dry-run)")
 	propsDir := flag.String("properties-dir", "web/static/properties", "Legacy property images directory")
+	uploadsDir := flag.String("uploads-dir", "web/static/uploads", "Legacy selling page uploads directory")
 	flag.Parse()
 
 	godotenv.Overload(".env")
@@ -91,12 +93,35 @@ func main() {
 		}
 	}
 
+	heroes, err := db.ListLegacySellingPageHeroes(ctx)
+	if err != nil {
+		log.Fatalf("Listing selling pages failed: %v", err)
+	}
+	var heroPlans []*db.LegacySellingPageHero
+	for _, h := range heroes {
+		// Heroes uploaded through the new panel are never overwritten.
+		if h.HeroMedia == "" || (h.HasHero && (h.HeroLegacy == "" || h.HeroLegacy == h.HeroMedia)) {
+			continue
+		}
+		path := filepath.Join(*uploadsDir, h.HeroMedia)
+		st, err := os.Stat(path)
+		if !safeName(h.HeroMedia) || err != nil {
+			fmt.Printf("  warn: selling page %s: hero file not found: %s\n", h.ID, h.HeroMedia)
+			nMissing++
+			continue
+		}
+		totalBytes += st.Size()
+		heroPlans = append(heroPlans, h)
+		fmt.Printf("  selling page %s: hero %s (%s)\n", h.ID, h.HeroMedia, h.HeroMediaType)
+	}
+
 	fmt.Println("\n── Summary ──────────────────────────────────────────")
 	fmt.Printf("  Properties scanned:     %d\n", len(props))
 	fmt.Printf("  Properties to update:   %d\n", len(plans))
 	fmt.Printf("  Gallery images to add:  %d\n", nAdd)
 	fmt.Printf("  Gallery items removed:  %d\n", nRemove)
 	fmt.Printf("  Main image changes:     %d\n", nMain)
+	fmt.Printf("  Selling page heroes:    %d\n", len(heroPlans))
 	fmt.Printf("  Missing legacy files:   %d\n", nMissing)
 	fmt.Printf("  Source bytes to encode: %s (WebP output is usually smaller)\n", humanBytes(totalBytes))
 
@@ -112,6 +137,13 @@ func main() {
 	for i, plan := range plans {
 		fmt.Printf("[%d/%d] %s\n", i+1, len(plans), plan.prop.ID)
 		failures += applyPlan(ctx, plan, *propsDir)
+	}
+	for _, h := range heroPlans {
+		fmt.Printf("selling page %s\n", h.ID)
+		if err := applyHero(ctx, h, *uploadsDir); err != nil {
+			fmt.Printf("  error: hero %s: %v\n", h.HeroMedia, err)
+			failures++
+		}
 	}
 	fmt.Printf("\nDone. %d file(s) failed.\n", failures)
 	if failures > 0 {
@@ -181,25 +213,47 @@ func mainAction(p *propertyPlan) string {
 	return "keep"
 }
 
-// encodeLegacy copies a legacy image into private storage under a new asset
+// encodeLegacy copies a legacy file into private storage under a new asset
 // id and encodes it with the same pipeline as uploads.
-func encodeLegacy(ctx context.Context, path string) (*db.BackfillAsset, error) {
+func encodeLegacy(ctx context.Context, path, kind string) (*db.BackfillAsset, error) {
 	id := db.NewMediaID()
 	if err := copyFile(path, media.IncomingFile(id)); err != nil {
 		return nil, err
 	}
 	defer os.Remove(media.IncomingFile(id))
 
-	res, err := media.EncodeAsset(ctx, id, media.KindImage)
+	res, err := media.EncodeAsset(ctx, id, kind)
 	if err != nil {
 		_ = media.RemoveAssetFiles(id)
 		return nil, err
 	}
 	return &db.BackfillAsset{
-		ID: id, Kind: media.KindImage, LegacyFile: filepath.Base(path),
-		Width: res.Width, Height: res.Height,
-		Variants: db.MediaVariants{Images: res.Images},
+		ID: id, Kind: kind, LegacyFile: filepath.Base(path),
+		Width: res.Width, Height: res.Height, DurationMs: res.DurationMs, HasAudio: res.HasAudio,
+		Variants: db.MediaVariants{Images: res.Images, Videos: res.Videos, Poster: res.Poster},
 	}, nil
+}
+
+// applyHero encodes a selling page's legacy hero and sets it as the hero asset.
+func applyHero(ctx context.Context, h *db.LegacySellingPageHero, dir string) error {
+	kind := media.KindImage
+	if h.HeroMediaType == "video" {
+		kind = media.KindVideo
+	}
+	a, err := encodeLegacy(ctx, filepath.Join(dir, h.HeroMedia), kind)
+	if err != nil {
+		return err
+	}
+	prev, err := db.BackfillSetSellingPageHero(ctx, h.ID, *a)
+	if err != nil {
+		_ = media.RemoveAssetFiles(a.ID)
+		return err
+	}
+	if prev != "" {
+		_ = media.RemoveAssetFiles(prev)
+	}
+	fmt.Printf("  hero set from %s\n", h.HeroMedia)
+	return nil
 }
 
 // applyPlan writes one property's changes and returns the number of files
@@ -210,7 +264,7 @@ func applyPlan(ctx context.Context, plan *propertyPlan, dir string) int {
 
 	var added []db.BackfillAsset
 	for _, f := range plan.add {
-		a, err := encodeLegacy(ctx, legacyPath(dir, id, f))
+		a, err := encodeLegacy(ctx, legacyPath(dir, id, f), media.KindImage)
 		if err != nil {
 			fmt.Printf("  error: %s: %v\n", f, err)
 			failures++
@@ -242,7 +296,7 @@ func applyPlan(ctx context.Context, plan *propertyPlan, dir string) int {
 
 	switch {
 	case plan.setMain != "":
-		a, err := encodeLegacy(ctx, legacyPath(dir, id, plan.setMain))
+		a, err := encodeLegacy(ctx, legacyPath(dir, id, plan.setMain), media.KindImage)
 		if err != nil {
 			fmt.Printf("  error: main %s: %v\n", plan.setMain, err)
 			failures++

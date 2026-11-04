@@ -165,3 +165,70 @@ func BackfillSetPropertyMain(ctx context.Context, propertyID string, a BackfillA
 	}
 	return old, tx.Commit(ctx)
 }
+
+// LegacySellingPageHero is a selling page's legacy hero and the asset
+// backfilled from it so far.
+type LegacySellingPageHero struct {
+	ID            string
+	HeroMedia     string
+	HeroMediaType string
+	// HasHero reports whether a hero asset is set; HeroLegacy is its
+	// legacy_file ("" when it was uploaded through the new panel).
+	HasHero    bool
+	HeroLegacy string
+}
+
+// ListLegacySellingPageHeroes returns every selling page with its legacy hero
+// columns and current hero asset.
+func ListLegacySellingPageHeroes(ctx context.Context) ([]*LegacySellingPageHero, error) {
+	rows, err := DB.Query(ctx, `
+		SELECT sp.id, sp.hero_media, sp.hero_media_type,
+			sp.hero_asset_id IS NOT NULL OR sp.hero_pending_asset_id IS NOT NULL,
+			COALESCE((SELECT legacy_file FROM media_assets WHERE id = sp.hero_asset_id), '')
+		FROM selling_pages sp ORDER BY sp.id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []*LegacySellingPageHero
+	for rows.Next() {
+		h := &LegacySellingPageHero{}
+		if err := rows.Scan(&h.ID, &h.HeroMedia, &h.HeroMediaType, &h.HasHero, &h.HeroLegacy); err != nil {
+			return nil, err
+		}
+		out = append(out, h)
+	}
+	return out, rows.Err()
+}
+
+// BackfillSetSellingPageHero sets an encoded legacy hero, keeping the legacy
+// columns (the frontend prefers the asset). Returns the replaced asset id.
+func BackfillSetSellingPageHero(ctx context.Context, pageID string, a BackfillAsset) (string, error) {
+	tx, err := DB.Begin(ctx)
+	if err != nil {
+		return "", err
+	}
+	defer tx.Rollback(ctx)
+
+	var prev *string
+	if err := tx.QueryRow(ctx, `SELECT hero_asset_id::text FROM selling_pages WHERE id = $1 FOR UPDATE`, pageID).Scan(&prev); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return "", ErrMediaNotFound
+		}
+		return "", err
+	}
+	if err := insertReadyAsset(ctx, tx, a); err != nil {
+		return "", err
+	}
+	if _, err := tx.Exec(ctx, `UPDATE selling_pages SET hero_asset_id = $1 WHERE id = $2`, a.ID, pageID); err != nil {
+		return "", err
+	}
+	old := ""
+	if prev != nil {
+		old = *prev
+		if _, err := tx.Exec(ctx, `DELETE FROM media_assets WHERE id = $1`, old); err != nil {
+			return "", err
+		}
+	}
+	return old, tx.Commit(ctx)
+}

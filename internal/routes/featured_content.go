@@ -254,7 +254,7 @@ func AdminUploadFeaturedImage(w http.ResponseWriter, r *http.Request) {
 	}
 	fileHeader := files[0]
 
-	if _, ok, msg := validateMediaContentType(fileHeader, false); !ok {
+	if ok, msg := validateImageContentType(fileHeader); !ok {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: msg})
 		return
 	}
