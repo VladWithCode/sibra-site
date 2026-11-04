@@ -98,6 +98,8 @@ function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedIte
     if (items.length === 0) return null;
 
     const visible = items.slice(0, visibleCount);
+    // Featured order decides which cover video plays first.
+    const priority = new Map(items.map((item, i) => [item.id, i]));
     const collapsed = items.slice(visibleCount);
     // First 3 cards keep the original hero composition; the rest flow in a grid.
     const heroItems = visible.slice(0, 3);
@@ -129,7 +131,7 @@ function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedIte
                             heroItems.length === 1 && "md:col-span-12",
                         )}
                     >
-                        <FeaturedCard item={heroItems[0]} />
+                        <FeaturedCard item={heroItems[0]} priority={0} />
                     </motion.div>
 
                     {/* Side Cards */}
@@ -144,14 +146,14 @@ function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedIte
                                     transition={{ delay: idx * 0.1, duration: 0.5 }}
                                     className="relative overflow-hidden group h-[284px] shadow-xl"
                                 >
-                                    <FeaturedCard item={item} />
+                                    <FeaturedCard item={item} priority={priority.get(item.id)} />
                                 </motion.div>
                             ))}
                         </div>
                     )}
                 </div>
 
-                {gridItems.length > 0 && <FeaturedGrid items={gridItems} />}
+                {gridItems.length > 0 && <FeaturedGrid items={gridItems} priority={priority} />}
 
                 <AnimatePresence initial={false}>
                     {expanded && collapsed.length > 0 && (
@@ -162,7 +164,7 @@ function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedIte
                             transition={{ duration: 0.35 }}
                             className="overflow-hidden"
                         >
-                            <FeaturedGrid items={collapsed} />
+                            <FeaturedGrid items={collapsed} priority={priority} />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -184,7 +186,7 @@ function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedIte
     );
 }
 
-function FeaturedGrid({ items }: { items: TResolvedFeaturedItem[] }) {
+function FeaturedGrid({ items, priority }: { items: TResolvedFeaturedItem[]; priority: Map<string, number> }) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
             {items.map((item, idx) => (
@@ -196,7 +198,7 @@ function FeaturedGrid({ items }: { items: TResolvedFeaturedItem[] }) {
                     transition={{ delay: (idx % 3) * 0.1, duration: 0.5 }}
                     className="relative overflow-hidden group h-[284px] shadow-xl"
                 >
-                    <FeaturedCard item={item} />
+                    <FeaturedCard item={item} priority={priority.get(item.id)} />
                 </motion.div>
             ))}
         </div>

@@ -9,7 +9,7 @@ import type { TProperty } from "@/queries/type";
 import { Link } from "@tanstack/react-router";
 import { LikeButton } from "./likeButton";
 import { motion } from "motion/react";
-import { PropertyImage } from "../Image";
+import { PropertyMainImage } from "../Image";
 import { getPropertyAddress } from "@/lib/utils";
 import { Badge } from "../ui/badge";
 
@@ -73,13 +73,9 @@ export function PropertyCardHeader({ property }: { property: TProperty }) {
         <CardHeader className="p-0">
             <div className="relative z-0 w-full h-full overflow-hidden">
                 <Link to={`/propiedades/${property.contract}/${property.slug}` as any} className="relative z-10 w-full aspect-[2/1] bg-gray-200 rounded-t-lg">
-                    <img
-                        src={
-                            property.mainImg
-                                ? `/static/properties/${property.id}/${property.mainImg}`
-                                : undefined
-                        }
-                            alt={`Imagen mostrando la propiedad ubicada en ${property.address}. C.P. ${property.zip}`}
+                    <PropertyMainImage
+                        property={property}
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                         className="w-full h-full object-cover rounded-t-lg"
                     />
                 </Link>
@@ -114,13 +110,9 @@ export function PropertyCardHeaderWithMap({ property }: { property: TProperty })
                     data-is-active={activeTab === "img"}
                 >
                     <Link to={`/propiedades/${property.contract}/${property.slug}` as any}>
-                        <img
-                            src={
-                                property.mainImg
-                                    ? `/static/properties/${property.id}/${property.mainImg}`
-                                    : undefined
-                            }
-                        alt={`Imagen mostrando la propiedad ubicada en ${property.address}. C.P. ${property.zip}`}
+                        <PropertyMainImage
+                            property={property}
+                            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                             className="w-full h-full object-cover rounded-t-lg"
                         />
                     </Link>
@@ -153,10 +145,10 @@ export function NewPropertyCard({ property, disableMap }: {
         >
             <div className="relative aspect-[4/3] grid grid-cols-2 grid-rows-2 gap-3 overflow-hidden rounded-2xl mb-4 bg-surface-container-low shadow-sm">
                 <Link to={"/propiedades/" + property.contract + "/" + property.slug} className="col-span-full row-span-full">
-                    <PropertyImage
-                        propId={property.id}
-                        propName={property.address}
-                        src={property.mainImg}
+                    <PropertyMainImage
+                        property={property}
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        className="w-full h-full object-cover"
                     />
                 </Link>
                 <div className="col-start-1 row-start-1 p-3">

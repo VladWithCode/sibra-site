@@ -16,7 +16,7 @@ import {
 import { Bath, Bed, Building2, Home, List, Ruler, Search, Trees, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LoadingCircles } from "../icons/loadingCircles";
-import { PropertyImage } from "../Image";
+import { PropertyMainImage } from "../Image";
 import { getPropertyAddress } from "@/lib/utils";
 import { FormatMetric, FormatMoney } from "@/lib/format";
 import { FiltersDialog } from "./PropertyListingFilters";
@@ -317,16 +317,7 @@ function PropertyPopup({
                     params={{ contract: property.contract, slug: property.slug }}
                     className="block"
                 >
-                    {property.mainImg ? (
-                        <PropertyImage
-                            propId={property.id}
-                            propName={property.address}
-                            src={property.mainImg}
-                            className="w-full h-32 object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-32 bg-surface-container-highest" />
-                    )}
+                    <PropertyMainImage property={property} sizes="288px" className="w-full h-32 object-cover" />
                 </Link>
                 <div className="p-3 space-y-1.5">
                     <Link

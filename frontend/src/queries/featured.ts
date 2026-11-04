@@ -1,5 +1,6 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { queryClient } from "./queryClient";
+import type { TMediaAsset } from "@/lib/media";
 
 /**
  * Featured section content: admin-curated cards on the home page. Each card
@@ -47,6 +48,10 @@ export type TResolvedFeaturedItem = {
     title: string;
     subtitle: string;
     image: string;
+    /** Encoded card image (responsive widths); `image` is empty when set. */
+    imageAsset?: TMediaAsset;
+    /** Cover video the card plays when scrolled into view. */
+    video?: TMediaAsset;
     href: string;
     external: boolean;
     meta?: {

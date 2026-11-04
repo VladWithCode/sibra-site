@@ -1,3 +1,5 @@
+import type { TMediaAsset } from "@/lib/media";
+
 export type TRequestError = {
     error: string;
     etc?: Record<string, any>;
@@ -48,9 +50,21 @@ export type TPropertyDetail = {
 export type TPropertyNamedImage = {
     id?: string;
     category: TPropertyDetailCategory;
-    image: string;
+    /** Gallery item (TPropertyMedia.id) the caption applies to. */
+    mediaId: string;
     caption: string;
     position: number;
+    /** Encoded image, present in API responses. */
+    asset?: TMediaAsset;
+};
+
+/** One item of a property's ordered gallery (image or video). */
+export type TPropertyMedia = {
+    id: string;
+    position: number;
+    /** Video that plays in the home featured card. */
+    isCover: boolean;
+    asset: TMediaAsset;
 };
 
 export type TProperty = {
@@ -81,8 +95,10 @@ export type TProperty = {
     lon: number;
     featured: boolean;
     featuredExpiresAt: string;
-    mainImg: string;
-    imgs: string[];
+    /** Main (card/hero) image; null while unset or still encoding. */
+    mainImage: TMediaAsset | null;
+    /** Gallery in display order; only fully encoded items on public endpoints. */
+    media: TPropertyMedia[];
     agent: string;
     slug: string;
     agentData: {

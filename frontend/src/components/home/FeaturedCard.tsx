@@ -4,6 +4,8 @@ import { Bath, Bed, MapPin } from "lucide-react";
 import { FormatMetric, FormatMoney } from "@/lib/format";
 import { Badge } from "../ui/badge";
 import { Link } from "@tanstack/react-router";
+import { ResponsiveImage } from "../media/ResponsiveImage";
+import { useFeaturedVideo } from "./FeaturedVideo";
 import {
     featuredImageSrc,
     featuredKindLabel,
@@ -13,23 +15,39 @@ import {
 export type TFeaturedCardProps = {
     item: TResolvedFeaturedItem;
     className?: string;
+    /** Index in the featured list; lower plays its cover video first. */
+    priority?: number;
 };
 
 /** Generic featured section card. Renders any resolved featured item
  * (property, project, selling page, blog post or external link) with the same
  * look as the original home property cards. */
-export function FeaturedCard({ item, className }: TFeaturedCardProps) {
+export function FeaturedCard({ item, className, priority = 0 }: TFeaturedCardProps) {
     const isProperty = item.kind === "property" && item.meta;
+    const { containerRef, videoElement, controls } = useFeaturedVideo(item.video, priority);
+    const alt = `Imagen de ${item.title}`;
 
     const card = (
         <Card className={cn("h-full p-0 rounded-lg overflow-hidden", className)}>
             <CardContent className="relative w-full h-full z-0 p-0">
                 <div className="absolute inset-0 z-0">
-                    <img
-                        src={featuredImageSrc(item.image)}
-                        alt={`Imagen de ${item.title}`}
-                        className="w-full h-full object-cover brightness-90"
-                    />
+                    {item.imageAsset ? (
+                        <ResponsiveImage
+                            asset={item.imageAsset}
+                            sizes="(min-width: 768px) 60vw, 100vw"
+                            alt={alt}
+                            className="w-full h-full object-cover brightness-90"
+                        />
+                    ) : (
+                        <img
+                            src={featuredImageSrc(item.image)}
+                            alt={alt}
+                            loading="lazy"
+                            decoding="async"
+                            className="w-full h-full object-cover brightness-90"
+                        />
+                    )}
+                    {videoElement}
                 </div>
                 <div className="absolute top-3 left-3">
                     <Badge className="uppercase rounded-lg font-semibold tracking-wide">
@@ -77,13 +95,19 @@ export function FeaturedCard({ item, className }: TFeaturedCardProps) {
         </Card>
     );
 
-    if (item.external) {
-        return (
-            <a href={item.href} target="_blank" rel="noopener noreferrer">
-                {card}
-            </a>
-        );
-    }
+    const link = item.external ? (
+        <a href={item.href} target="_blank" rel="noopener noreferrer">
+            {card}
+        </a>
+    ) : (
+        <Link to={item.href as any}>{card}</Link>
+    );
 
-    return <Link to={item.href as any}>{card}</Link>;
+    // Video controls sit beside the link, not inside it (no buttons in <a>).
+    return (
+        <div ref={containerRef} className="relative h-full [&>a]:block [&>a]:h-full">
+            {link}
+            {controls}
+        </div>
+    );
 }

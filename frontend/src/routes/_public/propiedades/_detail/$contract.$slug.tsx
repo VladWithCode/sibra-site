@@ -1,7 +1,9 @@
 import { ContactForm } from "@/components/contact/ContactForm";
 import { FloatingCTA } from "@/components/floatingCTA";
 import { SqMtIcon } from "@/components/icons/icons";
-import { PropertyImage } from "@/components/Image";
+import { PropertyMainImage } from "@/components/Image";
+import { ResponsiveImage } from "@/components/media/ResponsiveImage";
+import { isReady, stillSrc, videoSrc, type TMediaAsset } from "@/lib/media";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,7 +37,7 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Bath, Bed, Home, XIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { DynamicIcon } from "lucide-react/dynamic";
@@ -58,16 +60,95 @@ export const Route = createFileRoute("/_public/propiedades/_detail/$contract/$sl
     },
 });
 
+/** "9 Fotos · 3 Videos" style summary of a gallery. */
+function mediaCountLabel(media: TProperty["media"]): string {
+    const videos = media.filter((m) => m.asset.kind === "video").length;
+    const photos = media.length - videos;
+    const parts = [`${photos} ${photos === 1 ? "Foto" : "Fotos"}`];
+    if (videos > 0) parts.push(`${videos} ${videos === 1 ? "Video" : "Videos"}`);
+    return parts.join(" · ");
+}
+
+/**
+ * Video slide of the gallery dialog. The file is attached only once the slide
+ * is the selected one or its neighbour, so opening the gallery never
+ * downloads every video. The selected slide plays (muted the first time),
+ * every other slide pauses.
+ */
+function GalleryVideo({
+    asset,
+    active,
+    near,
+}: {
+    asset: TMediaAsset;
+    active: boolean;
+    near: boolean;
+}) {
+    const ref = useRef<HTMLVideoElement>(null);
+    const [attached, setAttached] = useState(false);
+    const [src] = useState(() =>
+        videoSrc(asset, window.matchMedia("(min-width: 1024px)").matches ? 1080 : 720),
+    );
+
+    useEffect(() => {
+        if (near) setAttached(true);
+    }, [near]);
+
+    // React does not reflect `muted` as an attribute; set it once so the user
+    // can unmute with the native controls and keep that choice.
+    useEffect(() => {
+        if (ref.current) ref.current.muted = true;
+    }, []);
+
+    useEffect(() => {
+        const video = ref.current;
+        if (!video || !attached) return;
+        if (active) {
+            video.play().catch(() => {
+                /* Autoplay refused: the native controls remain available. */
+            });
+        } else {
+            video.pause();
+        }
+    }, [active, attached]);
+
+    return (
+        <video
+            ref={ref}
+            className="max-w-full max-h-full w-full h-full object-contain"
+            src={attached ? src : undefined}
+            poster={stillSrc(asset, 1600)}
+            controls
+            playsInline
+            loop
+            preload="none"
+            aria-label="Video de la propiedad"
+        />
+    );
+}
+
 function HeroSection({ property }: { property: TProperty }) {
+    const media = property.media ?? [];
     const [open, setOpen] = useState(false);
     const [api, setApi] = useState<CarouselApi>();
-    const [current, setCurrent] = useState(1);
+    const [selected, setSelected] = useState(0);
 
     useEffect(() => {
         if (!api) return;
-        setCurrent(api.selectedScrollSnap() + 1);
-        api.on("select", () => setCurrent(api.selectedScrollSnap() + 1));
+        const onSelect = () => setSelected(api.selectedScrollSnap());
+        onSelect();
+        api.on("select", onSelect);
+        return () => {
+            api.off("select", onSelect);
+        };
     }, [api]);
+
+    // Slides within one step of the selected one (the carousel loops) may
+    // fetch video; the rest stay on their poster.
+    const isNear = (i: number) => {
+        const d = Math.abs(i - selected);
+        return Math.min(d, media.length - d) <= 1;
+    };
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -80,11 +161,11 @@ function HeroSection({ property }: { property: TProperty }) {
                     transition={{ duration: 0.5 }}
                 >
                     <DialogTrigger className="w-full h-full p-0 cursor-pointer" asChild>
-                        <PropertyImage
+                        <PropertyMainImage
                             className="w-full h-full object-cover hover:scale-105 active:scale-95"
-                            propId={property.id}
-                            propName={property.address}
-                            src={property.mainImg}
+                            property={property}
+                            sizes="(min-width: 1280px) 1200px, 100vw"
+                            priority
                         />
                     </DialogTrigger>
                 </motion.div>
@@ -97,7 +178,7 @@ function HeroSection({ property }: { property: TProperty }) {
                         className="absolute z-10 bottom-4 right-4 glass border-none px-4 py-2 rounded-lg shadow-lg active:scale-95 active:shadow-sm"
                     >
                         <span className="text-tiny font-sans font-bold tracking-widest text-primary uppercase">
-                            1 / {property.imgs?.length || 0} Fotos
+                            {mediaCountLabel(media)}
                         </span>
                     </motion.p>
                 </DialogTrigger>
@@ -141,19 +222,24 @@ function HeroSection({ property }: { property: TProperty }) {
                     opts={{ loop: true }}
                 >
                     <CarouselContent className="h-full">
-                        {property.imgs?.map((img, i) => (
-                            <CarouselItem key={`${img}-${i}`}>
-                                <div
-                                    className="flex items-center justify-center w-full h-full aspect-[4/5] bg-center bg-contain bg-no-repeat sm:aspect-video overflow-hidden"
-                                    style={{
-                                        backgroundImage:
-                                            "url(/static/properties/" +
-                                            property.id +
-                                            "/" +
-                                            img +
-                                            ")",
-                                    }}
-                                ></div>
+                        {media.map((item, i) => (
+                            <CarouselItem key={item.id}>
+                                <div className="flex items-center justify-center w-full h-full aspect-[4/5] sm:aspect-video overflow-hidden">
+                                    {item.asset.kind === "video" ? (
+                                        <GalleryVideo
+                                            asset={item.asset}
+                                            active={open && i === selected}
+                                            near={open && isNear(i)}
+                                        />
+                                    ) : (
+                                        <ResponsiveImage
+                                            asset={item.asset}
+                                            sizes="(min-width: 1024px) 80vw, 100vw"
+                                            alt={`Foto ${i + 1} de ${property.address}`}
+                                            className="max-w-full max-h-full w-auto h-auto object-contain"
+                                        />
+                                    )}
+                                </div>
                             </CarouselItem>
                         ))}
                     </CarouselContent>
@@ -161,7 +247,8 @@ function HeroSection({ property }: { property: TProperty }) {
                     <CarouselNext className="right-2 sm:-right-12 bg-white/90" />
                 </Carousel>
                 <p className="lg:absolute lg:top-6 lg:inset-x-0 text-center text-sm font-sans font-bold tracking-widest text-white/80 uppercase">
-                    {current} / {property.imgs.length} Fotos
+                    {media.length > 0 ? selected + 1 : 0} / {media.length} ·{" "}
+                    {mediaCountLabel(media)}
                 </p>
             </DialogContent>
         </Dialog>
@@ -344,14 +431,19 @@ function CategoryPane({
             {images.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
                     {images.map((img) => (
-                        <figure key={img.id ?? img.image} className="group flex flex-col gap-2">
+                        <figure
+                            key={img.id ?? img.mediaId}
+                            className="group flex flex-col gap-2"
+                        >
                             <div className="aspect-[4/3] rounded-md overflow-hidden bg-surface-container shadow-sm">
-                                <PropertyImage
-                                    propId={property.id}
-                                    propName={img.caption || img.image}
-                                    src={img.image}
-                                    className="h-full w-full object-cover brightness-[0.96] transition-transform duration-500 group-hover:scale-105"
-                                />
+                                {isReady(img.asset) && (
+                                    <ResponsiveImage
+                                        asset={img.asset}
+                                        sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                                        alt={img.caption || `Foto de ${property.address}`}
+                                        className="h-full w-full object-cover brightness-[0.96] transition-transform duration-500 group-hover:scale-105"
+                                    />
+                                )}
                             </div>
                             {img.caption && (
                                 <figcaption className="text-sm font-medium text-on-surface">
