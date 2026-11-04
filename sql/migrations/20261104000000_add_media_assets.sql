@@ -17,6 +17,9 @@ CREATE TABLE media_assets (
     -- Encoded outputs: {"images": [480, 960], "videos": [1080, 720], "poster": [480, 960]}.
     -- File names are derived from these values (see internal/media).
     variants    JSONB NOT NULL DEFAULT '{}',
+    -- Legacy filename this asset was backfilled from (cmd/media-backfill), so
+    -- re-runs only sync what changed. Dropped with the legacy columns.
+    legacy_file VARCHAR(256),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );

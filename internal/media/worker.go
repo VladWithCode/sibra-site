@@ -111,7 +111,7 @@ func process(parent context.Context, asset *db.MediaAsset) {
 	defer cancel()
 
 	start := time.Now()
-	res, err := encodeAsset(ctx, asset)
+	res, err := EncodeAsset(ctx, asset.ID, asset.Kind)
 	// Bookkeeping uses a fresh context so it still runs during shutdown.
 	bg, bgCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer bgCancel()
@@ -164,13 +164,14 @@ func process(parent context.Context, asset *db.MediaAsset) {
 	log.Printf("media: %s %s ready in %s\n", asset.Kind, asset.ID, time.Since(start).Round(time.Second))
 }
 
-// encodeAsset probes and encodes the original into the work dir, then moves
-// the result to the public output dir in one rename.
-func encodeAsset(ctx context.Context, asset *db.MediaAsset) (*Result, error) {
-	if !validID(asset.ID) {
-		return nil, fmt.Errorf("invalid asset id %q", asset.ID)
+// EncodeAsset probes the original of assetID (media.IncomingFile), checks it
+// is of kind wantKind, encodes it into the work dir and moves the result to
+// the public output dir in one rename. The original is left in place.
+func EncodeAsset(ctx context.Context, assetID, wantKind string) (*Result, error) {
+	if !validID(assetID) {
+		return nil, fmt.Errorf("invalid asset id %q", assetID)
 	}
-	src := IncomingFile(asset.ID)
+	src := IncomingFile(assetID)
 	if _, err := os.Stat(src); err != nil {
 		return nil, err
 	}
@@ -178,19 +179,20 @@ func encodeAsset(ctx context.Context, asset *db.MediaAsset) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if p.Kind != asset.Kind {
+	if p.Kind != wantKind {
 		return nil, invalid("El tipo de archivo no coincide con el esperado")
 	}
 
-	work := filepath.Join(WorkPath, asset.ID)
+	work := filepath.Join(WorkPath, assetID)
 	if err := os.RemoveAll(work); err != nil {
 		return nil, err
 	}
 	res, err := Encode(ctx, src, work, p)
 	if err != nil {
+		_ = os.RemoveAll(work)
 		return nil, err
 	}
-	if err := publish(work, OutputDir(asset.ID)); err != nil {
+	if err := publish(work, OutputDir(assetID)); err != nil {
 		return nil, err
 	}
 	return res, nil
