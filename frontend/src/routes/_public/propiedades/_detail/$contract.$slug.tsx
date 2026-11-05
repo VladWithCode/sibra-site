@@ -560,7 +560,7 @@ function ArchitecturalVision({ property }: { property: TProperty }) {
                     <div className="h-px flex-1 bg-outline-variant/20" />
                 </h2>
                 <div className="space-y-4">
-                    <p className="text-on-surface-variant leading-relaxed font-sans">
+                    <p className="text-on-surface-variant leading-relaxed font-sans whitespace-pre-wrap break-words [tab-size:4]">
                         {property.description}
                     </p>
                 </div>
