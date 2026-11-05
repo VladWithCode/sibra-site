@@ -60,8 +60,17 @@ export const Route = createFileRoute("/_public/propiedades/_detail/$contract/$sl
     },
 });
 
+type GallerySlide = { id: string; asset: TMediaAsset };
+
+/** Gallery slides: the main image first, then the gallery items in order. */
+function gallerySlides(property: TProperty): GallerySlide[] {
+    const media: GallerySlide[] = property.media ?? [];
+    const main = property.mainImage;
+    return main && isReady(main) ? [{ id: `main-${main.id}`, asset: main }, ...media] : media;
+}
+
 /** "9 Fotos · 3 Videos" style summary of a gallery. */
-function mediaCountLabel(media: TProperty["media"]): string {
+function mediaCountLabel(media: GallerySlide[]): string {
     const videos = media.filter((m) => m.asset.kind === "video").length;
     const photos = media.length - videos;
     const parts = [`${photos} ${photos === 1 ? "Foto" : "Fotos"}`];
@@ -128,7 +137,7 @@ function GalleryVideo({
 }
 
 function HeroSection({ property }: { property: TProperty }) {
-    const media = property.media ?? [];
+    const media = gallerySlides(property);
     const [open, setOpen] = useState(false);
     const [api, setApi] = useState<CarouselApi>();
     const [selected, setSelected] = useState(0);
