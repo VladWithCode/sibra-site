@@ -471,13 +471,29 @@ The new server binary **panics at startup if ffmpeg/ffprobe are missing**, so in
 
 1. **VPS prerequisites:** `sudo apt install ffmpeg` (check `ffmpeg -hide_banner -encoders | grep -E
    'libx264|libwebp'`), then create the 1 GB swap file (section 7).
-2. **Migrate:** `goose up`. The change is additive, and the running old binary ignores the new columns.
-3. **Backfill while the old site still runs:**
-   `go run ./cmd/media-backfill` (dry run: check counts and missing files), then `--apply`.
-   Expect roughly 20 s for ~30 images. A legacy hero video takes minutes.
+2. **Migrate:** the change is additive, and the running old binary ignores the new columns. The
+   server has no git checkout, so run goose from the dev machine through an SSH tunnel:
+   ```bash
+   ssh -N -L 5433:localhost:5432 vladwb@sibvm      # terminal 1: keep open
+   goose -dir sql/migrations postgres "postgres://USER:PASS@localhost:5433/DBNAME?sslmode=disable" status
+   goose -dir sql/migrations postgres "postgres://USER:PASS@localhost:5433/DBNAME?sslmode=disable" up
+   ```
+   Take USER, PASS and DBNAME from the server's `.env`. `status` must show only
+   `20261104000000_add_media_assets.sql` as pending before you run `up`. Alternative: `scp -r
+   sql/migrations` to the server and run goose there, if goose is installed on it.
+3. **Backfill while the old site still runs:** it needs the server's legacy files and ffmpeg, so it
+   runs on the server. Build it on the dev machine and copy it next to the server binary:
+   ```bash
+   CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o media-backfill ./cmd/media-backfill
+   scp media-backfill vladwb@sibvm:~/www/sibra-remake/
+   ```
+   On the server, run it from `~/www/sibra-remake` (it reads `.env` and the relative
+   `web/static/...` paths from the working directory): `./media-backfill` (dry run: check counts and
+   missing files), then `./media-backfill --apply`. Expect roughly 20 s for ~30 images. A legacy
+   hero video takes minutes.
 4. **nginx:** apply section 7 (headers snippet, upload location, `/static/media/` location), then
    `nginx -t` and reload.
-5. **Cutover:** ask editors to pause gallery edits. Re-run `go run ./cmd/media-backfill --apply`
+5. **Cutover:** ask editors to pause gallery edits. Re-run `./media-backfill --apply` on the server
    (it only syncs what changed), build the frontend, then build and restart the Go server.
 6. **Verify:** home and detail pages render images from `/static/media/`. Upload a real phone video
    in the panel and watch it go from "Procesando" to ready. Measure the encode's peak memory with
