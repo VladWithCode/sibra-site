@@ -168,8 +168,8 @@ one implementation.
 
 ```
 ffmpeg -protocol_whitelist file -i SRC -map 0:v:0 -map 0:a:0? -map_metadata -1 \
-  -vf "scale=SHORT_SIDE_EXPR,fps=fps='min(source_fps,30)'" \
-  -c:v libx264 -preset medium -profile:v high -pix_fmt yuv420p \
+  -vf "fps=30,scale=SHORT_SIDE_EXPR" \        # fps only when the source is > 30 fps
+  -c:v libx264 -preset veryfast -profile:v high -pix_fmt yuv420p \
   -crf 23 -maxrate 5M -bufsize 10M            # 1080 rendition
   -crf 27 -maxrate 1.8M -bufsize 3.6M         # 720 rendition
   -c:a aac -b:a 128k -ac 2 -movflags +faststart OUT.mp4
@@ -315,7 +315,7 @@ All routes use `WithAuthAccessLevelMiddleware(..., AccessLevelEditor)` unless pu
 
 | Resource | Value | Consequence |
 |---|---|---|
-| CPU | 2 cores (`nproc`) | 1 worker, renditions encoded one after another, `-preset medium`, `nice -n 19` so web requests keep priority. Expect a 3 min phone clip to take ~5–10 min for both renditions. This is fine because processing is async. |
+| CPU | 2 cores (`nproc`) | 1 worker, renditions encoded one after another, `-preset veryfast`, `nice -n 19` so web requests keep priority. A 3 min 4K60 clip takes ~15–20 min for both renditions (see the measurements below). This is fine because processing is async. |
 | RAM | 1.9 Gi total, **886 Mi available**, **no swap** | Decoding a 4K HEVC phone source and encoding x264 1080p can reach several hundred MB. Without swap, a peak could get Go or Postgres OOM-killed. See "Memory protection" below. `MEDIA_WORKERS` stays 1. Do not raise it on this server. |
 | Disk | 20 G, **6.4 G free**; legacy media = 101 M (`properties/`) + 148 M (`uploads/`) | The backfill is small: WebP variants of ~250 M of sources fit with a large margin. 500 MB video uploads are the real pressure. See the disk guard below. |
 
@@ -337,9 +337,22 @@ All routes use `WithAuthAccessLevelMiddleware(..., AccessLevelEditor)` unless pu
 
 **Measuring peak memory:** `/usr/bin/time` is not installed on the VPS. Use ffmpeg's own
 `-benchmark` flag instead. It prints `bench: maxrss=...KiB` at exit and needs no extra package.
-Measure one 4K phone clip in phase 1 right after installing ffmpeg. If maxrss > ~700 MB, set a
-lower ceiling: downscale during decode with `-vf scale` first in the chain (already the case) and
-use `-preset fast`.
+
+**VPS measurements (2026-11-04, ffmpeg 5.1.9 Debian 12):** source is a 29 s 4K60 H.264 HLG clip
+at 49 Mb/s. Each row is the 1080 rendition (`-threads 2`, `nice -n 19`):
+
+| Run | Speed (s of work per s of video) | maxrss |
+|---|---|---|
+| `-preset medium` (full clip) | 22.5 | 647 MB |
+| Decode + `fps=30,scale` only (10 s) | 2.9 | 217 MB |
+| `-preset veryfast` (10 s) | 4.3 | 418 MB |
+
+`medium` spent ~85% of its time in x264 and ran a 3 min clip to ~70 min for the 1080 rendition
+alone, plus ~25 min for the 720 rendition. `veryfast` is ~5× faster and uses ~230 MB less memory, so
+both renditions use it. The output bitrate sits at the `-maxrate` cap on this footage
+(~5.1–5.4 Mb/s), so quality per MB is what changes between presets, not file size. Re-check quality
+on real property footage before tuning CRF. Decoding 4K60 alone is ~3 s per second of video;
+no preset reduces that.
 
 **Disk guard:** before accepting an upload, the handler calls `syscall.Statfs` on
 `MEDIA_INCOMING_PATH`. It rejects with `507` and a Spanish message when free space would drop below
@@ -501,17 +514,17 @@ so the old code works as before. `goose down` removes the new tables if needed.
 - **VPS capacity:** the server has 2 cores, 886 Mi available RAM, no swap and 6.4 G free disk.
   Encoding competes with the site for CPU (mitigated by `nice -n 19`, sequential renditions,
   1 worker). Memory is the tightest resource (mitigated by swap, `oom_score_adj` and bounded
-  threads). Still to do before phase 1:
-  - Install ffmpeg and create the swap file.
-  - Measure ffmpeg `-benchmark` maxrss on a real 4K phone clip.
+  threads). ffmpeg 5.1.9 is installed and measured (418 MB peak with `veryfast`). Still to do:
+  create the swap file.
 - **Disk:** at 6.4 G, a few large videos plus the backfill can fill the disk. The disk guard
   prevents a full disk but not "can't upload". Plan for a disk upgrade, or move media to object
   storage, if the catalog grows.
 - **iPhone HDR video:** HLG/Dolby Vision sources are converted to 8-bit `yuv420p` without tone
   mapping and can look washed out. Add a `zscale`/`tonemap` step if editors upload HDR clips (it needs
   ffmpeg built with libzimg).
-- **Not verified yet:** CRF values on real property footage (the tests use synthetic clips), the
-  mobile-width layout of the featured cards in a real phone browser, and peak memory on the VPS.
+- **Not verified yet:** CRF values on real property footage (one real 4K clip hit the `-maxrate`
+  cap, so the 1080 quality is bitrate-limited), and the mobile-width layout of the featured cards
+  in a real phone browser.
 - **HEIC images:** rejected in v1. Revisit if editors upload from iPhone desktop sync.
 - **Disk growth:** variants roughly double image storage per photo vs one raw file, but the total is
   far smaller than raw JPEGs. Videos are about 5–15 MB each after encode.

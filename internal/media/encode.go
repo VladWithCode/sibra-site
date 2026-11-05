@@ -133,10 +133,12 @@ func encodeVideo(ctx context.Context, src, outDir string, p *Probe) (*Result, er
 	input := src
 	inW, inH := p.Width, p.Height
 	for i, r := range renditions {
-		filters := []string{scaleFilter(inW, inH, r)}
+		// Drop frames before scaling so a 60 fps source is only scaled at 30 fps.
+		var filters []string
 		if i == 0 && p.FPS > 30.5 {
 			filters = append(filters, "fps=30")
 		}
+		filters = append(filters, scaleFilter(inW, inH, r))
 		enc := renditionEncoding[r]
 		args := []string{
 			"-hide_banner", "-nostdin", "-v", "error", "-y",
@@ -155,7 +157,7 @@ func encodeVideo(ctx context.Context, src, outDir string, p *Probe) (*Result, er
 		args = append(args,
 			"-map_metadata", "-1", "-map_chapters", "-1",
 			"-vf", strings.Join(filters, ","), "-filter_threads", "1",
-			"-c:v", "libx264", "-preset", "medium", "-profile:v", "high", "-pix_fmt", "yuv420p",
+			"-c:v", "libx264", "-preset", "veryfast", "-profile:v", "high", "-pix_fmt", "yuv420p",
 			"-crf", enc.crf, "-maxrate", enc.maxrate, "-bufsize", enc.bufsize,
 			"-threads", "2",
 		)
