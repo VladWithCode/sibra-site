@@ -475,9 +475,13 @@ The new server binary **panics at startup if ffmpeg/ffprobe are missing**, so in
    server has no git checkout, so run goose from the dev machine through an SSH tunnel:
    ```bash
    ssh -N -L 5433:localhost:5432 vladwb@sibvm      # terminal 1: keep open
-   goose -dir sql/migrations postgres "postgres://USER:PASS@localhost:5433/DBNAME?sslmode=disable" status
-   goose -dir sql/migrations postgres "postgres://USER:PASS@localhost:5433/DBNAME?sslmode=disable" up
+   export GOOSE_DRIVER=postgres GOOSE_DBSTRING="postgres://USER:PASS@localhost:5433/DBNAME?sslmode=disable"
+   goose -env=none -dir sql/migrations status
+   goose -env=none -dir sql/migrations up
    ```
+   Pass the connection through `GOOSE_*` variables, not as arguments: goose otherwise loads the
+   local `.env`, sees `GOOSE_DRIVER`, and fails with `"postgres": no such command`. `-env=none`
+   makes sure the local `.env` is never used, so the commands cannot hit the local database.
    Take USER, PASS and DBNAME from the server's `.env`. `status` must show only
    `20261104000000_add_media_assets.sql` as pending before you run `up`. Alternative: `scp -r
    sql/migrations` to the server and run goose there, if goose is installed on it.
