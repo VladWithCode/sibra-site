@@ -27,6 +27,23 @@ function errsOf(field: { state: { meta: { errors: unknown } } }) {
     return field.state.meta.errors as unknown as ErrorList;
 }
 
+// Length at which the counter turns fully red. A hint that the text is long, not a limit.
+const LONG_DESCRIPTION = 1500;
+
+function DescriptionCounter({ length }: { length: number }) {
+    const redPercent = Math.round(Math.min(length / LONG_DESCRIPTION, 1) * 100);
+    return (
+        <p
+            className="-mt-1 text-right text-xs tabular-nums"
+            style={{
+                color: `color-mix(in oklch, var(--destructive) ${redPercent}%, var(--muted-foreground))`,
+            }}
+        >
+            {length.toLocaleString("es-MX")} caracteres
+        </p>
+    );
+}
+
 function numberFromInput(value: string): number | undefined {
     if (value === "") return undefined;
     const n = Number(value);
@@ -146,6 +163,7 @@ export function MainInfoSection({ form }: { form: any }) {
                                 onChange={(e) => field.handleChange(e.target.value)}
                                 placeholder="Describe la propiedad, sus acabados y atmósfera..."
                             />
+                            <DescriptionCounter length={(field.state.value ?? "").length} />
                             <FieldError errors={errsOf(field)} />
                         </Field>
                     )}
