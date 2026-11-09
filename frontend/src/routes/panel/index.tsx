@@ -6,7 +6,7 @@ import { RequestStatusBadge } from '@/components/panel/requests/RequestStatusBad
 import { FormatMoney } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { getProfileOpts } from '@/queries/auth';
-import { getPropertyFilteredListingOpts } from '@/queries/properties';
+import { getPanelPropertyListingOpts } from '@/queries/properties';
 import { getProjectsOpts } from '@/queries/projects';
 import { getQuotesOpts } from '@/queries/quotes';
 import type { TContactRequestType, TProperty, TQuote } from '@/queries/type';
@@ -31,7 +31,7 @@ export const Route = createFileRoute('/panel/')({
     loader: async ({ context }) => {
         await Promise.allSettled([
             context.queryClient.ensureQueryData(
-                getPropertyFilteredListingOpts({ perPage: 5, page: 1 }),
+                getPanelPropertyListingOpts({ perPage: 5, page: 1 }),
             ),
             context.queryClient.ensureQueryData(getProjectsOpts),
             context.queryClient.ensureQueryData(getQuotesOpts({ perPage: 5, page: 1 })),
@@ -57,7 +57,7 @@ const STAT_CARD_CLS =
 function RouteComponent() {
     const { data: profile } = useQuery(getProfileOpts);
     const { data: propsData, isLoading: propsLoading } = useQuery(
-        getPropertyFilteredListingOpts({ perPage: 5, page: 1 }),
+        getPanelPropertyListingOpts({ perPage: 5, page: 1 }),
     );
     const { data: projectsData, isLoading: projectsLoading } = useQuery(getProjectsOpts);
     const { data: requestsData, isLoading: requestsLoading } = useQuery(

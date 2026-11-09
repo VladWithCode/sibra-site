@@ -1,7 +1,7 @@
 import { PropertiesFilters } from '@/components/panel/properties/PropertiesFilters';
 import { PropertiesHeader } from '@/components/panel/properties/PropertiesHeader';
 import { PropertiesTable } from '@/components/panel/properties/PropertiesTable';
-import { getPropertyFilteredListingOpts } from '@/queries/properties';
+import { getPanelPropertyListingOpts } from '@/queries/properties';
 import type { TPropertyFilters } from '@/queries/type';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
@@ -37,14 +37,14 @@ export const Route = createFileRoute('/panel/propiedades/')({
     validateSearch: (search) => PanelPropertiesSearchSchema.parse(search),
     loaderDeps: ({ search }) => toFilters(search),
     loader: async ({ context, deps }) => {
-        await context.queryClient.ensureQueryData(getPropertyFilteredListingOpts(deps));
+        await context.queryClient.ensureQueryData(getPanelPropertyListingOpts(deps));
     },
 });
 
 function RouteComponent() {
     const search = Route.useSearch();
     const filters = toFilters(search);
-    const { data, isLoading } = useQuery(getPropertyFilteredListingOpts(filters));
+    const { data, isLoading } = useQuery(getPanelPropertyListingOpts(filters));
 
     const properties = data?.properties ?? [];
     const pagination = data?.pagination ?? {

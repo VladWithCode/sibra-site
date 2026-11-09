@@ -11,12 +11,17 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
 
 func RegisterPropertyRoutes(router *customServeMux) {
+	// Public routes only ever return published properties (see
+	// publicPropertyFilter). The panel lists every status through the
+	// auth-gated /panel routes.
 	router.HandleFunc("GET /api/propiedades", FindFilteredProperties)
+	router.HandleFunc("GET /api/propiedades/panel", auth.ValidateAuthMiddleware(FindPanelProperties))
 	router.HandleFunc("GET /api/propiedades/panel/{id}", auth.ValidateAuthMiddleware(FindSingleProperty))
 	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
@@ -140,11 +145,31 @@ func DeletePropertyById(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func FindFilteredProperties(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
+// publicPropertyFilter parses the query string into a filter for an
+// unauthenticated route: whatever status the client asked for, only published
+// properties may be returned.
+func publicPropertyFilter(r *http.Request) *db.PropertyFilter {
 	params := r.URL.Query()
 	filter := db.NewPropertyFilterFromQuery(&params)
+	published := db.PropertyStatusPublished
+	filter.Status = &published
+	return filter
+}
+
+// FindFilteredProperties is the public property search: published only.
+func FindFilteredProperties(w http.ResponseWriter, r *http.Request) {
+	listFilteredProperties(w, r, publicPropertyFilter(r))
+}
+
+// FindPanelProperties lists properties of every status for the dashboard. It
+// must stay behind auth; the optional `status` query param filters by status.
+func FindPanelProperties(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	listFilteredProperties(w, r, db.NewPropertyFilterFromQuery(&params))
+}
+
+func listFilteredProperties(w http.ResponseWriter, r *http.Request, filter *db.PropertyFilter) {
+	ctx := r.Context()
 	pageStr := r.URL.Query().Get("page")
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
@@ -225,8 +250,12 @@ func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 	}
 
 	prop, err := findFn(ctx, id)
+	if err == nil && prop.Status != db.PropertyStatusPublished {
+		// Public detail page: unpublished properties don't exist here.
+		err = sql.ErrNoRows
+	}
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, pgx.ErrNoRows) {
 			respondWithError(w, http.StatusNotFound, ErrorParams{ErrorMessage: "No se encontró la propiedad"})
 			return
 		}
@@ -235,7 +264,7 @@ func FindPropertyWithNearbyProps(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nearbyProps, err := db.FindNearbyProperties(id, nearbyDistance)
+	nearbyProps, err := db.FindNearbyProperties(prop.Id, nearbyDistance)
 	if err != nil {
 		log.Printf("Error finding nearby properties: %v\n", err)
 		return
@@ -251,8 +280,7 @@ func FindProperties(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	contract := r.PathValue("contract")
 
-	params := r.URL.Query()
-	filter := db.NewPropertyFilterFromQuery(&params)
+	filter := publicPropertyFilter(r)
 
 	// Contract comes from path param, override whatever query might say
 	if contract != "" {

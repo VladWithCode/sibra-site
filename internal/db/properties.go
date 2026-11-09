@@ -34,6 +34,13 @@ const (
 	DefaultPageSize      int    = 10
 )
 
+var validOrderBy = map[string]bool{
+	OrderByListingDate: true,
+	OrderByPrice:       true,
+	OrderBySqMt:        true,
+	OrderByLotSize:     true,
+}
+
 type PropertyStatus string
 
 const (
@@ -628,6 +635,12 @@ func buildFilterConditions(filter *PropertyFilter) ([]string, []any, int) {
 		nextParamIdx++
 	}
 
+	if filter.Status != nil {
+		queryConditions = append(queryConditions, fmt.Sprintf(`status = $%d`, nextParamIdx))
+		queryParams = append(queryParams, *filter.Status)
+		nextParamIdx++
+	}
+
 	if filter.TextSearch != nil && *filter.TextSearch != "" {
 		queryConditions = append(queryConditions, fmt.Sprintf(`
 			to_tsvector('spanish',
@@ -727,13 +740,15 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 
 	queryConditions, queryParams, _ := buildFilterConditions(filter)
 
+	// OrderBy/OrderDirection come straight from the query string, so only
+	// whitelisted values may be interpolated into the SQL.
 	var orderOpts string
-	if filter.OrderBy != nil {
-		if filter.OrderDirection == nil {
-			dir := OrderDirectionDESC
-			filter.OrderDirection = &dir
+	if filter != nil && filter.OrderBy != nil && validOrderBy[*filter.OrderBy] {
+		dir := OrderDirectionDESC
+		if filter.OrderDirection != nil && strings.EqualFold(*filter.OrderDirection, OrderDirectionASC) {
+			dir = OrderDirectionASC
 		}
-		orderOpts = fmt.Sprintf(" ORDER BY %s %s", *filter.OrderBy, *filter.OrderDirection)
+		orderOpts = fmt.Sprintf(" ORDER BY p.%s %s, p.id", *filter.OrderBy, dir)
 	}
 
 	var paginateOpts string
@@ -834,6 +849,9 @@ func GetProperties(ctx context.Context, filter *PropertyFilter, limit, page int)
 	return
 }
 
+// FindNearbyProperties returns up to 10 published properties with the same
+// contract within nearbyDistance of the property with the given id. It is
+// only used by public pages, so non-published properties are never returned.
 func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 	conn, err := GetPool()
 	if err != nil {
@@ -857,6 +875,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
 		    AND p1.deleted_at IS NULL
 		    AND p2.deleted_at IS NULL
 		    AND p2.contract = p1.contract
+		    AND p2.status = $3
             AND p1.earth_coords IS NOT NULL
 		    AND p2.earth_coords IS NOT NULL
             AND (p1.earth_coords <@> p2.earth_coords) <= $2
@@ -864,6 +883,7 @@ func FindNearbyProperties(id string, nearbyDistance int) ([]*Property, error) {
         LIMIT 10`,
 		id,
 		nearbyDistance,
+		PropertyStatusPublished,
 	)
 	if err != nil {
 		return nil, err

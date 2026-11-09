@@ -390,8 +390,8 @@ func resolveFeaturedProperties(ctx context.Context, ids []string) (map[string]fe
              FROM property_media pm JOIN media_assets cv ON cv.id = pm.asset_id
              WHERE pm.property_id = p.id AND pm.is_cover AND cv.status = 'ready')
         FROM properties p
-        WHERE p.id::text = ANY($1) AND p.deleted_at IS NULL`,
-		ids,
+        WHERE p.id::text = ANY($1) AND p.deleted_at IS NULL AND p.status = $2`,
+		ids, PropertyStatusPublished,
 	)
 	if err != nil {
 		return nil, err

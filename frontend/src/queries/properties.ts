@@ -21,6 +21,9 @@ export const PropertyQueryKeys = {
     listing: () => [...PropertyQueryKeys.all(), "listing"] as const,
     filtered: (filters: Partial<TPropertyQueryFilters>) =>
         [...PropertyQueryKeys.listing(), "filtered", { filters }] as const,
+    // Dashboard listing (every status, auth-gated endpoint)
+    panel: (filters: Partial<TPropertyQueryFilters>) =>
+        [...PropertyQueryKeys.listing(), "panel", { filters }] as const,
     byContract: (contract: string | undefined, filters: TPropertyQueryFilters) =>
         [...PropertyQueryKeys.listing(), "byContract", { contract, filters }] as const,
     nearby: (id: string, nearbyDistance: number) =>
@@ -39,6 +42,7 @@ export const PropertyQueryKeys = {
 // Type helpers for queryFns to recognize the queryKey type
 export type QKPropertiesListing = ReturnType<typeof PropertyQueryKeys.listing>;
 export type QKPropertiesFiltered = ReturnType<typeof PropertyQueryKeys.filtered>;
+export type QKPropertiesPanel = ReturnType<typeof PropertyQueryKeys.panel>;
 export type QKPropertyByContract = ReturnType<typeof PropertyQueryKeys.byContract>;
 export type QKPropertiesNearby = ReturnType<typeof PropertyQueryKeys.nearby>;
 export type QKPropertyById = ReturnType<typeof PropertyQueryKeys.byId>;
@@ -60,6 +64,14 @@ export const getPropertyFilteredListingOpts = (filters: Partial<TPropertyFilters
     queryOptions({
         queryKey: PropertyQueryKeys.filtered(filters),
         queryFn: getPropertiesFiltered,
+    });
+
+// Dashboard listing: includes drafts and every other status. Public pages must
+// use getPropertyFilteredListingOpts, which only returns published properties.
+export const getPanelPropertyListingOpts = (filters: Partial<TPropertyFilters>) =>
+    queryOptions({
+        queryKey: PropertyQueryKeys.panel(filters),
+        queryFn: getPanelProperties,
     });
 
 export const getPropertyByIdOpts = (id: string, contract: string) =>
@@ -225,6 +237,18 @@ export async function getPropertiesFiltered({
     const queryParams = objectToQueryString(queryKey[3].filters);
 
     let response = await fetch(url + "?" + queryParams.toString());
+    if (!response.ok) throw new Error("Error al obtener las propiedades");
+    const data = await response.json();
+
+    return data;
+}
+
+export async function getPanelProperties({
+    queryKey,
+}: QueryFunctionContext<QKPropertiesPanel>): Promise<TPropertyListingResult> {
+    const queryParams = objectToQueryString(queryKey[3].filters);
+
+    const response = await fetch("/api/propiedades/panel?" + queryParams.toString());
     if (!response.ok) throw new Error("Error al obtener las propiedades");
     const data = await response.json();
 
