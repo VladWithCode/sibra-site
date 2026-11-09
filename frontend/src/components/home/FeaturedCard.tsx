@@ -27,8 +27,10 @@ export function FeaturedCard({ item, className, priority = 0 }: TFeaturedCardPro
     const { containerRef, videoElement, controls } = useFeaturedVideo(item.video, priority);
     const alt = `Imagen de ${item.title}`;
 
+    // The card is a size container: featured cards range from ~300px wide
+    // (mobile, side cards) to full width, so the overlay scales with the card.
     const card = (
-        <Card className={cn("h-full p-0 rounded-lg overflow-hidden", className)}>
+        <Card className={cn("@container/featured h-full p-0 rounded-lg overflow-hidden", className)}>
             <CardContent className="relative w-full h-full z-0 p-0">
                 <div className="absolute inset-0 z-0">
                     {item.imageAsset ? (
@@ -54,11 +56,11 @@ export function FeaturedCard({ item, className, priority = 0 }: TFeaturedCardPro
                         {isProperty ? item.meta?.contract : featuredKindLabel(item.kind)}
                     </Badge>
                 </div>
-                <div className="relative z-10 h-full flex flex-col justify-end bg-gradient-to-t from-foreground/60 to-60% to-foreground/0 text-background p-6">
-                    <CardTitle className="text-3xl tracking-wide line-clamp-2">
+                <div className="relative z-10 h-full flex flex-col justify-end bg-gradient-to-t from-foreground/70 to-70% to-foreground/0 text-background p-4 @md/featured:p-5 @2xl/featured:p-6 @5xl/featured:p-8">
+                    <CardTitle className="text-xl @md/featured:text-2xl @2xl/featured:text-3xl @5xl/featured:text-4xl tracking-wide line-clamp-2">
                         {isProperty ? FormatMoney(item.meta?.price ?? 0) : item.title}
                     </CardTitle>
-                    <CardDescription className="text-current tracking-tight mt-1.5 space-y-6">
+                    <CardDescription className="text-current tracking-tight mt-1 @2xl/featured:mt-1.5 space-y-2.5 @md/featured:space-y-4 @2xl/featured:space-y-6">
                         {item.subtitle && (
                             <div className="flex gap-2 items-center font-normal">
                                 <MapPin className="size-3.5 shrink-0" />

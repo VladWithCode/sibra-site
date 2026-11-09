@@ -107,19 +107,31 @@ function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedIte
 
     return (
         <section className="py-32 px-6 md:px-12 bg-surface-container-low">
-            <div className="max-w-7xl mx-auto">
+            <div className="@container max-w-7xl mx-auto">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-6">
                     <div>
                         <span className="text-label-md text-primary mb-3 block">Oportunidades únicas</span>
                         <h2 className="text-headline-lg">Destacados para ti</h2>
                     </div>
-                    <Link to="/propiedades" className="flex items-center gap-1 text-sm text-sbr-blue-dark leading-0">
+                    <Link to="/propiedades" className="flex shrink-0 items-center gap-1 text-sm text-sbr-blue-dark leading-0">
                         <span>Ver todas las propiedades</span>
                         <ArrowRight className="size-4" />
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                {/* Every card is 16:9 so uploaded 16:9 media fills it without cropping.
+                    Columns follow the container width (the tablet sidebar narrows it).
+                    With 3 cards, wide containers put the main card beside a column of
+                    two: that column's width makes two stacked 16:9 cards plus the gap
+                    exactly as tall as the 16:9 main card (side = (100% - gap * 25/9) / 3). */}
+                <div
+                    className={cn(
+                        "grid grid-cols-1 gap-6",
+                        heroItems.length > 1 && "@min-[40rem]:grid-cols-2",
+                        heroItems.length === 3 &&
+                            "@5xl:grid-cols-[minmax(0,1fr)_calc((100%_-_24px*25/9)/3)]",
+                    )}
+                >
                     {/* Main Card */}
                     <motion.div
                         initial={{ opacity: 0, scale: 0.98 }}
@@ -127,30 +139,26 @@ function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedIte
                         viewport={{ once: true, amount: 0.3 }}
                         transition={{ duration: 0.5 }}
                         className={cn(
-                            "md:col-span-7 relative overflow-hidden group h-[600px] shadow-2xl",
-                            heroItems.length === 1 && "md:col-span-12",
+                            "relative overflow-hidden group aspect-video shadow-2xl",
+                            heroItems.length === 3 && "@min-[40rem]:col-span-2 @5xl:col-span-1 @5xl:row-span-2",
                         )}
                     >
                         <FeaturedCard item={heroItems[0]} priority={0} />
                     </motion.div>
 
                     {/* Side Cards */}
-                    {heroItems.length > 1 && (
-                        <div className="md:col-span-5 flex flex-col justify-between gap-6">
-                            {heroItems.slice(1).map((item, idx) => (
-                                <motion.div
-                                    key={item.id}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    viewport={{ once: true, amount: 0.3 }}
-                                    transition={{ delay: idx * 0.1, duration: 0.5 }}
-                                    className="relative overflow-hidden group h-[284px] shadow-xl"
-                                >
-                                    <FeaturedCard item={item} priority={priority.get(item.id)} />
-                                </motion.div>
-                            ))}
-                        </div>
-                    )}
+                    {heroItems.slice(1).map((item, idx) => (
+                        <motion.div
+                            key={item.id}
+                            initial={{ opacity: 0, x: 20 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true, amount: 0.3 }}
+                            transition={{ delay: idx * 0.1, duration: 0.5 }}
+                            className="relative overflow-hidden group aspect-video shadow-xl"
+                        >
+                            <FeaturedCard item={item} priority={priority.get(item.id)} />
+                        </motion.div>
+                    ))}
                 </div>
 
                 {gridItems.length > 0 && <FeaturedGrid items={gridItems} priority={priority} />}
@@ -188,7 +196,7 @@ function FeaturedListings({ items, visibleCount }: { items: TResolvedFeaturedIte
 
 function FeaturedGrid({ items, priority }: { items: TResolvedFeaturedItem[]; priority: Map<string, number> }) {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <div className="grid grid-cols-1 @min-[40rem]:grid-cols-2 @5xl:grid-cols-3 gap-6 mt-6">
             {items.map((item, idx) => (
                 <motion.div
                     key={item.id}
@@ -196,7 +204,7 @@ function FeaturedGrid({ items, priority }: { items: TResolvedFeaturedItem[]; pri
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true, amount: 0.3 }}
                     transition={{ delay: (idx % 3) * 0.1, duration: 0.5 }}
-                    className="relative overflow-hidden group h-[284px] shadow-xl"
+                    className="relative overflow-hidden group aspect-video shadow-xl"
                 >
                     <FeaturedCard item={item} priority={priority.get(item.id)} />
                 </motion.div>
