@@ -23,12 +23,13 @@ import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { z } from 'zod';
+import * as z from "zod/mini";
+import { optionalParam } from "@/lib/searchParams";
 
 const VincularSearchSchema = z.object({
-    name: z.string().optional().catch(undefined),
-    rfcOrCurp: z.string().optional().catch(undefined),
-    phone: z.string().optional().catch(undefined),
+    name: optionalParam(z.string()),
+    rfcOrCurp: optionalParam(z.string()),
+    phone: optionalParam(z.string()),
 });
 
 type VincularSearch = z.infer<typeof VincularSearchSchema>;

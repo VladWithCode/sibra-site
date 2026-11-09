@@ -7,11 +7,11 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { BookOpen, Newspaper } from "lucide-react";
 import { Suspense, useEffect } from "react";
-import { z } from "zod";
+import * as z from "zod/mini";
 
 const BlogSearchSchema = z.object({
-    page:  z.number().int().positive().optional(),
-    limit: z.number().int().positive().max(20).optional(),
+    page:  z.optional(z.number().check(z.int(), z.positive())),
+    limit: z.optional(z.number().check(z.int(), z.positive(), z.lte(20))),
 });
 
 type TBlogSearch = z.infer<typeof BlogSearchSchema>;

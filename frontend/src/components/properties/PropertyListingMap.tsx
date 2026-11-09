@@ -23,7 +23,7 @@ import { FiltersDialog } from "./PropertyListingFilters";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import type z from "zod";
-import type { PropertyListingSearchSchema } from "./PropertyListingFilters";
+import type { PropertyListingSearchSchema } from "./propertyListingSearch";
 
 const PROPERTY_LOCATION_ID = import.meta.env.VITE_MAPS_PROPERTY_LOCATION_ID;
 

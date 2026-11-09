@@ -26,7 +26,7 @@ import gsap from "gsap";
 import { cn } from "@/lib/utils";
 import { useUIStore, type THeaderComplementProps } from "@/stores/uiStore";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import * as z from "zod/mini";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { Input } from "./ui/input";
@@ -182,37 +182,25 @@ export function HeaderComplement(props: THeaderComplementProps) {
 }
 
 const propertyListingFilterFormSchema = z.object({
-    search: z.string().optional(),
-    price: z.number().gte(0, { message: "El precio debe ser un número positivo" }).optional(),
-    minPrice: z
-        .number()
-        .gte(0, { message: "El precio mínimo debe ser un número positivo" })
-        .optional(),
-    maxPrice: z
-        .number()
-        .gte(0, { message: "El precio máximo debe ser un número positivo" })
-        .optional(),
-    sqMt: z
-        .number()
-        .gte(0, { message: "El área de más menos debe ser un número positivo" })
-        .optional(),
-    lotSize: z
-        .number()
-        .gte(0, { message: "El tamaño del lote debe ser un número positivo" })
-        .optional(),
-    yearBuilt: z.number().optional(),
-    contract: z.string().optional(),
-    propType: z.string().optional(),
-    zip: z.string().optional(),
-    status: z.string().optional(),
-    minBedrooms: z.number().optional(),
-    maxBedrooms: z.number().optional(),
-    minBathrooms: z.number().optional(),
-    maxBathrooms: z.number().optional(),
-    minSqMt: z.number().optional(),
-    maxSqMt: z.number().optional(),
-    orderBy: z.string().default("listing_date").optional(),
-    orderDirection: z.string().default("desc").optional(),
+    search: z.optional(z.string()),
+    price: z.optional(z.number().check(z.gte(0, { message: "El precio debe ser un número positivo" }))),
+    minPrice: z.optional(z.number().check(z.gte(0, { message: "El precio mínimo debe ser un número positivo" }))),
+    maxPrice: z.optional(z.number().check(z.gte(0, { message: "El precio máximo debe ser un número positivo" }))),
+    sqMt: z.optional(z.number().check(z.gte(0, { message: "El área de más menos debe ser un número positivo" }))),
+    lotSize: z.optional(z.number().check(z.gte(0, { message: "El tamaño del lote debe ser un número positivo" }))),
+    yearBuilt: z.optional(z.number()),
+    contract: z.optional(z.string()),
+    propType: z.optional(z.string()),
+    zip: z.optional(z.string()),
+    status: z.optional(z.string()),
+    minBedrooms: z.optional(z.number()),
+    maxBedrooms: z.optional(z.number()),
+    minBathrooms: z.optional(z.number()),
+    maxBathrooms: z.optional(z.number()),
+    minSqMt: z.optional(z.number()),
+    maxSqMt: z.optional(z.number()),
+    orderBy: z.optional(z._default(z.string(), "listing_date")),
+    orderDirection: z.optional(z._default(z.string(), "desc")),
 });
 
 export type formSchemaType = z.infer<typeof propertyListingFilterFormSchema>;

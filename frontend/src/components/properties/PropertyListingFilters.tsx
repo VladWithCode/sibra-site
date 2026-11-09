@@ -1,38 +1,26 @@
 import { useNavigate } from "@tanstack/react-router";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { type ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import z from "zod";
 import { useForm } from "@tanstack/react-form";
 import { AnimatePresence, motion } from "motion/react";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Separator } from "../ui/separator";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "../ui/dialog";
 import { Button } from "../ui/button";
 import type { TPropertyFilters } from "@/queries/type";
+import type { TListingSearch } from "./propertyListingSearch";
 
-export const PropertyListingSearchSchema = z.object({
-    q: z.string().optional().catch(""),
-    contract: z.enum(["venta", "renta"]).optional().catch(undefined),
-    minPrice: z.coerce.number().positive().optional().catch(undefined),
-    maxPrice: z.coerce.number().positive().optional().catch(undefined),
-    beds: z.coerce.number().int().nonnegative().optional().catch(undefined),
-    baths: z.coerce.number().int().nonnegative().optional().catch(undefined),
-    minSqMt: z.coerce.number().positive().optional().catch(undefined),
-    maxSqMt: z.coerce.number().positive().optional().catch(undefined),
-    minLotSize: z.coerce.number().positive().optional().catch(undefined),
-    maxLotSize: z.coerce.number().positive().optional().catch(undefined),
-    minYearBuilt: z.coerce.number().int().positive().optional().catch(undefined),
-    propType: z.enum(["casa", "apartamento", "terreno"]).optional().catch(undefined),
-    page: z.coerce.number().int().positive().optional().catch(undefined),
-    perPage: z.coerce.number().int().positive().optional().catch(undefined),
-    view: z.enum(["list", "map"]).optional().catch("list"),
-});
-
-type TListingSearch = z.infer<typeof PropertyListingSearchSchema>;
-
-export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyListingSearchSchema> }) {
+export function FiltersDialog({ filters }: { filters: TListingSearch }) {
     const navigate = useNavigate();
     const [open, setOpen] = useState(false);
 
@@ -87,9 +75,12 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
         setOpen(false);
     };
 
-    const labelClass = "block text-tiny font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1";
-    const inputClass = "w-full h-11 px-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all";
-    const selectTriggerClass = "w-full !h-11 px-3 bg-white border border-outline-variant rounded-xl text-sm font-medium";
+    const labelClass =
+        "block text-tiny font-sans font-bold text-primary uppercase tracking-[0.1em] ml-1";
+    const inputClass =
+        "w-full h-11 px-3 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all";
+    const selectTriggerClass =
+        "w-full !h-11 px-3 bg-white border border-outline-variant rounded-xl text-sm font-medium";
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -104,9 +95,12 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
             </DialogTrigger>
             <DialogContent className="sm:max-w-lg bg-surface-container-lowest max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="font-sans font-extrabold text-on-surface text-2xl">Filtros</DialogTitle>
+                    <DialogTitle className="font-sans font-extrabold text-on-surface text-2xl">
+                        Filtros
+                    </DialogTitle>
                     <DialogDescription className="text-on-surface-variant text-sm">
-                        Ajusta los filtros para encontrar propiedades que se adapten a tus necesidades.
+                        Ajusta los filtros para encontrar propiedades que se adapten a tus
+                        necesidades.
                     </DialogDescription>
                 </DialogHeader>
                 <form
@@ -162,18 +156,27 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
                             name="beds"
                             children={(field) => (
                                 <div className="space-y-1">
-                                    <Label htmlFor={field.name} className={labelClass}>Habitaciones</Label>
+                                    <Label htmlFor={field.name} className={labelClass}>
+                                        Habitaciones
+                                    </Label>
                                     <Select
                                         value={field.state.value}
-                                        onValueChange={(v) => field.handleChange(v === "any" ? "" : v)}
+                                        onValueChange={(v) =>
+                                            field.handleChange(v === "any" ? "" : v)
+                                        }
                                     >
-                                        <SelectTrigger id={field.name} className={selectTriggerClass}>
+                                        <SelectTrigger
+                                            id={field.name}
+                                            className={selectTriggerClass}
+                                        >
                                             <SelectValue placeholder="Cualquiera" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="any">Cualquiera</SelectItem>
                                             {[1, 2, 3, 4, 5].map((n) => (
-                                                <SelectItem key={n} value={n.toString()}>{n}+</SelectItem>
+                                                <SelectItem key={n} value={n.toString()}>
+                                                    {n}+
+                                                </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -184,18 +187,27 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
                             name="baths"
                             children={(field) => (
                                 <div className="space-y-1">
-                                    <Label htmlFor={field.name} className={labelClass}>Baños</Label>
+                                    <Label htmlFor={field.name} className={labelClass}>
+                                        Baños
+                                    </Label>
                                     <Select
                                         value={field.state.value}
-                                        onValueChange={(v) => field.handleChange(v === "any" ? "" : v)}
+                                        onValueChange={(v) =>
+                                            field.handleChange(v === "any" ? "" : v)
+                                        }
                                     >
-                                        <SelectTrigger id={field.name} className={selectTriggerClass}>
+                                        <SelectTrigger
+                                            id={field.name}
+                                            className={selectTriggerClass}
+                                        >
                                             <SelectValue placeholder="Cualquiera" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="any">Cualquiera</SelectItem>
                                             {[1, 2, 3, 4].map((n) => (
-                                                <SelectItem key={n} value={n.toString()}>{n}+</SelectItem>
+                                                <SelectItem key={n} value={n.toString()}>
+                                                    {n}+
+                                                </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
@@ -289,12 +301,19 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
                             name="contract"
                             children={(field) => (
                                 <div className="space-y-1">
-                                    <Label htmlFor={field.name} className={labelClass}>Contrato</Label>
+                                    <Label htmlFor={field.name} className={labelClass}>
+                                        Contrato
+                                    </Label>
                                     <Select
                                         value={field.state.value}
-                                        onValueChange={(v) => field.handleChange(v === "any" ? "" : v)}
+                                        onValueChange={(v) =>
+                                            field.handleChange(v === "any" ? "" : v)
+                                        }
                                     >
-                                        <SelectTrigger id={field.name} className={selectTriggerClass}>
+                                        <SelectTrigger
+                                            id={field.name}
+                                            className={selectTriggerClass}
+                                        >
                                             <SelectValue placeholder="Cualquiera" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -310,18 +329,27 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
                             name="propType"
                             children={(field) => (
                                 <div className="space-y-1">
-                                    <Label htmlFor={field.name} className={labelClass}>Tipo de propiedad</Label>
+                                    <Label htmlFor={field.name} className={labelClass}>
+                                        Tipo de propiedad
+                                    </Label>
                                     <Select
                                         value={field.state.value}
-                                        onValueChange={(v) => field.handleChange(v === "any" ? "" : v)}
+                                        onValueChange={(v) =>
+                                            field.handleChange(v === "any" ? "" : v)
+                                        }
                                     >
-                                        <SelectTrigger id={field.name} className={selectTriggerClass}>
+                                        <SelectTrigger
+                                            id={field.name}
+                                            className={selectTriggerClass}
+                                        >
                                             <SelectValue placeholder="Cualquiera" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="any">Cualquiera</SelectItem>
                                             <SelectItem value="casa">Casa</SelectItem>
-                                            <SelectItem value="apartamento">Apartamento</SelectItem>
+                                            <SelectItem value="apartamento">
+                                                Apartamento
+                                            </SelectItem>
                                             <SelectItem value="terreno">Terreno</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -335,7 +363,9 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
                             name="minYearBuilt"
                             children={(field) => (
                                 <div className="space-y-1">
-                                    <Label htmlFor={field.name} className={labelClass}>Año min. de construcción</Label>
+                                    <Label htmlFor={field.name} className={labelClass}>
+                                        Año min. de construcción
+                                    </Label>
                                     <Input
                                         id={field.name}
                                         name={field.name}
@@ -377,25 +407,34 @@ export function FiltersDialog({ filters }: { filters: z.infer<typeof PropertyLis
     );
 }
 
-export function FilterSection({ filters, leading }: { filters: Partial<TPropertyFilters>; leading?: ReactNode; }) {
+export function FilterSection({
+    filters,
+    leading,
+}: {
+    filters: Partial<TPropertyFilters>;
+    leading?: ReactNode;
+}) {
     const navigate = useNavigate();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     const [search, setSearch] = useState(filters.textSearch ?? "");
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-    const onInputChange = useCallback((value: string) => {
-        setSearch(value);
+    const onInputChange = useCallback(
+        (value: string) => {
+            setSearch(value);
 
-        if (debounceRef.current) clearTimeout(debounceRef.current);
-        debounceRef.current = setTimeout(() => {
-            navigate({
-                // @ts-ignore
-                search: (prev) => ({ ...prev, q: value || undefined, page: undefined }),
-                replace: true,
-            });
-        }, 400);
-    }, [navigate]);
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            debounceRef.current = setTimeout(() => {
+                navigate({
+                    // @ts-ignore
+                    search: (prev) => ({ ...prev, q: value || undefined, page: undefined }),
+                    replace: true,
+                });
+            }, 400);
+        },
+        [navigate],
+    );
 
     useEffect(() => {
         return () => {
@@ -408,9 +447,7 @@ export function FilterSection({ filters, leading }: { filters: Partial<TProperty
     return (
         <div className="space-y-0">
             <div className="flex items-center justify-between gap-3">
-                <div className="">
-                    {leading}
-                </div>
+                <div className="">{leading}</div>
                 <div className="flex items-center gap-3">
                     <Button
                         type="button"
@@ -437,8 +474,14 @@ export function FilterSection({ filters, leading }: { filters: Partial<TProperty
                         className="overflow-hidden"
                     >
                         <div className="px-1 py-3 grid grid-cols-[auto_1fr] grid-rows-1">
-                            <Label htmlFor="main-property-search" className="relative z-10 inline-block col-start-1 row-start-1 my-auto px-3">
-                                <Search className="size-4.5 stroke-3" style={{ color: "var(--color-outline-variant)" }} />
+                            <Label
+                                htmlFor="main-property-search"
+                                className="relative z-10 inline-block col-start-1 row-start-1 my-auto px-3"
+                            >
+                                <Search
+                                    className="size-4.5 stroke-3"
+                                    style={{ color: "var(--color-outline-variant)" }}
+                                />
                             </Label>
                             <Input
                                 className="col-start-1 row-start-1 col-span-2 w-full h-12 pl-10 pr-4 bg-white border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
@@ -456,23 +499,4 @@ export function FilterSection({ filters, leading }: { filters: Partial<TProperty
             </AnimatePresence>
         </div>
     );
-}
-
-export function propertyListingSearchToFilters(search: TListingSearch): Partial<TPropertyFilters> {
-    return {
-        contract: search.contract,
-        textSearch: search.q ?? "",
-        minPrice: search.minPrice,
-        maxPrice: search.maxPrice,
-        beds: search.beds,
-        baths: search.baths,
-        minSqMt: search.minSqMt,
-        maxSqMt: search.maxSqMt,
-        minLotSize: search.minLotSize,
-        maxLotSize: search.maxLotSize,
-        minYearBuilt: search.minYearBuilt,
-        propType: search.propType,
-        page: search.page,
-        perPage: search.perPage,
-    };
 }

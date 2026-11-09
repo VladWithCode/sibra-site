@@ -1,7 +1,8 @@
 import { LoadingCircles } from "@/components/icons/loadingCircles";
 import { PropertyListing, PropertyListingLoading } from "@/components/properties/PropertyListing";
 import { PropertyListingMap, PropertyListingMapLoading } from "@/components/properties/PropertyListingMap";
-import { FilterSection, PropertyListingSearchSchema, propertyListingSearchToFilters } from "@/components/properties/PropertyListingFilters";
+import { FilterSection } from "@/components/properties/PropertyListingFilters";
+import { PropertyListingSearchSchema, propertyListingSearchToFilters } from "@/components/properties/propertyListingSearch";
 import { getPropertyFilteredListingOpts } from "@/queries/properties";
 import type { TPropertyFilters } from "@/queries/type";
 import { useUIStore } from "@/stores/uiStore";

@@ -5,12 +5,13 @@ import { getAdminBlogPostsOpts } from "@/queries/blog";
 import type { TBlogPostFilters, TBlogPostStatus } from "@/queries/type";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
+import * as z from "zod/mini";
+import { optionalParam, positiveIntParam } from "@/lib/searchParams";
 
 const BlogSearchSchema = z.object({
-    q:      z.string().optional().catch(undefined),
-    status: z.enum(["draft", "published", "archived"]).optional().catch(undefined),
-    page:   z.coerce.number().int().positive().optional().catch(undefined),
+    q:      optionalParam(z.string()),
+    status: optionalParam(z.enum(["draft", "published", "archived"])),
+    page:   positiveIntParam(),
 });
 
 type BlogSearch = z.infer<typeof BlogSearchSchema>;

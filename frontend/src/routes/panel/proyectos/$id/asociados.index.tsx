@@ -3,15 +3,16 @@ import { AssociatesTable } from '@/components/panel/associates/AssociatesTable';
 import { getProjectAssociateByDataOpts, getProjectAssociatesOpts, getProjectOpts } from '@/queries/projects';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { z } from 'zod';
+import * as z from "zod/mini";
+import { optionalParam } from "@/lib/searchParams";
 
 const AssociatesSearchSchema = z.object({
-    pendingPayment: z.boolean().optional().catch(undefined),
-    lotNum: z.string().optional().catch(undefined),
-    appleNum: z.string().optional().catch(undefined),
-    rfcOrCurp: z.string().optional().catch(undefined),
-    name: z.string().optional().catch(undefined),
-    phone: z.string().optional().catch(undefined),
+    pendingPayment: optionalParam(z.boolean()),
+    lotNum: optionalParam(z.string()),
+    appleNum: optionalParam(z.string()),
+    rfcOrCurp: optionalParam(z.string()),
+    name: optionalParam(z.string()),
+    phone: optionalParam(z.string()),
 });
 
 export const Route = createFileRoute('/panel/proyectos/$id/asociados/')({

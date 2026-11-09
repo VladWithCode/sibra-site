@@ -6,11 +6,7 @@ import { resolve } from "node:path";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [
-        tanstackRouter({ autoCodeSplitting: true }),
-        viteReact(),
-        tailwindcss(),
-    ],
+    plugins: [tanstackRouter({ autoCodeSplitting: true }), viteReact(), tailwindcss()],
     resolve: {
         alias: {
             "@": resolve(__dirname, "./src"),
@@ -23,8 +19,8 @@ export default defineConfig({
         },
     },
     build: {
-        target: 'esnext',
-        minify: 'terser',
+        target: "esnext",
+        minify: "terser",
         terserOptions: {
             compress: {
                 drop_console: true,
@@ -33,45 +29,25 @@ export default defineConfig({
         },
         rollupOptions: {
             output: {
-                manualChunks: {
-                    'react-vendor': ['react', 'react-dom', 'react/jsx-runtime', 'scheduler'],
-                    'tanstack': [
-                        '@tanstack/react-query',
-                        '@tanstack/react-router',
-                    ],
-                    'radix-ui': [
-                        '@radix-ui/react-checkbox',
-                        '@radix-ui/react-collapsible',
-                        '@radix-ui/react-dialog',
-                        '@radix-ui/react-label',
-                        '@radix-ui/react-navigation-menu',
-                        '@radix-ui/react-popover',
-                        '@radix-ui/react-radio-group',
-                        '@radix-ui/react-scroll-area',
-                        '@radix-ui/react-select',
-                        '@radix-ui/react-separator',
-                        '@radix-ui/react-slot',
-                        '@radix-ui/react-tabs',
-                        '@radix-ui/react-tooltip',
-                    ],
-                    'animations': ['@gsap/react'],
-                    'forms': [
-                        'zod',
-                        '@hookform/resolvers',
-                        'react-hook-form',
-                    ],
-                    'maps': ['@vis.gl/react-google-maps'],
-                    'icons': ['lucide-react'],
+                // Only pin the framework core every page needs into one
+                // long-cached vendor chunk. Everything else (icons, forms,
+                // charts, maps, markdown, animations) is left to Rollup so it
+                // lands in the route chunks that actually import it. Grouping
+                // whole libraries here forces them into the entry's preload
+                // list and defeats lucide's per-icon tree-shaking.
+                manualChunks(id) {
+                    if (
+                        /node_modules\/(react|react-dom|scheduler|@tanstack\/(react-router|router-core|history|react-query|query-core|store|react-store))\//.test(
+                            id,
+                        )
+                    ) {
+                        return "vendor";
+                    }
                 },
-            }
+            },
         },
     },
     optimizeDeps: {
-        include: [
-            'react',
-            'react-dom',
-            '@tanstack/react-query',
-            '@tanstack/react-router',
-        ],
+        include: ["react", "react-dom", "@tanstack/react-query", "@tanstack/react-router"],
     },
 });

@@ -5,10 +5,11 @@ import { getProjectsOpts } from '@/queries/projects';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { useMemo } from 'react';
-import { z } from 'zod';
+import * as z from "zod/mini";
+import { optionalParam } from "@/lib/searchParams";
 
 const PanelProjectsSearchSchema = z.object({
-    q: z.string().optional().catch(undefined),
+    q: optionalParam(z.string()),
 });
 
 export const Route = createFileRoute('/panel/proyectos/')({

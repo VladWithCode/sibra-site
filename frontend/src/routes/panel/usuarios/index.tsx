@@ -6,16 +6,14 @@ import type { TUserFilters } from '@/queries/type';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { motion } from 'motion/react';
-import { z } from 'zod';
+import * as z from "zod/mini";
+import { optionalParam, positiveIntParam } from "@/lib/searchParams";
 
 const PanelUsersSearchSchema = z.object({
-    search: z.string().optional().catch(undefined),
-    role: z
-        .enum(['admin', 'editor', 'user'])
-        .optional()
-        .catch(undefined),
-    page: z.coerce.number().int().positive().optional().catch(undefined),
-    perPage: z.coerce.number().int().positive().optional().catch(undefined),
+    search: optionalParam(z.string()),
+    role: optionalParam(z.enum(['admin', 'editor', 'user'])),
+    page: positiveIntParam(),
+    perPage: positiveIntParam(),
 });
 
 type PanelUsersSearch = z.infer<typeof PanelUsersSearchSchema>;

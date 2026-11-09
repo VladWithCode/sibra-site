@@ -5,18 +5,16 @@ import { getPanelPropertyListingOpts } from '@/queries/properties';
 import type { TPropertyFilters } from '@/queries/type';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
-import { z } from 'zod';
+import * as z from "zod/mini";
+import { optionalParam, positiveIntParam } from "@/lib/searchParams";
 
 const PanelPropertiesSearchSchema = z.object({
-    q: z.string().optional().catch(undefined),
-    status: z
-        .enum(['borrador', 'archivada', 'publicada', 'en_revision', 'vendida', 'no_disponible'])
-        .optional()
-        .catch(undefined),
-    propType: z.enum(['casa', 'apartamento', 'terreno']).optional().catch(undefined),
-    contract: z.enum(['venta', 'renta']).optional().catch(undefined),
-    page: z.coerce.number().int().positive().optional().catch(undefined),
-    perPage: z.coerce.number().int().positive().optional().catch(undefined),
+    q: optionalParam(z.string()),
+    status: optionalParam(z.enum(['borrador', 'archivada', 'publicada', 'en_revision', 'vendida', 'no_disponible'])),
+    propType: optionalParam(z.enum(['casa', 'apartamento', 'terreno'])),
+    contract: optionalParam(z.enum(['venta', 'renta'])),
+    page: positiveIntParam(),
+    perPage: positiveIntParam(),
 });
 
 type PanelPropertiesSearch = z.infer<typeof PanelPropertiesSearchSchema>;

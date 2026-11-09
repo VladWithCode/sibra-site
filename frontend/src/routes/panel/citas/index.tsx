@@ -6,23 +6,18 @@ import type { TQuoteFilters } from '@/queries/type';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 import { motion } from 'motion/react';
-import { z } from 'zod';
+import * as z from "zod/mini";
+import { optionalParam, positiveIntParam } from "@/lib/searchParams";
 
 const PanelRequestsSearchSchema = z.object({
-    name: z.string().optional().catch(undefined),
-    phone: z.string().optional().catch(undefined),
-    type: z
-        .enum(['informacion', 'cita', 'venta', 'precalificacion', 'proyecto'])
-        .optional()
-        .catch(undefined),
-    status: z
-        .enum(['pendiente', 'atendida', 'confirmada', 'volver a atender'])
-        .optional()
-        .catch(undefined),
-    scheduledDate: z.string().optional().catch(undefined),
-    createdAt: z.string().optional().catch(undefined),
-    page: z.coerce.number().int().positive().optional().catch(undefined),
-    perPage: z.coerce.number().int().positive().optional().catch(undefined),
+    name: optionalParam(z.string()),
+    phone: optionalParam(z.string()),
+    type: optionalParam(z.enum(['informacion', 'cita', 'venta', 'precalificacion', 'proyecto'])),
+    status: optionalParam(z.enum(['pendiente', 'atendida', 'confirmada', 'volver a atender'])),
+    scheduledDate: optionalParam(z.string()),
+    createdAt: optionalParam(z.string()),
+    page: positiveIntParam(),
+    perPage: positiveIntParam(),
 });
 
 type PanelRequestsSearch = z.infer<typeof PanelRequestsSearchSchema>;

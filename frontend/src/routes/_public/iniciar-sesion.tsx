@@ -9,7 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import z from "zod";
+import * as z from "zod/mini";
 
 export const Route = createFileRoute("/_public/iniciar-sesion")({
     component: RouteComponent,
@@ -27,8 +27,8 @@ export const Route = createFileRoute("/_public/iniciar-sesion")({
 });
 
 const loginSchema = z.object({
-    username: z.string().min(2, "El nombre de usuario debe tener al menos 2 caracteres"),
-    password: z.string().min(4, "La contraseña debe tener al menos 4 caracteres"),
+    username: z.string().check(z.minLength(2, "El nombre de usuario debe tener al menos 2 caracteres")),
+    password: z.string().check(z.minLength(4, "La contraseña debe tener al menos 4 caracteres")),
 });
 
 type loginSchemaType = z.infer<typeof loginSchema>;
