@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
+import { trackContactClick, trackPixel } from "@/lib/metaPixel";
 
 function getSessionId(): string {
     const key = "sibra_session_id";
@@ -20,6 +21,7 @@ export function usePageTracking() {
         const unsubscribe = router.subscribe("onResolved", (evt) => {
             const path = evt.toLocation.pathname;
             if (path.startsWith("/panel")) return;
+            if (evt.pathChanged) trackPixel("PageView");
             const payload = JSON.stringify({
                 path,
                 referrer: document.referrer,
@@ -41,6 +43,14 @@ export function usePageTracking() {
             }
         });
 
-        return unsubscribe;
+        const onClick = (evt: MouseEvent) => {
+            if (!location.pathname.startsWith("/panel")) trackContactClick(evt);
+        };
+        document.addEventListener("click", onClick);
+
+        return () => {
+            unsubscribe();
+            document.removeEventListener("click", onClick);
+        };
     }, [router]);
 }

@@ -81,6 +81,6 @@ Data fetching uses TanStack Query. Global UI state (sidebar open/close, etc.) is
 
 - **Backend errors**: `fmt.Printf("err: %v\n", err)` pattern; always check returned errors.
 - **DB access**: Acquire pool via `db.GetPool()`; pass `context.Background()` for DB ops.
-- **Environment**: `.env` loaded with `godotenv.Overload(".env")`. Required vars: `DATABASE_URL`, `PORT`, `JWT_SECRET`, WhatsApp (`WSP_*`), Google Maps (`GOOGLE_MAPS_API_KEY`), Gmail (`GOOGLE_MAIL_*`), Goose (`GOOSE_*`).
+- **Environment**: `.env` loaded with `godotenv.Overload(".env")`. Required vars: `DATABASE_URL`, `PORT`, `JWT_SECRET`, WhatsApp (`WSP_*`), Google Maps (`GOOGLE_MAPS_API_KEY`), Gmail (`GOOGLE_MAIL_*`), Goose (`GOOSE_*`). Optional: `META_CAPI_ACCESS_TOKEN` (Meta Conversions API; without it server-side `Lead` events are skipped) and `META_CAPI_TEST_EVENT_CODE`.
 - **Frontend path alias**: `@/*` maps to `frontend/src/*`.
 - **Formatting**: Prettier for frontend (`npm run format`); standard `gofmt` for Go.

@@ -1,3 +1,4 @@
+import { trackPixel } from '@/lib/metaPixel';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -34,6 +35,17 @@ export const Route = createFileRoute('/_public/proyectos/$project')({
 function RouteComponent() {
     const { project } = Route.useParams();
     const { data, status, error } = useSuspenseQuery(getProjectBySlugOpts(project))
+
+    const projectId = data?.project?.id;
+    useEffect(() => {
+        if (!projectId) return;
+        trackPixel("ViewContent", {
+            content_ids: [projectId],
+            content_type: "product",
+            content_category: "proyecto",
+            content_name: data.project.name,
+        });
+    }, [projectId]);
 
     if (status === "error") {
         return <ProjectFetchError error={error} />

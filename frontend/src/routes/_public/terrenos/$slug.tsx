@@ -1,3 +1,4 @@
+import { trackPixel } from "@/lib/metaPixel";
 import { SellingPageTemplate } from "@/components/selling-pages/SellingPageTemplate";
 import { mergeSellingPage } from "@/components/selling-pages/normalize";
 import { getSellingPageBySlugOpts } from "@/queries/sellingPages";
@@ -5,7 +6,7 @@ import { useUIStore } from "@/stores/uiStore";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { isReady, stillSrc, stillSrcSet } from "@/lib/media";
-import { useLayoutEffect, useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo } from "react";
 
 export const Route = createFileRoute("/_public/terrenos/$slug")({
     component: RouteComponent,
@@ -54,6 +55,10 @@ function RouteComponent() {
         setHeaderFloating(true);
         setHeaderComplement("none");
     }, []);
+
+    useEffect(() => {
+        trackPixel("ViewContent", { content_category: "terreno", content_name: slug });
+    }, [slug]);
 
     const merged = useMemo(() => mergeSellingPage(data.page), [data.page]);
 

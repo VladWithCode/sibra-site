@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
+	"github.com/vladwithcode/sibra-site/internal/meta"
 	"github.com/vladwithcode/sibra-site/internal/wsp"
 )
 
@@ -28,6 +29,32 @@ func RegisterRequestsRouter(r *customServeMux) {
 	r.HandleFunc("PUT /api/citas/{id}", auth.WithAuthAccessLevelMiddleware(UpdateRequest, auth.AccessLevelEditor))
 	r.HandleFunc("PUT /api/citas/{id}/set-done", auth.WithAuthAccessLevelMiddleware(SetDoneRequest, auth.AccessLevelEditor))
 	r.HandleFunc("DELETE /api/citas/{id}", auth.WithAuthAccessLevelMiddleware(DeleteRequest, auth.AccessLevelEditor))
+}
+
+// sendMetaLead reports a submitted lead form to Meta's Conversions API without
+// delaying the response. The browser sends the event ID it uses for its own
+// Pixel "Lead" event so Meta counts the lead once.
+func sendMetaLead(r *http.Request, phone, name string) {
+	lead := meta.Lead{
+		EventID:   truncate(r.Header.Get("X-Meta-Event-Id"), 128),
+		SourceURL: r.Referer(),
+		IP:        extractIP(r),
+		UserAgent: r.UserAgent(),
+		Phone:     phone,
+		Name:      name,
+	}
+	if c, err := r.Cookie("_fbp"); err == nil {
+		lead.Fbp = c.Value
+	}
+	if c, err := r.Cookie("_fbc"); err == nil {
+		lead.Fbc = c.Value
+	}
+
+	go func() {
+		if err := meta.SendLead(lead); err != nil {
+			log.Printf("Error sending Meta lead event: %v\n", err)
+		}
+	}()
 }
 
 func CreateRequest(w http.ResponseWriter, r *http.Request) {
@@ -93,6 +120,7 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"request": req,
 	})
+	sendMetaLead(r, req.Phone, req.Name)
 }
 
 func CreatePropInfoRequest(w http.ResponseWriter, r *http.Request) {
@@ -174,6 +202,7 @@ func CreatePropInfoRequest(w http.ResponseWriter, r *http.Request) {
 		"success": true,
 		"request": req,
 	})
+	sendMetaLead(r, req.Phone, req.Name)
 }
 
 func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
@@ -246,6 +275,7 @@ func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, map[string]any{
 		"success": true,
 	})
+	sendMetaLead(r, req.Phone, req.Name)
 
 	go func() {
 		ctx := context.Background()

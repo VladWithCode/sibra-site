@@ -1,3 +1,4 @@
+import { trackPixel } from "@/lib/metaPixel";
 import { LoadingCircles } from "@/components/icons/loadingCircles";
 import { PropertyListing, PropertyListingLoading } from "@/components/properties/PropertyListing";
 import { PropertyListingMap, PropertyListingMapLoading } from "@/components/properties/PropertyListingMap";
@@ -36,6 +37,16 @@ function RouteComponent() {
     useEffect(() => {
         setHeaderComplementProps({ complementType: "none" })
     }, []);
+
+    // Report each distinct search (filters only; view and paging are not searches).
+    const { view: _view, page: _page, perPage: _perPage, ...searchFilters } = filters as Record<string, unknown>;
+    const searchString = Object.entries(searchFilters)
+        .filter(([, v]) => v !== undefined && v !== "")
+        .map(([k, v]) => `${k}=${v}`)
+        .join(" ");
+    useEffect(() => {
+        if (searchString) trackPixel("Search", { search_string: searchString });
+    }, [searchString]);
 
     useEffect(() => {
         if (view === "map") {

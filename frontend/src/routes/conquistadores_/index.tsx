@@ -27,16 +27,6 @@ export const Route = createFileRoute("/conquistadores_/")({
                 href: "/conq_video_poster.webp",
             },
         ],
-        scripts: [
-            {
-                src: "/meta-pixel.js",
-                async: true,
-                defer: true,
-                onError: (e) => {
-                    console.error(e);
-                },
-            },
-        ],
     }),
 });
 

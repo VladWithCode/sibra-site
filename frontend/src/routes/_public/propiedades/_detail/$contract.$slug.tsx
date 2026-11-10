@@ -1,3 +1,4 @@
+import { trackPixel } from "@/lib/metaPixel";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { FloatingCTA } from "@/components/floatingCTA";
 import { SqMtIcon } from "@/components/icons/icons";
@@ -828,6 +829,16 @@ function RouteComponent() {
         setHeaderFloating(false);
         setHeaderComplementProps({ complementType: "search" });
     }, []);
+
+    useEffect(() => {
+        trackPixel("ViewContent", {
+            content_ids: [property.id],
+            content_type: "product",
+            content_category: property.contract,
+            value: property.price,
+            currency: "MXN",
+        });
+    }, [property.id]);
 
     return (
         <main className="pb-12">

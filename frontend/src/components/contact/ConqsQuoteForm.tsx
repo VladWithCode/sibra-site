@@ -71,10 +71,6 @@ export function ConqsQuoteForm({
                     },
                 },
             );
-
-            if (window.fbq) {
-                window.fbq("track", "Schedule");
-            }
         },
         () => {
             toast.error("El formulario es inválido. Corrige los datos e intenta de nuevo.");
@@ -246,10 +242,6 @@ export function ConqsFooterQuoteForm({
                     },
                 },
             );
-
-            if (window.fbq) {
-                window.fbq("track", "Schedule");
-            }
         },
         () => {
             toast.error("El formulario es inválido. Corrige los datos e intenta de nuevo.");

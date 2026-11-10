@@ -17,6 +17,32 @@ import type {
 } from "./type";
 import { objectToQueryString } from "./util";
 import { queryClient } from "./queryClient";
+import { trackPixel } from "@/lib/metaPixel";
+
+/**
+ * Submits a public lead form and reports it to Meta as a `Lead`. The backend
+ * reports the same lead through the Conversions API; the shared event ID lets
+ * Meta deduplicate both.
+ */
+async function postLead<T>(url: string, body: unknown, errorMessage: string): Promise<T> {
+    const eventID = crypto.randomUUID();
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-Meta-Event-Id": eventID,
+        },
+        body: JSON.stringify(body),
+    });
+    const data = await response.json();
+
+    if (response.status < 200 || response.status >= 300) {
+        throw new Error(data.error || errorMessage);
+    }
+
+    trackPixel("Lead", {}, eventID);
+    return data;
+}
 
 export const QuoteQueryKeys = {
     all: () => ["quotes"] as const,
@@ -127,71 +153,19 @@ export const createContactRequestOpts = () => mutationOptions({
 })
 
 export async function createQuote(newQuote: TQuote): Promise<TQuoteCreateResult> {
-    const response = await fetch("/api/contacto", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newQuote),
-    });
-    const data = await response.json();
-
-    if (response.status < 200 || response.status >= 300) {
-        throw new Error(data.error || "Error al crear cita");
-    }
-
-    return data;
+    return postLead("/api/contacto", newQuote, "Error al crear cita");
 }
 
 export async function createConqsQuote({ quoteData }: { quoteData: Partial<TQuoteConquistadores> }): Promise<TQuoteCreateResult> {
-    const response = await fetch("/api/citas/conquistadores", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(quoteData),
-    });
-    const data = await response.json();
-
-    if (response.status < 200 || response.status >= 300) {
-        throw new Error(data.error || "Error al crear cita");
-    }
-
-    return data;
+    return postLead("/api/citas/conquistadores", quoteData, "Error al crear cita");
 }
 
 export async function createPropInfoRequest({ infoRequest }: { infoRequest: Pick<TPropInfoRequest, "name" | "phone" | "property"> }): Promise<TPropInfoRequestCreateResult> {
-    const response = await fetch("/api/contacto/info-propiedad", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(infoRequest),
-    });
-    const data = await response.json();
-
-    if (response.status < 200 || response.status >= 300) {
-        throw new Error(data.error || "Error al enviar la solicitud");
-    }
-
-    return data;
+    return postLead("/api/contacto/info-propiedad", infoRequest, "Error al enviar la solicitud");
 }
 
 export async function createContactRequest({ contactRequest }: { contactRequest: TContactRequest }): Promise<TContactRequestCreateResult> {
-    const response = await fetch("/api/contacto", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(contactRequest),
-    });
-    const data = await response.json();
-
-    if (response.status < 200 || response.status >= 300) {
-        throw new Error(data.error || "Error al enviar la solicitud");
-    }
-
-    return data;
+    return postLead("/api/contacto", contactRequest, "Error al enviar la solicitud");
 }
 
 export const updateQuoteOpts = (id: string, data: Partial<TQuote>) => mutationOptions({
