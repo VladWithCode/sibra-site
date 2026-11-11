@@ -56,6 +56,9 @@ export const NamedImageInputSchema = z.object({
     position: z.number(),
 });
 
+// Search engines cut meta descriptions around this length. Mirrors the backend cap.
+export const SHORT_DESCRIPTION_MAX = 160;
+
 export const PropertyFormSchema = z.object({
     title: z.string(),
     address: z.string().min(1, "La dirección es obligatoria"),
@@ -64,6 +67,9 @@ export const PropertyFormSchema = z.object({
     zip: z.string(),
     country: z.string(),
     description: z.string(),
+    shortDescription: z
+        .string()
+        .max(SHORT_DESCRIPTION_MAX, `Máximo ${SHORT_DESCRIPTION_MAX} caracteres`),
 
     price: requiredNumber,
     propertyType: z.enum(PROPERTY_TYPES, { error: "Elige el tipo de propiedad" }),
@@ -100,6 +106,7 @@ export const propertyFormDefaults: PropertyFormValues = {
     zip: "",
     country: "México",
     description: "",
+    shortDescription: "",
     price: 0,
     propertyType: "casa",
     contract: "venta",
@@ -150,6 +157,7 @@ export function buildPropertyPayload(v: PropertyFormValues): Partial<TProperty> 
         zip: v.zip,
         country: v.country,
         description: v.description,
+        shortDescription: v.shortDescription.trim(),
         price: v.price,
         propertyType: v.propertyType,
         contract: v.contract,
@@ -178,6 +186,7 @@ export function propertyToFormValues(p: TProperty): PropertyFormValues {
         zip: p.zip ?? "",
         country: p.country ?? "México",
         description: p.description ?? "",
+        shortDescription: p.shortDescription ?? "",
         price: p.price ?? 0,
         propertyType: p.propertyType ?? "casa",
         contract: p.contract ?? "venta",

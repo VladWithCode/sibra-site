@@ -103,6 +103,7 @@ type Property struct {
 	Id                string               `json:"id" db:"id"`
 	Address           string               `json:"address" db:"address"`
 	Description       string               `json:"description" db:"description"`
+	ShortDescription  string               `json:"shortDescription" db:"short_description"`
 	City              string               `json:"city" db:"city"`
 	State             string               `json:"state" db:"state"`
 	Zip               string               `json:"zip" db:"zip"`
@@ -354,6 +355,7 @@ func CreateProperty(prop *Property) error {
 		"id":            prop.Id,
 		"address":       prop.Address,
 		"description":   prop.Description,
+		"short_desc":    prop.ShortDescription,
 		"city":          prop.City,
 		"state":         prop.State,
 		"zip":           prop.Zip,
@@ -383,11 +385,11 @@ func CreateProperty(prop *Property) error {
 		`INSERT INTO properties (
 			id, address, description, city, state, zip, country, price, property_type,
 			contract, beds, baths, square_mt, lot_size, year_built, listing_date,
-			status, earth_coords, lat, lon, title, agent, slug
+			status, earth_coords, lat, lon, title, agent, slug, short_description
 		) VALUES (
             @id, @address, @description, @city, @state, @zip, @country, @price, @property_type,
             @contract, @beds, @baths, @square_mt, @lot_size, @year_built, @listing_date,
-            @status, @earth_coords, @lat, @lon, @title, @agent, @slug
+            @status, @earth_coords, @lat, @lon, @title, @agent, @slug, @short_desc
         )`,
 		args,
 	)
@@ -448,6 +450,7 @@ func UpdateProperty(property *Property) error {
 		"id":            property.Id,
 		"address":       property.Address,
 		"description":   property.Description,
+		"short_desc":    property.ShortDescription,
 		"city":          property.City,
 		"state":         property.State,
 		"zip":           property.Zip,
@@ -476,6 +479,7 @@ func UpdateProperty(property *Property) error {
 		`UPDATE properties SET
             address = @address,
             description = @description,
+            short_description = @short_desc,
             city = @city,
             state = @state,
             zip = @zip,
@@ -937,7 +941,7 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 
 	row := conn.QueryRow(ctx, `
 		SELECT
-			p.id, p.address, p.description, p.city, p.state, p.zip, p.country,
+			p.id, p.address, p.description, p.short_description, p.city, p.state, p.zip, p.country,
             p.price, p.property_type, p.beds, p.baths, p.square_mt, p.lot_size,
             p.year_built, p.listing_date, p.status, p.earth_coords,
 			COALESCE((
@@ -1022,6 +1026,7 @@ func FindPropertyById(ctx context.Context, propId string) (property *Property, e
 		&property.Id,
 		&property.Address,
 		&property.Description,
+		&property.ShortDescription,
 		&property.City,
 		&property.State,
 		&property.Zip,
@@ -1119,7 +1124,7 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 
 	row := conn.QueryRow(ctx, `
 		SELECT
-			p.id, p.address, p.description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
+			p.id, p.address, p.description, p.short_description, p.city, p.state, p.zip, p.country, p.price, p.property_type,
 			p.beds, p.baths, p.square_mt, p.lot_size, p.year_built, p.listing_date, p.status, p.earth_coords,
 			COALESCE((
 				SELECT jsonb_agg(
@@ -1203,6 +1208,7 @@ func FindPropertyBySlug(ctx context.Context, slug string) (property *Property, e
 		&property.Id,
 		&property.Address,
 		&property.Description,
+		&property.ShortDescription,
 		&property.City,
 		&property.State,
 		&property.Zip,

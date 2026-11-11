@@ -3,6 +3,8 @@ import { ContactForm } from "@/components/contact/ContactForm";
 import { FloatingCTA } from "@/components/floatingCTA";
 import { SqMtIcon } from "@/components/icons/icons";
 import { PropertyMainImage } from "@/components/Image";
+import { CollapsibleContent } from "@/components/properties/CollapsibleContent";
+import { PropertyMarkdown } from "@/components/properties/PropertyMarkdown";
 import { ResponsiveImage } from "@/components/media/ResponsiveImage";
 import { isReady, stillSrc, videoSrc, type TMediaAsset } from "@/lib/media";
 import { Badge } from "@/components/ui/badge";
@@ -55,9 +57,20 @@ const inquiryFormSchema = z.object({
 export const Route = createFileRoute("/_public/propiedades/_detail/$contract/$slug")({
     component: RouteComponent,
     loader: async ({ context, params }) => {
-        await context.queryClient.ensureQueryData(
+        return await context.queryClient.ensureQueryData(
             getPropertyBySlugOpts(params.slug, params.contract),
         );
+    },
+    // Keeps the tab title right on in-app navigation. Crawlers and link
+    // previews read the tags the server injects (internal/routes/property_seo.go).
+    head: ({ loaderData }) => {
+        const property = loaderData?.property;
+        const meta = [];
+        if (property?.title) meta.push({ title: `${property.title} | Sibra Inmobiliaria` });
+        if (property?.shortDescription) {
+            meta.push({ name: "description", content: property.shortDescription });
+        }
+        return { meta };
     },
 });
 
@@ -560,11 +573,9 @@ function ArchitecturalVision({ property }: { property: TProperty }) {
                     Vision Arquitectónica
                     <div className="h-px flex-1 bg-outline-variant/20" />
                 </h2>
-                <div className="space-y-4">
-                    <p className="text-on-surface-variant leading-relaxed font-sans whitespace-pre-wrap break-words [tab-size:4]">
-                        {property.description}
-                    </p>
-                </div>
+                <CollapsibleContent>
+                    <PropertyMarkdown content={property.description} />
+                </CollapsibleContent>
             </motion.div>
         </section>
     );

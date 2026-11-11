@@ -43,6 +43,8 @@ func NewRouter() http.Handler {
 	// Blog post page with Open Graph / Twitter Card meta injection for bots.
 	// Must be registered before the SPA fallback so it takes priority.
 	router.HandleFunc("GET /blog/{slug}", handleBlogPostOG)
+	// Property detail page: same meta injection, no body fallback.
+	router.HandleFunc("GET /propiedades/{contract}/{slug}", handlePropertyOG)
 
 	// SPA fallback: all other non-API paths get the React index.html so
 	// client-side routing (/, /blog, /propiedades, /panel/*, etc.) works.

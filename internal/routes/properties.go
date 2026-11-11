@@ -43,6 +43,13 @@ func CreateProperty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !validShortDescription(property.ShortDescription) {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "La descripción corta no puede tener más de 160 caracteres.",
+		})
+		return
+	}
+
 	user, err := auth.ExtractAuthDataFromRequest(r)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, ErrorParams{
@@ -81,6 +88,13 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage: "El formulario contiene información inválida",
 		})
 		log.Printf("Error decoding request body: %v", err)
+		return
+	}
+
+	if !validShortDescription(property.ShortDescription) {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "La descripción corta no puede tener más de 160 caracteres.",
+		})
 		return
 	}
 

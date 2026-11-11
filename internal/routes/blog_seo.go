@@ -117,13 +117,19 @@ func truncateDesc(s string, max int) string {
 var metaDescRe = regexp.MustCompile(`(?s)<meta\s[^>]*name="description"[^>]*/?>`)
 
 // buildOGInjection returns the HTML fragment (already HTML-escaped) to inject
-// before </head>. All arguments must be pre-escaped before calling.
+// before </head> for a blog post. All arguments must be pre-escaped before calling.
 func buildOGInjection(title, desc, canonical, ogImage string) string {
+	return buildHeadInjection("article", title, desc, canonical, ogImage)
+}
+
+// buildHeadInjection is buildOGInjection for any page type: ogType is the
+// og:type value ("article", "website", …). All arguments must be pre-escaped.
+func buildHeadInjection(ogType, title, desc, canonical, ogImage string) string {
 	return fmt.Sprintf(
 		"    <title>%s | Sibra Inmobiliaria</title>\n"+
 			"    <meta name=\"description\" content=\"%s\" />\n"+
 			"    <link rel=\"canonical\" href=\"%s\" />\n"+
-			"    <meta property=\"og:type\" content=\"article\" />\n"+
+			"    <meta property=\"og:type\" content=\"%s\" />\n"+
 			"    <meta property=\"og:title\" content=\"%s\" />\n"+
 			"    <meta property=\"og:description\" content=\"%s\" />\n"+
 			"    <meta property=\"og:url\" content=\"%s\" />\n"+
@@ -133,7 +139,7 @@ func buildOGInjection(title, desc, canonical, ogImage string) string {
 			"    <meta name=\"twitter:title\" content=\"%s\" />\n"+
 			"    <meta name=\"twitter:description\" content=\"%s\" />\n"+
 			"    <meta name=\"twitter:image\" content=\"%s\" />\n",
-		title, desc, canonical,
+		title, desc, canonical, ogType,
 		title, desc, canonical, ogImage,
 		title, desc, ogImage,
 	)

@@ -8,6 +8,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { PropertyMarkdown } from "@/components/properties/PropertyMarkdown";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { DollarSign } from "lucide-react";
 import type { CSSProperties } from "react";
@@ -19,6 +21,7 @@ import {
     PROPERTY_STATUS_LABELS,
     PROPERTY_TYPES,
     PROPERTY_TYPE_LABELS,
+    SHORT_DESCRIPTION_MAX,
 } from "./schema";
 
 type ErrorList = Array<{ message?: string } | undefined>;
@@ -34,7 +37,7 @@ function DescriptionCounter({ length }: { length: number }) {
     const redPercent = Math.round(Math.min(length / LONG_DESCRIPTION, 1) * 100);
     return (
         <p
-            className="-mt-1 text-right text-xs tabular-nums"
+            className="shrink-0 text-right tabular-nums"
             style={{
                 color: `color-mix(in oklch, var(--destructive) ${redPercent}%, var(--muted-foreground))`,
             }}
@@ -151,19 +154,82 @@ export function MainInfoSection({ form }: { form: any }) {
                     </form.Field>
                 </div>
 
+                <form.Field name="shortDescription">
+                    {(field: any) => {
+                        const length = (field.state.value ?? "").length;
+                        return (
+                            <Field>
+                                <FieldLabel htmlFor="shortDescription">
+                                    Descripción corta
+                                </FieldLabel>
+                                <Textarea
+                                    id="shortDescription"
+                                    rows={2}
+                                    maxLength={SHORT_DESCRIPTION_MAX}
+                                    value={field.state.value ?? ""}
+                                    onBlur={field.handleBlur}
+                                    onChange={(e) => field.handleChange(e.target.value)}
+                                    placeholder="Casa de 3 recámaras con jardín y alberca en Los Remedios, a 5 minutos del centro."
+                                    aria-describedby="shortDescription-hint"
+                                />
+                                <div className="-mt-1 flex justify-between gap-4 text-xs text-muted-foreground">
+                                    <p id="shortDescription-hint">
+                                        Texto que aparece en Google y al compartir el enlace. Si
+                                        queda vacía se usa el inicio de la descripción.
+                                    </p>
+                                    <p className="shrink-0 tabular-nums">
+                                        {length}/{SHORT_DESCRIPTION_MAX}
+                                    </p>
+                                </div>
+                                <FieldError errors={errsOf(field)} />
+                            </Field>
+                        );
+                    }}
+                </form.Field>
+
                 <form.Field name="description">
                     {(field: any) => (
                         <Field>
                             <FieldLabel htmlFor="description">Descripción</FieldLabel>
-                            <Textarea
-                                id="description"
-                                rows={4}
-                                value={field.state.value ?? ""}
-                                onBlur={field.handleBlur}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                placeholder="Describe la propiedad, sus acabados y atmósfera..."
-                            />
-                            <DescriptionCounter length={(field.state.value ?? "").length} />
+                            <Tabs defaultValue="write">
+                                <TabsList>
+                                    <TabsTrigger value="write">Escritura</TabsTrigger>
+                                    <TabsTrigger value="preview">Previsualización</TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="write" className="space-y-2">
+                                    <Textarea
+                                        id="description"
+                                        rows={8}
+                                        value={field.state.value ?? ""}
+                                        onBlur={field.handleBlur}
+                                        onChange={(e) => field.handleChange(e.target.value)}
+                                        placeholder="Describe la propiedad, sus acabados y atmósfera..."
+                                        className="font-mono"
+                                        aria-describedby="description-hint"
+                                    />
+                                    <div className="flex justify-between gap-4 text-xs text-muted-foreground">
+                                        <p id="description-hint">
+                                            Acepta Markdown: **negritas**, *cursivas*, listas
+                                            (-), subtítulos (###), enlaces y tablas.
+                                        </p>
+                                        <DescriptionCounter
+                                            length={(field.state.value ?? "").length}
+                                        />
+                                    </div>
+                                </TabsContent>
+                                <TabsContent value="preview">
+                                    <div className="min-h-40 rounded-md border border-input bg-surface-container-lowest px-4 py-3">
+                                        {field.state.value?.trim() ? (
+                                            <PropertyMarkdown content={field.state.value} />
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">
+                                                Escribe la descripción para ver la
+                                                previsualización.
+                                            </p>
+                                        )}
+                                    </div>
+                                </TabsContent>
+                            </Tabs>
                             <FieldError errors={errsOf(field)} />
                         </Field>
                     )}
@@ -181,9 +247,15 @@ export function MainInfoSection({ form }: { form: any }) {
                                         type="number"
                                         min={0}
                                         className="pl-9"
-                                        value={field.state.value === undefined ? "" : field.state.value}
+                                        value={
+                                            field.state.value === undefined
+                                                ? ""
+                                                : field.state.value
+                                        }
                                         onBlur={field.handleBlur}
-                                        onChange={(e) => field.handleChange(numberFromInput(e.target.value))}
+                                        onChange={(e) =>
+                                            field.handleChange(numberFromInput(e.target.value))
+                                        }
                                     />
                                 </div>
                                 <FieldError errors={errsOf(field)} />
@@ -220,7 +292,9 @@ export function MainInfoSection({ form }: { form: any }) {
                     <form.Field name="propertyType">
                         {(field: any) => (
                             <Field>
-                                <FieldLabel htmlFor="propertyType">Tipo de propiedad</FieldLabel>
+                                <FieldLabel htmlFor="propertyType">
+                                    Tipo de propiedad
+                                </FieldLabel>
                                 <Select
                                     value={field.state.value}
                                     onValueChange={(v) => field.handleChange(v)}
@@ -267,13 +341,32 @@ export function MainInfoSection({ form }: { form: any }) {
 
                 <div
                     className="grid gap-4"
-                    style={{ gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))" } as CSSProperties}
+                    style={
+                        {
+                            gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                        } as CSSProperties
+                    }
                 >
                     <NumericStat form={form} name="beds" label="Recámaras" iconName="Bed" />
                     <NumericStat form={form} name="baths" label="Baños" iconName="Bath" />
-                    <NumericStat form={form} name="sqMt" label="Terreno (m²)" iconName="Ruler" />
-                    <NumericStat form={form} name="lotSize" label="Construcción (m²)" iconName="Home" />
-                    <NumericStat form={form} name="yearBuilt" label="Año de construcción" iconName="Calendar" />
+                    <NumericStat
+                        form={form}
+                        name="sqMt"
+                        label="Terreno (m²)"
+                        iconName="Ruler"
+                    />
+                    <NumericStat
+                        form={form}
+                        name="lotSize"
+                        label="Construcción (m²)"
+                        iconName="Home"
+                    />
+                    <NumericStat
+                        form={form}
+                        name="yearBuilt"
+                        label="Año de construcción"
+                        iconName="Calendar"
+                    />
                 </div>
             </CardContent>
         </Card>
@@ -313,4 +406,3 @@ function NumericStat({
         </form.Field>
     );
 }
-

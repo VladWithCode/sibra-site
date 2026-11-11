@@ -71,7 +71,10 @@ export type TProperty = {
     id: string;
     address: string;
     title: string;
+    /** Markdown (see PropertyMarkdown). */
     description: string;
+    /** Plain-text summary for search results and link previews; may be empty. */
+    shortDescription: string;
     city: string;
     state: string;
     zip: string;
