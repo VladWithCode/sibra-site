@@ -77,11 +77,11 @@ func TestPropertyHeadInjection_published(t *testing.T) {
 		t.Fatal("published property must be indexable")
 	}
 	for _, want := range []string{
-		"<title>Casa con jardín en Los Remedios | Sibra Inmobiliaria</title>",
-		`<meta name="description" content="Casa &#34;única&#34; &amp; amplia" />`,
-		`<link rel="canonical" href="https://sibra.mx/propiedades/venta/venta-av-siempre-viva-1" />`,
-		`<meta property="og:type" content="website" />`,
-		`<meta property="og:image" content="https://sibra.mx/static/img/sibra_logo_512.webp" />`,
+		"<title data-server-head>Casa con jardín en Los Remedios | Sibra Inmobiliaria</title>",
+		`<meta name="description" content="Casa &#34;única&#34; &amp; amplia" data-server-head />`,
+		`<link rel="canonical" href="https://sibra.mx/propiedades/venta/venta-av-siempre-viva-1" data-server-head />`,
+		`<meta property="og:type" content="website" data-server-head />`,
+		`<meta property="og:image" content="https://sibra.mx/static/img/sibra_logo_512.webp" data-server-head />`,
 	} {
 		if !strings.Contains(injection, want) {
 			t.Errorf("injection missing %q\n%s", want, injection)
@@ -89,6 +89,59 @@ func TestPropertyHeadInjection_published(t *testing.T) {
 	}
 	if strings.Contains(injection, "noindex") {
 		t.Error("published property must not be noindex")
+	}
+	assertAllServerHead(t, injection)
+}
+
+// assertAllServerHead fails unless every element in the injected fragment
+// carries the data-server-head marker the SPA uses to remove them.
+func assertAllServerHead(t *testing.T, injection string) {
+	t.Helper()
+	for _, line := range strings.Split(strings.TrimSpace(injection), "\n") {
+		if line = strings.TrimSpace(line); !strings.Contains(line, "data-server-head") {
+			t.Errorf("injected element without data-server-head: %s", line)
+		}
+	}
+}
+
+func TestPropertyHeadInjection_productTags(t *testing.T) {
+	p := publishedProperty()
+	p.Id = "0190-abc"
+	p.Price = 1500000
+	injection, _ := propertyHeadInjection(p, "https://sibra.mx")
+	for _, want := range []string{
+		`<meta property="product:brand" content="Sibra Inmobiliaria" data-server-head />`,
+		`<meta property="product:availability" content="in stock" data-server-head />`,
+		`<meta property="product:condition" content="new" data-server-head />`,
+		`<meta property="product:price:amount" content="1500000.00" data-server-head />`,
+		`<meta property="product:price:currency" content="MXN" data-server-head />`,
+		`<meta property="product:retailer_item_id" content="0190-abc" data-server-head />`,
+	} {
+		if !strings.Contains(injection, want) {
+			t.Errorf("injection missing %q\n%s", want, injection)
+		}
+	}
+	if n := strings.Count(injection, `property="og:url"`); n != 1 {
+		t.Errorf("og:url emitted %d times", n)
+	}
+	assertAllServerHead(t, injection)
+
+	p.Status = db.PropertyStatusSold
+	if got := propertyProductTags(p); !strings.Contains(got, `content="out of stock"`) {
+		t.Errorf("sold property not out of stock: %s", got)
+	}
+
+	p.Price = 0
+	if got := propertyProductTags(p); got != "" {
+		t.Errorf("no price must emit no product tags, got %q", got)
+	}
+}
+
+func TestCatalogPrice(t *testing.T) {
+	for in, want := range map[float64]string{1500000: "1500000.00", 2500.5: "2500.50", 12345678.999: "12345679.00"} {
+		if got := catalogPrice(in); got != want {
+			t.Errorf("catalogPrice(%v) = %q, want %q", in, got, want)
+		}
 	}
 }
 
@@ -100,6 +153,7 @@ func TestPropertyHeadInjection_notPublic(t *testing.T) {
 		if indexable || injection != noindexInjection {
 			t.Errorf("%s: want noindex only, got indexable=%v %q", name, indexable, injection)
 		}
+		assertAllServerHead(t, injection)
 	}
 }
 

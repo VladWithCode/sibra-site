@@ -1,4 +1,12 @@
 import { trackPixel } from "@/lib/metaPixel";
+import {
+    productMetaTags,
+    propertyDescription,
+    propertyTitle,
+    propertyUrl,
+    viewContentParams,
+} from "@/lib/metaCatalog";
+import { removeServerHead } from "@/lib/serverHead";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { FloatingCTA } from "@/components/floatingCTA";
 import { SqMtIcon } from "@/components/icons/icons";
@@ -40,7 +48,7 @@ import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Bath, Bed, Home, XIcon } from "lucide-react";
 import { motion } from "motion/react";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import z from "zod";
 import { DynamicIcon } from "lucide-react/dynamic";
@@ -61,16 +69,25 @@ export const Route = createFileRoute("/_public/propiedades/_detail/$contract/$sl
             getPropertyBySlugOpts(params.slug, params.contract),
         );
     },
-    // Keeps the tab title right on in-app navigation. Crawlers and link
-    // previews read the tags the server injects (internal/routes/property_seo.go).
+    // Title, description, canonical, OpenGraph and Meta catalog product tags.
+    // The Meta Pixel reads the product tags from the DOM, and in production
+    // nginx serves index.html for this page unless it passes it to Go, so they
+    // must come from here. When the request reaches Go,
+    // internal/routes/property_seo.go injects the same set for crawlers and
+    // link previews, and RouteComponent removes it so none are duplicated.
+    // This set must stay complete on its own.
     head: ({ loaderData }) => {
         const property = loaderData?.property;
-        const meta = [];
-        if (property?.title) meta.push({ title: `${property.title} | Sibra Inmobiliaria` });
-        if (property?.shortDescription) {
-            meta.push({ name: "description", content: property.shortDescription });
-        }
-        return { meta };
+        if (!property) return {};
+        const origin = window.location.origin;
+        return {
+            meta: [
+                { title: `${propertyTitle(property)} | Sibra Inmobiliaria` },
+                { name: "description", content: propertyDescription(property) },
+                ...productMetaTags(property, origin),
+            ],
+            links: [{ rel: "canonical", href: propertyUrl(property, origin) }],
+        };
     },
 });
 
@@ -841,14 +858,15 @@ function RouteComponent() {
         setHeaderComplementProps({ complementType: "search" });
     }, []);
 
+    // The route head renders the full set of tags the server injected; drop
+    // the server's copy before the pixel loads (it does on the first tracked
+    // event, from a passive effect) so it never sees both.
+    useLayoutEffect(() => {
+        removeServerHead();
+    }, []);
+
     useEffect(() => {
-        trackPixel("ViewContent", {
-            content_ids: [property.id],
-            content_type: "product",
-            content_category: property.contract,
-            value: property.price,
-            currency: "MXN",
-        });
+        trackPixel("ViewContent", viewContentParams(property));
     }, [property.id]);
 
     return (

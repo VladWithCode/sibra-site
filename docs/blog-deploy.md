@@ -9,8 +9,11 @@ Internet → Nginx → Go backend (puerto 8080)
 ```
 
 - **Nginx** sirve `/assets/`, `/static/`, archivos raíz del dist (`favicon.ico`, etc.)
-- **Nginx** pasa `/api/*` y `/blog/:slug` a Go
+- **Nginx** pasa `/api/*`, `/blog/:slug` y las páginas de detalle de propiedad
+  (`/propiedades/:contrato/:slug`) a Go
 - **Go** inyecta OG tags + fallback HTML del artículo en `/blog/{slug}`
+- **Go** inyecta title, description, canonical, OG tags y tags de producto de
+  Meta en `/propiedades/{contrato}/{slug}`
 - **Go** sirve el SPA React para todas las demás rutas
 
 ---
@@ -27,11 +30,12 @@ Internet → Nginx → Go backend (puerto 8080)
    ```
 
    Si Go arranca sin el build, los endpoints SPA responden 503.
-   El `index.html` se cachea en memoria tras la primera lectura exitosa.
-   Los errores de lectura (build no disponible) **no** se cachean: una vez
-   que el build exista, el siguiente request lo leerá automáticamente sin
-   reiniciar Go. Para actualizar el build en producción sí es necesario
-   reiniciar el proceso Go (el HTML se cachea una vez leído exitosamente).
+   El `index.html` se cachea en memoria, pero Go revisa en cada request la
+   fecha de modificación y el tamaño del archivo y lo vuelve a leer si
+   cambiaron. Los errores de lectura (build no disponible) **no** se cachean:
+   una vez que el build exista, el siguiente request lo leerá automáticamente.
+   Para actualizar el build en producción **no** hace falta reiniciar Go: basta
+   con reemplazar `frontend/dist/`.
 
 2. Variables de entorno obligatorias en producción:
 
@@ -136,6 +140,19 @@ server {
         proxy_set_header   X-Forwarded-Proto $scheme;
         proxy_set_header   Connection        "";
         # Sin cache en rutas de blog (contenido puede publicarse en cualquier momento)
+        add_header Cache-Control "no-cache";
+    }
+
+    # ── Propiedades: Go inyecta title, description, canonical, OG y tags de producto
+    location ~ ^/propiedades/[^/]+/[^/]+$ {
+        proxy_pass         http://go_backend;
+        proxy_http_version 1.1;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+        proxy_set_header   Connection        "";
+        # Sin cache (precio, estado y publicación pueden cambiar en cualquier momento)
         add_header Cache-Control "no-cache";
     }
 

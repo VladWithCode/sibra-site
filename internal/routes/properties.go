@@ -25,6 +25,7 @@ func RegisterPropertyRoutes(router *customServeMux) {
 	router.HandleFunc("GET /api/propiedades/panel/{id}", auth.ValidateAuthMiddleware(FindSingleProperty))
 	router.HandleFunc("GET /api/propiedades/{contract}", FindProperties)
 	router.HandleFunc("GET /api/propiedades/{contract}/{id}", FindPropertyWithNearbyProps)
+	router.HandleFunc("GET /api/feeds/meta/home-listings.xml", HomeListingFeed)
 	router.HandleFunc("POST /api/property", auth.WithAuthAccessLevelMiddleware(CreateProperty, auth.AccessLevelEditor))
 	router.HandleFunc("PUT /api/property/{id}", auth.WithAuthAccessLevelMiddleware(UpdateProperty, auth.AccessLevelEditor))
 	router.HandleFunc("DELETE /api/property/{id}", auth.WithAuthAccessLevelMiddleware(DeletePropertyById, auth.AccessLevelEditor))

@@ -124,21 +124,24 @@ func buildOGInjection(title, desc, canonical, ogImage string) string {
 
 // buildHeadInjection is buildOGInjection for any page type: ogType is the
 // og:type value ("article", "website", …). All arguments must be pre-escaped.
+// Every element carries data-server-head, the marker for tags the server
+// injects into <head>, so the SPA can remove them once they stop describing the
+// current page (frontend/src/lib/serverHead.ts).
 func buildHeadInjection(ogType, title, desc, canonical, ogImage string) string {
 	return fmt.Sprintf(
-		"    <title>%s | Sibra Inmobiliaria</title>\n"+
-			"    <meta name=\"description\" content=\"%s\" />\n"+
-			"    <link rel=\"canonical\" href=\"%s\" />\n"+
-			"    <meta property=\"og:type\" content=\"%s\" />\n"+
-			"    <meta property=\"og:title\" content=\"%s\" />\n"+
-			"    <meta property=\"og:description\" content=\"%s\" />\n"+
-			"    <meta property=\"og:url\" content=\"%s\" />\n"+
-			"    <meta property=\"og:image\" content=\"%s\" />\n"+
-			"    <meta property=\"og:site_name\" content=\"Sibra Inmobiliaria\" />\n"+
-			"    <meta name=\"twitter:card\" content=\"summary_large_image\" />\n"+
-			"    <meta name=\"twitter:title\" content=\"%s\" />\n"+
-			"    <meta name=\"twitter:description\" content=\"%s\" />\n"+
-			"    <meta name=\"twitter:image\" content=\"%s\" />\n",
+		"    <title data-server-head>%s | Sibra Inmobiliaria</title>\n"+
+			"    <meta name=\"description\" content=\"%s\" data-server-head />\n"+
+			"    <link rel=\"canonical\" href=\"%s\" data-server-head />\n"+
+			"    <meta property=\"og:type\" content=\"%s\" data-server-head />\n"+
+			"    <meta property=\"og:title\" content=\"%s\" data-server-head />\n"+
+			"    <meta property=\"og:description\" content=\"%s\" data-server-head />\n"+
+			"    <meta property=\"og:url\" content=\"%s\" data-server-head />\n"+
+			"    <meta property=\"og:image\" content=\"%s\" data-server-head />\n"+
+			"    <meta property=\"og:site_name\" content=\"Sibra Inmobiliaria\" data-server-head />\n"+
+			"    <meta name=\"twitter:card\" content=\"summary_large_image\" data-server-head />\n"+
+			"    <meta name=\"twitter:title\" content=\"%s\" data-server-head />\n"+
+			"    <meta name=\"twitter:description\" content=\"%s\" data-server-head />\n"+
+			"    <meta name=\"twitter:image\" content=\"%s\" data-server-head />\n",
 		title, desc, canonical, ogType,
 		title, desc, canonical, ogImage,
 		title, desc, ogImage,

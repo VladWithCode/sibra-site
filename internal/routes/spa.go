@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 func frontendDistDir() string {
@@ -14,29 +15,40 @@ func frontendDistDir() string {
 	return "frontend/dist"
 }
 
-// spaCache holds the raw bytes of frontend/dist/index.html after the first
-// successful read. Errors are NOT cached so the server recovers automatically
-// once the frontend build becomes available (e.g. after a delayed npm run build).
+// spaCache holds the bytes of frontend/dist/index.html together with the
+// modification time and size the file had when it was read. A new frontend
+// build replaces the file, so the next call sees a different stat and re-reads
+// it without restarting the server. Errors are NOT cached so the server
+// recovers automatically once the frontend build becomes available (e.g. after
+// a delayed npm run build).
 var (
-	spaMu    sync.Mutex
-	spaBytes []byte
+	spaMu      sync.Mutex
+	spaBytes   []byte
+	spaModTime time.Time
+	spaSize    int64
 )
 
-// readSPAHTML returns the cached index.html bytes. On the first successful read
-// the result is cached for all subsequent calls. If the read fails (e.g.
-// frontend/dist not built yet), the error is returned but NOT cached — the next
-// call will retry.
+// readSPAHTML returns the index.html bytes, re-reading the file whenever its
+// modification time or size differs from the cached copy. If the stat or read
+// fails (e.g. frontend/dist not built yet), the error is returned but NOT
+// cached — the next call will retry. Callers must not modify the result.
 func readSPAHTML() ([]byte, error) {
-	spaMu.Lock()
-	defer spaMu.Unlock()
-	if spaBytes != nil {
-		return spaBytes, nil
-	}
-	data, err := os.ReadFile(frontendDistDir() + "/index.html")
+	path := frontendDistDir() + "/index.html"
+	info, err := os.Stat(path)
 	if err != nil {
 		return nil, err
 	}
-	spaBytes = data
+
+	spaMu.Lock()
+	defer spaMu.Unlock()
+	if spaBytes != nil && info.ModTime().Equal(spaModTime) && info.Size() == spaSize {
+		return spaBytes, nil
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	spaBytes, spaModTime, spaSize = data, info.ModTime(), info.Size()
 	return spaBytes, nil
 }
 

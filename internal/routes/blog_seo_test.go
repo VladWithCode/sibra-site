@@ -136,6 +136,13 @@ func TestOGInjection_containsAllTags(t *testing.T) {
 			t.Errorf("missing %q in enriched HTML", c)
 		}
 	}
+
+	// Every injected element is marked for the SPA; the index.html defaults
+	// that survive the injection are not.
+	assertAllServerHead(t, injection)
+	if n := strings.Count(string(enriched), "data-server-head"); n != strings.Count(injection, "\n") {
+		t.Errorf("enriched HTML has %d marked elements, want %d", n, strings.Count(injection, "\n"))
+	}
 }
 
 func TestOGInjection_noDuplicateTitle(t *testing.T) {
@@ -143,7 +150,7 @@ func TestOGInjection_noDuplicateTitle(t *testing.T) {
 	injection := buildOGInjection("Post Title", "Desc", "https://x.com/blog/s", "https://x.com/img.webp")
 	enriched := string(applyOGInjection(indexHTML, injection))
 
-	count := strings.Count(enriched, "<title>")
+	count := strings.Count(enriched, "<title")
 	if count != 1 {
 		t.Errorf("expected exactly 1 <title> tag, got %d", count)
 	}

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
@@ -93,8 +94,10 @@ func propertyOGImage(p *db.Property) string {
 	return fmt.Sprintf("/static/media/%s/%s%d.webp", a.ID, prefix, pick)
 }
 
-// noindexInjection keeps pages that are not public listings out of search results.
-const noindexInjection = "    <meta name=\"robots\" content=\"noindex\" />\n"
+// noindexInjection keeps pages that are not public listings out of search
+// results. Like every injected tag it carries data-server-head (see
+// buildHeadInjection).
+const noindexInjection = "    <meta name=\"robots\" content=\"noindex\" data-server-head />\n"
 
 // propertyHeadInjection returns the <head> fragment of a property page. A nil
 // or unpublished property gets noindex and keeps the site's default tags.
@@ -102,14 +105,51 @@ func propertyHeadInjection(p *db.Property, base string) (injection string, index
 	if p == nil || p.Status != db.PropertyStatusPublished {
 		return noindexInjection, false
 	}
-	canonical := base + "/propiedades/" + url.PathEscape(p.Contract) + "/" + url.PathEscape(p.Slug)
 	return buildHeadInjection(
 		"website",
 		sthtml.EscapeString(propertyMetaTitle(p)),
 		sthtml.EscapeString(propertyMetaDescription(p)),
-		sthtml.EscapeString(canonical),
+		sthtml.EscapeString(propertyURL(p, base)),
 		sthtml.EscapeString(absoluteImageURL(propertyOGImage(p), base)),
-	), true
+	) + propertyProductTags(p), true
+}
+
+// propertyURL is the absolute URL of the property's public page.
+func propertyURL(p *db.Property, base string) string {
+	return base + "/propiedades/" + url.PathEscape(p.Contract) + "/" + url.PathEscape(p.Slug)
+}
+
+// catalogPrice formats a price the way Meta catalogs expect: a plain number
+// with two decimals and no symbols or separators ("1500000.00").
+func catalogPrice(price float64) string {
+	return strconv.FormatFloat(price, 'f', 2, 64)
+}
+
+// propertyProductTags returns Meta's product microdata tags (OpenGraph
+// product format) for the property page, so the pixel can match it to the
+// catalog item whose retailer id is the property id. Empty when the property
+// has no price: Meta rejects items without one. Tags carry data-server-head
+// (see buildHeadInjection).
+func propertyProductTags(p *db.Property) string {
+	if p.Price <= 0 {
+		return ""
+	}
+	availability := "in stock"
+	if p.Status == db.PropertyStatusSold {
+		availability = "out of stock"
+	}
+	var sb strings.Builder
+	for _, tag := range [][2]string{
+		{"product:brand", "Sibra Inmobiliaria"},
+		{"product:availability", availability},
+		{"product:condition", "new"},
+		{"product:price:amount", catalogPrice(p.Price)},
+		{"product:price:currency", "MXN"},
+		{"product:retailer_item_id", p.Id},
+	} {
+		fmt.Fprintf(&sb, "    <meta property=\"%s\" content=\"%s\" data-server-head />\n", tag[0], sthtml.EscapeString(tag[1]))
+	}
+	return sb.String()
 }
 
 // handlePropertyOG serves the SPA index.html with the property's title,
