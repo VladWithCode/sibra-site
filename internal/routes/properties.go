@@ -9,12 +9,22 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/vladwithcode/sibra-site/internal/auth"
 	"github.com/vladwithcode/sibra-site/internal/db"
 )
+
+// maxNeighborhood is the longest neighborhood accepted, in characters.
+// Mirrors the neighborhood column (VARCHAR(128)).
+const maxNeighborhood = 128
+
+// validNeighborhood reports whether s fits the neighborhood cap.
+func validNeighborhood(s string) bool {
+	return utf8.RuneCountInString(s) <= maxNeighborhood
+}
 
 func RegisterPropertyRoutes(router *customServeMux) {
 	// Public routes only ever return published properties (see
@@ -47,6 +57,13 @@ func CreateProperty(w http.ResponseWriter, r *http.Request) {
 	if !validShortDescription(property.ShortDescription) {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "La descripción corta no puede tener más de 160 caracteres.",
+		})
+		return
+	}
+
+	if !validNeighborhood(property.Neighborhood) {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "La colonia no puede tener más de 128 caracteres.",
 		})
 		return
 	}
@@ -95,6 +112,13 @@ func UpdateProperty(w http.ResponseWriter, r *http.Request) {
 	if !validShortDescription(property.ShortDescription) {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "La descripción corta no puede tener más de 160 caracteres.",
+		})
+		return
+	}
+
+	if !validNeighborhood(property.Neighborhood) {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "La colonia no puede tener más de 128 caracteres.",
 		})
 		return
 	}

@@ -15,6 +15,7 @@ import { DollarSign } from "lucide-react";
 import type { CSSProperties } from "react";
 import { LucideIcon } from "./LucideIcon";
 import {
+    NEIGHBORHOOD_MAX,
     PROPERTY_CONTRACTS,
     PROPERTY_CONTRACT_LABELS,
     PROPERTY_STATUSES,
@@ -87,6 +88,31 @@ export function MainInfoSection({ form }: { form: any }) {
                                 onChange={(e) => field.handleChange(e.target.value)}
                                 placeholder="Calle y número, Colonia"
                             />
+                            <FieldError errors={errsOf(field)} />
+                        </Field>
+                    )}
+                </form.Field>
+
+                <form.Field name="neighborhood">
+                    {(field: any) => (
+                        <Field>
+                            <FieldLabel htmlFor="neighborhood">
+                                Colonia / Fraccionamiento
+                            </FieldLabel>
+                            <Input
+                                id="neighborhood"
+                                maxLength={NEIGHBORHOOD_MAX}
+                                value={field.state.value ?? ""}
+                                onBlur={field.handleBlur}
+                                onChange={(e) => field.handleChange(e.target.value)}
+                                placeholder="Col. Santa Fe"
+                                aria-describedby="neighborhood-hint"
+                            />
+                            <div className="-mt-1 text-xs text-muted-foreground">
+                                <p id="neighborhood-hint">
+                                    Opcional. Se usa en el catálogo de anuncios de Meta.
+                                </p>
+                            </div>
                             <FieldError errors={errsOf(field)} />
                         </Field>
                     )}

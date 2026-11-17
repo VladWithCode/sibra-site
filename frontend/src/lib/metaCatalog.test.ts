@@ -118,6 +118,15 @@ describe("viewContentParams", () => {
         });
     });
 
+    it("adds the neighborhood only when the property has one", () => {
+        expect(viewContentParams(property({ neighborhood: "Col. Santa Fe" }))).toMatchObject({
+            neighborhood: "Col. Santa Fe",
+        });
+        expect(viewContentParams(property({ neighborhood: "" }))).not.toHaveProperty(
+            "neighborhood",
+        );
+    });
+
     it("maps rentals and land", () => {
         const params = viewContentParams(
             property({ contract: "renta", propertyType: "terreno" }),

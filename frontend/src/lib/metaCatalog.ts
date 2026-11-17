@@ -122,5 +122,6 @@ export function viewContentParams(p: TProperty): Record<string, unknown> {
         property_type: homePropertyType(p),
         listing_type: homeListingType(p),
         availability: homeListingAvailability(p),
+        ...(p.neighborhood?.trim() ? { neighborhood: p.neighborhood.trim() } : {}),
     };
 }

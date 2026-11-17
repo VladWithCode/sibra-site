@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"cmp"
 	"encoding/xml"
 	"log"
 	"net/http"
@@ -104,9 +105,8 @@ func buildHomeListingFeed(props []*db.Property, base string) ([]byte, error) {
 			Availability: homeListingAvailability(p.Contract),
 			Description:  truncateDesc(markdownToPlainText(p.Description), 4999),
 			Address:      feedAddress{Format: "simple"},
-			// Properties have no neighborhood field (nb_hood was merged into
-			// the address) and are not linked to hoods, so the city stands in.
-			Neighborhood: p.City,
+			// The city stands in for properties without a neighborhood.
+			Neighborhood: cmp.Or(p.Neighborhood, p.City),
 			ListingType:  homeListingType(p.Contract),
 			Price:        catalogPrice(p.Price) + " MXN",
 			PropertyType: homePropertyType(p.PropertyType),

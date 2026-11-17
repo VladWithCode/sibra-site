@@ -17,6 +17,7 @@ func TestBuildHomeListingFeed(t *testing.T) {
 	house.State, house.Country, house.Zip = "Durango", "México", "34000"
 	house.Lat, house.Lon = 24.0277, -104.6532
 	house.YearBuilt = 2015
+	house.Neighborhood = "Col. Santa Fe"
 	house.MainImage = &db.MediaAsset{
 		ID: "img1", Kind: "image", Status: db.MediaStatusReady,
 		Variants: db.MediaVariants{Images: []int{960, 1600}},
@@ -50,7 +51,7 @@ func TestBuildHomeListingFeed(t *testing.T) {
 		`<component name="postal_code">34000</component>`,
 		`<latitude>24.0277</latitude>`,
 		`<longitude>-104.6532</longitude>`,
-		`<neighborhood>Durango</neighborhood>`,
+		`<neighborhood>Col. Santa Fe</neighborhood>`,
 		`<image>`,
 		`<url>https://sibra.mx/static/media/img1/w1600.webp</url>`,
 		`<listing_type>for_sale_by_agent</listing_type>`,
@@ -66,10 +67,14 @@ func TestBuildHomeListingFeed(t *testing.T) {
 		`<property_type>land</property_type>`,
 		`<price>9000.50 MXN</price>`,
 		`<description>Terreno</description>`,
+		`<neighborhood>Gómez Palacio</neighborhood>`,
 	} {
 		if !strings.Contains(got, want) {
 			t.Errorf("feed missing %q\n%s", want, got)
 		}
+	}
+	if strings.Contains(got, "<neighborhood>Durango</neighborhood>") {
+		t.Error("city must not replace a set neighborhood")
 	}
 	if strings.Contains(got, "0190-free") {
 		t.Error("listing without price must be skipped")

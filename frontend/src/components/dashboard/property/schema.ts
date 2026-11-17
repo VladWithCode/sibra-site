@@ -59,9 +59,13 @@ export const NamedImageInputSchema = z.object({
 // Search engines cut meta descriptions around this length. Mirrors the backend cap.
 export const SHORT_DESCRIPTION_MAX = 160;
 
+// Mirrors the backend cap (properties.neighborhood is VARCHAR(128)).
+export const NEIGHBORHOOD_MAX = 128;
+
 export const PropertyFormSchema = z.object({
     title: z.string(),
     address: z.string().min(1, "La dirección es obligatoria"),
+    neighborhood: z.string().max(NEIGHBORHOOD_MAX, `Máximo ${NEIGHBORHOOD_MAX} caracteres`),
     city: z.string().min(1, "La ciudad es obligatoria"),
     state: z.string().min(1, "El estado es obligatorio"),
     zip: z.string(),
@@ -101,6 +105,7 @@ export type PropertyFormValues = z.infer<typeof PropertyFormSchema>;
 export const propertyFormDefaults: PropertyFormValues = {
     title: "",
     address: "",
+    neighborhood: "",
     city: "",
     state: "",
     zip: "",
@@ -152,6 +157,7 @@ export function buildPropertyPayload(v: PropertyFormValues): Partial<TProperty> 
     const payload: Partial<TProperty> = {
         title: v.title,
         address: v.address,
+        neighborhood: v.neighborhood.trim(),
         city: v.city,
         state: v.state,
         zip: v.zip,
@@ -181,6 +187,7 @@ export function propertyToFormValues(p: TProperty): PropertyFormValues {
     return {
         title: p.title ?? "",
         address: p.address ?? "",
+        neighborhood: p.neighborhood ?? "",
         city: p.city ?? "",
         state: p.state ?? "",
         zip: p.zip ?? "",

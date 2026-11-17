@@ -70,6 +70,8 @@ export type TPropertyMedia = {
 export type TProperty = {
     id: string;
     address: string;
+    /** Colonia / fraccionamiento; may be empty. */
+    neighborhood: string;
     title: string;
     /** Markdown (see PropertyMarkdown). */
     description: string;
