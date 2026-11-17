@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
+	"unicode"
 
 	"github.com/google/uuid"
 	"github.com/vladwithcode/sibra-site/internal/auth"
@@ -57,6 +59,29 @@ func sendMetaLead(r *http.Request, phone, name string) {
 	}()
 }
 
+// leadPhoneDigits is the digit count of a Mexican phone number.
+const leadPhoneDigits = 10
+
+// leadContactError returns why a public lead form's contact data is unusable,
+// or "" when it is valid. Lead handlers check it before notifying anyone or
+// reporting the lead to Meta, so a request with an empty name or phone is not
+// counted as a lead.
+func leadContactError(name, phone string, nameRequired bool) string {
+	if nameRequired && strings.TrimSpace(name) == "" {
+		return "El nombre es obligatorio."
+	}
+	digits := 0
+	for _, c := range phone {
+		if unicode.IsDigit(c) {
+			digits++
+		}
+	}
+	if digits < leadPhoneDigits {
+		return "El número de teléfono debe tener 10 dígitos."
+	}
+	return ""
+}
+
 func CreateRequest(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	req := db.Request{}
@@ -65,6 +90,11 @@ func CreateRequest(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, ErrorParams{
 			ErrorMessage: "Invalid request body",
 		})
+		return
+	}
+
+	if msg := leadContactError(req.Name, req.Phone, false); msg != "" {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: msg})
 		return
 	}
 
@@ -134,19 +164,27 @@ func CreatePropInfoRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var prop *db.Property
-	if req.Property != "" {
-		prop, err = db.FindPropertyById(ctx, req.Property)
-		if err != nil {
-			respondWithError(w, http.StatusBadRequest, ErrorParams{
-				ErrorMessage: "Ocurrió un error al buscar la propiedad",
-			})
-			log.Printf("Error finding property: %v\n", err)
-			return
-		}
-
-		req.Property = prop.Id
+	if msg := leadContactError(req.Name, req.Phone, true); msg != "" {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: msg})
+		return
 	}
+
+	if req.Property == "" {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Falta la propiedad de la solicitud.",
+		})
+		return
+	}
+
+	prop, err := db.FindPropertyById(ctx, req.Property)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{
+			ErrorMessage: "Ocurrió un error al buscar la propiedad",
+		})
+		log.Printf("Error finding property: %v\n", err)
+		return
+	}
+	req.Property = prop.Id
 
 	err = db.CreateRequest(ctx, req.ToRequest())
 	if err != nil {
@@ -213,6 +251,11 @@ func CreateConquistadoresRequest(w http.ResponseWriter, r *http.Request) {
 			ErrorMessage: "Ocurrió un error al procesar la solicitud. Intenta de nuevo más tarde.",
 		})
 		log.Printf("Error parsing request body: %v\n", err)
+		return
+	}
+
+	if msg := leadContactError(req.Name, req.Phone, true); msg != "" {
+		respondWithError(w, http.StatusBadRequest, ErrorParams{ErrorMessage: msg})
 		return
 	}
 

@@ -23,7 +23,7 @@ const conqsQuoteFormSchema = z.object({
     name: z.string().min(1, "El nombre no puede estar vacío"),
     phone: z
         .string()
-        .min(1, "El número de teléfono no puede estar vacío")
+        .min(10, "El número de teléfono debe tener 10 dígitos")
         .max(10, "El número de teléfono no puede tener más de 10 caracteres"),
     consent: z.literal(true, "Debes aceptar que te contactemos para agendar una cita."),
     schedule: z
@@ -53,6 +53,7 @@ export function ConqsQuoteForm({
     });
 
     const conqsQuoteMut = useMutation(createConqsQuoteOpts(""));
+    const isComplete = conqsQuoteFormSchema.safeParse(form.watch()).success;
     const onSubmit = form.handleSubmit(
         (data) => {
             conqsQuoteMut.mutate(
@@ -168,7 +169,7 @@ export function ConqsQuoteForm({
                                             <Checkbox
                                                 className="bg-card shadow-lg"
                                                 name={field.name}
-                                                defaultChecked={field.value}
+                                                checked={field.value}
                                                 onCheckedChange={field.onChange}
                                             />
                                         </FormControl>
@@ -191,6 +192,7 @@ export function ConqsQuoteForm({
                     <div className="">
                         <Button
                             type="submit"
+                            disabled={!isComplete || conqsQuoteMut.isPending}
                             className="w-full bg-linear-to-b from-sbr-blue-light to-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark text-gray-50 sm:text-base shadow active:shadow-sm hover:scale-105 active:scale-95"
                             size="lg"
                         >
@@ -224,6 +226,7 @@ export function ConqsFooterQuoteForm({
     });
 
     const conqsQuoteMut = useMutation(createConqsQuoteOpts(""));
+    const isComplete = conqsQuoteFormSchema.safeParse(form.watch()).success;
     const onSubmit = form.handleSubmit(
         (data) => {
             conqsQuoteMut.mutate(
@@ -338,7 +341,7 @@ export function ConqsFooterQuoteForm({
                                             <Checkbox
                                                 className="bg-card shadow-lg sm:size-6"
                                                 name={field.name}
-                                                defaultChecked={field.value}
+                                                checked={field.value}
                                                 onCheckedChange={field.onChange}
                                             />
                                         </FormControl>
@@ -355,6 +358,7 @@ export function ConqsFooterQuoteForm({
                     <div className="">
                         <Button
                             type="submit"
+                            disabled={!isComplete || conqsQuoteMut.isPending}
                             className="w-full bg-sbr-blue hover:bg-sbr-blue-light active:bg-sbr-blue-dark sm:text-base text-gray-50 shadow active:shadow-sm hover:scale-105 active:scale-95"
                             size="lg"
                         >

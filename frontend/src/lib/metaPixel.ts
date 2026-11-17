@@ -26,6 +26,10 @@ function ensurePixel(): NonNullable<Window["fbq"]> {
     script.src = "https://connect.facebook.net/en_US/fbevents.js";
     document.head.appendChild(script);
 
+    // Leads are reported only by trackPixel after the backend accepts a form.
+    // Automatic configuration lets Meta infer events from button clicks and
+    // page metadata, which can report a Lead for a form nobody filled.
+    fbq("set", "autoConfig", false, PIXEL_ID);
     fbq("init", PIXEL_ID);
     return fbq;
 }

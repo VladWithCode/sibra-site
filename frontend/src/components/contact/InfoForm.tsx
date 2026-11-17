@@ -143,7 +143,12 @@ export function InfoForm({ contactType, formTitle, submitLabel }: {
                     )}
                 />
                 <form.Subscribe
-                    selector={(state) => [state.canSubmit, state.isSubmitting] as const}
+                    selector={(state) =>
+                        [
+                            state.canSubmit && contactFormSchema.safeParse(state.values).success,
+                            state.isSubmitting,
+                        ] as const
+                    }
                     children={([canSubmit, isSubmitting]) => (
                         <motion.div whileTap={{ scale: 0.98 }}>
                             <Button

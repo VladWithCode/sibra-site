@@ -57,7 +57,7 @@ const inquiryFormSchema = z.object({
     name: z.string().min(1, "El nombre no puede estar vacío"),
     phone: z
         .string()
-        .min(1, "El número de teléfono no puede estar vacío")
+        .min(10, "El número de teléfono debe tener 10 dígitos")
         .max(10, "El número de teléfono no puede tener más de 10 caracteres"),
     consent: z.literal(true, "Debes aceptar que te contactemos para agendar una cita."),
 });
@@ -792,7 +792,13 @@ function InquiryForm({ property }: { property: TProperty }) {
                         )}
                     />
                     <form.Subscribe
-                        selector={(state) => [state.canSubmit, state.isSubmitting] as const}
+                        selector={(state) =>
+                            [
+                                state.canSubmit &&
+                                    inquiryFormSchema.safeParse(state.values).success,
+                                state.isSubmitting,
+                            ] as const
+                        }
                         children={([canSubmit, isSubmitting]) => (
                             <motion.div whileTap={{ scale: 0.98 }}>
                                 <Button

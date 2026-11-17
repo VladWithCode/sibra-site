@@ -210,7 +210,10 @@ export function ContactForm({
 
             <div className="flex items-center justify-end">
                 <form.Subscribe
-                    selector={(state) => [state.canSubmit, state.isSubmitting]}
+                    selector={(state) => [
+                        state.canSubmit && ContactFormSchema.safeParse(state.values).success,
+                        state.isSubmitting,
+                    ]}
                     children={([canSubmit, isSubmitting]) => (
                         <Button
                             className="text-base"
