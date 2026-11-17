@@ -8,7 +8,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { createConqsQuoteOpts } from "@/queries/quotes";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 export type TConqsQuoteFormData = z.infer<typeof conqsQuoteFormSchema>;
 
@@ -26,10 +25,6 @@ const conqsQuoteFormSchema = z.object({
         .min(10, "El número de teléfono debe tener 10 dígitos")
         .max(10, "El número de teléfono no puede tener más de 10 caracteres"),
     consent: z.literal(true, "Debes aceptar que te contactemos para agendar una cita."),
-    schedule: z
-        .enum(["otro", "fin de semana", "entre semana", "sin especificar"])
-        .optional()
-        .or(z.literal("")),
 });
 
 export function ConqsQuoteForm({
@@ -39,6 +34,9 @@ export function ConqsQuoteForm({
 }: SellingPageAttribution = {}) {
     const onDark = variant === "onDark";
     const labelCls = onDark ? "sm:text-base text-white" : "sm:text-base";
+    const legendCls = onDark
+        ? "text-sm sm:text-base text-white/80"
+        : "text-sm sm:text-base text-muted-foreground";
     const headingCls = onDark
         ? "text-2xl sm:text-3xl font-bold uppercase text-white"
         : "text-2xl sm:text-3xl font-bold uppercase";
@@ -47,7 +45,6 @@ export function ConqsQuoteForm({
         defaultValues: {
             name: "",
             phone: "",
-            schedule: "sin especificar",
             consent: false as unknown as true,
         },
     });
@@ -132,33 +129,10 @@ export function ConqsQuoteForm({
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="schedule"
-                            render={() => (
-                                <FormItem>
-                                    <Select>
-                                        <FormLabel className={labelCls}>
-                                            Horario de visita
-                                        </FormLabel>
-                                        <FormControl>
-                                            <SelectTrigger className="w-full text-gray-800 bg-card">
-                                                <SelectValue placeholder="¿Cuándo deseas visitar?" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="otro">Otro horario</SelectItem>
-                                            <SelectItem value="fin de semana">
-                                                Este fin de semana
-                                            </SelectItem>
-                                            <SelectItem value="entre semana">
-                                                Entre semana
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </FormItem>
-                            )}
-                        />
+                        <p className={legendCls}>
+                            Al hacer clic en enviar uno de nuestros asesores te hablará para
+                            comunicarse contigo
+                        </p>
                         <FormField
                             control={form.control}
                             name="consent"
@@ -212,6 +186,9 @@ export function ConqsFooterQuoteForm({
 }: SellingPageAttribution = {}) {
     const onDark = variant === "onDark";
     const labelCls = onDark ? "sm:text-base text-white" : "sm:text-base";
+    const legendCls = onDark
+        ? "text-sm sm:text-base text-white/80"
+        : "text-sm sm:text-base text-muted-foreground";
     const consentLabelCls = onDark
         ? "leading-none sm:pt-1.5 sm:text-base text-white"
         : "leading-none sm:pt-1.5 sm:text-base";
@@ -220,7 +197,6 @@ export function ConqsFooterQuoteForm({
         defaultValues: {
             name: "",
             phone: "",
-            schedule: "otro",
             consent: false as unknown as true,
         },
     });
@@ -304,33 +280,10 @@ export function ConqsFooterQuoteForm({
                                 </FormItem>
                             )}
                         />
-                        <FormField
-                            control={form.control}
-                            name="schedule"
-                            render={() => (
-                                <FormItem>
-                                    <Select>
-                                        <FormLabel className={labelCls}>
-                                            Horario de visita
-                                        </FormLabel>
-                                        <FormControl>
-                                            <SelectTrigger className="w-full bg-card">
-                                                <SelectValue placeholder="¿Cuándo deseas visitar?" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="otro">Otro horario</SelectItem>
-                                            <SelectItem value="fin de semana">
-                                                Este fin de semana
-                                            </SelectItem>
-                                            <SelectItem value="entre semana">
-                                                Entre semana
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </FormItem>
-                            )}
-                        />
+                        <p className={legendCls}>
+                            Al hacer clic en enviar uno de nuestros asesores te hablará para
+                            comunicarse contigo
+                        </p>
                         <FormField
                             control={form.control}
                             name="consent"
